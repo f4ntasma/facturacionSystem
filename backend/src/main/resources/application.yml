@@ -21,7 +21,7 @@ spring:
 
 security:
   jwt:
-    secret: ${JWT_SECRET:change-me-in-prod}
+    secret: ${JWT_SECRET:change-me-to-a-secure-32-char-key-123}
     expiration: 3600000 # 1 hora
 
 server:
