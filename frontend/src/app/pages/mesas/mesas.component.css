@@ -1,0 +1,15 @@
+.mesa-card {
+  height: 150px;
+  border-radius: 15px;
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+
+.mesa-card:hover {
+  transform: scale(1.03);
+}
+
+.mesa-card.add {
+  background: #f1f3f6;
+  color: #555;
+}
