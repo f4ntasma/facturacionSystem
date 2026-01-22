@@ -20,6 +20,7 @@
     <div class="col-md-3" *ngFor="let mesa of mesasFiltradas">
       <div class="mesa-card" (click)="abrirMesa(mesa)">
 
+        <!-- OPCIONES -->
         <div class="dropdown mesa-options" (click)="$event.stopPropagation()">
           <button
             class="btn btn-light btn-sm rounded-circle"
@@ -39,7 +40,6 @@
                 <i class="bi bi-pencil"></i> Editar
               </a>
             </li>
-
             <li>
               <a
                 class="dropdown-item text-danger"
@@ -67,7 +67,7 @@
   </div>
 </div>
 
-<!-- MODAL -->
+<!-- MODAL EDITAR -->
 <div class="modal fade" id="modalEditarMesa" tabindex="-1">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
@@ -78,23 +78,37 @@
       </div>
 
       <div class="modal-body">
+
         <div class="mb-3">
           <label class="form-label">Nombre</label>
-          <input class="form-control" [(ngModel)]="formMesa.nombre" />
+          <input
+            class="form-control"
+            [(ngModel)]="formMesa.nombre"
+          />
         </div>
 
         <div class="mb-3">
           <label class="form-label">Piso</label>
-          <select class="form-select" [(ngModel)]="formMesa.piso">
-            <option *ngFor="let p of pisos" [value]="p">
+          <select
+            class="form-select"
+            [(ngModel)]="formMesa.piso"
+          >
+            <option *ngFor="let p of pisos" [ngValue]="p">
               Piso {{ p }}
             </option>
           </select>
         </div>
+
       </div>
 
       <div class="modal-footer">
-        <button class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
+        <button
+          class="btn btn-light"
+          data-bs-dismiss="modal"
+        >
+          Cancelar
+        </button>
+
         <button
           class="btn btn-danger"
           data-bs-dismiss="modal"

@@ -28,6 +28,7 @@ export class MesasComponent {
   pisos: number[] = [1, 2, 3];
 
   openDropdownId: number | null = null;
+
   mesaEditando: Mesa | null = null;
 
   formMesa = {
@@ -36,6 +37,13 @@ export class MesasComponent {
   };
 
   constructor(private router: Router) {}
+
+  /* ===============================
+     FILTRADO POR PISO (CLAVE)
+     =============================== */
+  get mesasFiltradas(): Mesa[] {
+    return this.mesas.filter(m => m.piso === this.pisoActual);
+  }
 
   irAPiso(piso: number) {
     this.pisoActual = piso;
@@ -47,12 +55,15 @@ export class MesasComponent {
   }
 
   agregarMesa() {
-    const mesasDelPiso = this.mesas.filter(m => m.piso === this.pisoActual);
-    const numero = mesasDelPiso.length + 1;
+    const nuevoId = this.mesas.length
+      ? Math.max(...this.mesas.map(m => m.id)) + 1
+      : 1;
+
+    const cantidadEnPiso = this.mesas.filter(m => m.piso === this.pisoActual).length + 1;
 
     this.mesas.push({
-      id: Date.now(),
-      nombre: `Mesa ${numero}`,
+      id: nuevoId,
+      nombre: `Mesa ${cantidadEnPiso}`,
       piso: this.pisoActual
     });
   }
@@ -68,23 +79,39 @@ export class MesasComponent {
 
   abrirEditarMesa(mesa: Mesa) {
     this.mesaEditando = mesa;
-    this.formMesa = { ...mesa };
+    this.formMesa = {
+      nombre: mesa.nombre,
+      piso: mesa.piso
+    };
   }
 
+  /* =====================================================
+     🔴 NUEVA LÓGICA: ELIMINAR + CREAR EN OTRO PISO
+     ===================================================== */
   guardarCambiosMesa() {
     if (!this.mesaEditando) return;
 
-    this.mesaEditando.nombre = this.formMesa.nombre;
-    this.mesaEditando.piso = this.formMesa.piso;
+    const mesaOriginal = this.mesaEditando;
 
-    // ✅ CAMBIAR AUTOMÁTICAMENTE AL PISO DESTINO
+    // 1️⃣ eliminar la mesa original
+    this.mesas = this.mesas.filter(m => m.id !== mesaOriginal.id);
+
+    // 2️⃣ crear nueva mesa en el piso seleccionado
+    const nuevoId = this.mesas.length
+      ? Math.max(...this.mesas.map(m => m.id)) + 1
+      : 1;
+
+    this.mesas.push({
+      id: nuevoId,
+      nombre: this.formMesa.nombre,
+      piso: this.formMesa.piso
+    });
+
+    // 3️⃣ cambiar vista al nuevo piso
     this.pisoActual = this.formMesa.piso;
 
+    // limpiar estado
     this.mesaEditando = null;
     this.openDropdownId = null;
-  }
-
-  get mesasFiltradas() {
-    return this.mesas.filter(m => m.piso === this.pisoActual);
   }
 }
