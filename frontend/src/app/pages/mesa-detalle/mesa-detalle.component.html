@@ -1,8 +1,41 @@
-<div class="container p-4">
-  <h4>Mesa {{ mesaId }}</h4>
-  <p>Aquí irán los productos, total, cobrar, etc.</p>
+<div class="row h-100">
 
-  <button class="btn btn-secondary" routerLink="/">
-    Volver
-  </button>
+  <!-- IZQUIERDA -->
+  <div class="col-md-6 text-center p-5">
+    <h4>← Mesa {{ mesaId }}</h4>
+
+    <img
+      src="https://cdn-icons-png.flaticon.com/512/2921/2921822.png"
+      width="260"
+      class="my-4"
+    >
+
+    <p class="text-muted">No hay pedidos.</p>
+  </div>
+
+  <!-- DERECHA -->
+  <div class="col-md-6 p-4 border-start">
+    <h5 class="mb-3 text-danger">Productos</h5>
+
+    <div class="mb-3 d-flex gap-2">
+      <button class="btn btn-success">Todo</button>
+      <button class="btn btn-light">Plato de Fondo</button>
+      <button class="btn btn-light">Comida Rápida</button>
+    </div>
+
+    <input class="form-control mb-3" placeholder="Buscar producto">
+
+    <div class="list-group">
+      <div class="list-group-item d-flex justify-content-between">
+        Lomo Saltado <strong>S/ 15.00</strong>
+      </div>
+      <div class="list-group-item d-flex justify-content-between">
+        Ají de Gallina <strong>S/ 12.00</strong>
+      </div>
+      <div class="list-group-item d-flex justify-content-between">
+        Gaseosa <strong>S/ 8.00</strong>
+      </div>
+    </div>
+  </div>
+
 </div>

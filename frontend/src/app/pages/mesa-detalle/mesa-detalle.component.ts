@@ -1,9 +1,12 @@
 import { Component } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
+import { CommonModule } from '@angular/common';
 
 @Component({
+  selector: 'app-mesa-detalle',
   standalone: true,
-  templateUrl: './mesa-detalle.component.html'
+  imports: [CommonModule],
+  templateUrl: './mesa-detalle.component.html',
 })
 export class MesaDetalleComponent {
   mesaId!: number;

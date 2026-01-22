@@ -1,15 +1,71 @@
 .mesa-card {
-  height: 150px;
-  border-radius: 15px;
+  background: #e6e6e6;
+  border-radius: 18px;
+  padding: 20px;
+  height: 170px;
   cursor: pointer;
-  transition: transform 0.15s ease;
+  position: relative;
+}
+
+.mesa-options {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+}
+
+.mesa-add {
+  background: #e6e6e6;
+  border-radius: 18px;
+  height: 170px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 40px;
+  cursor: pointer;
+}
+.add-mesa-card {
+  height: 160px;
+  border-radius: 20px;
+  background: #f5f5f5;
+  border: 2px dashed #cfcfcf;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.add-mesa-card:hover {
+  background: #ededed;
+  transform: scale(1.02);
+}
+
+.add-mesa-card i {
+  font-size: 2rem;
+  margin-bottom: 8px;
+}
+.mesa-card {
+  background: #eeeeee;
+  border-radius: 20px;
+  padding: 16px;
+  height: 160px;
+  position: relative;
+  transition: transform 0.2s ease;
 }
 
 .mesa-card:hover {
-  transform: scale(1.03);
+  transform: translateY(-4px);
+}
+.mesa-options .dropdown-menu.show {
+  display: block;
+  position: absolute;
+  top: 100%;
+  right: 0;
+  z-index: 1000;
+  min-width: 150px;
 }
 
-.mesa-card.add {
-  background: #f1f3f6;
-  color: #555;
+.mesa-options .dropdown-menu {
+  display: none;
 }

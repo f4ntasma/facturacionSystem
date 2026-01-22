@@ -8,7 +8,7 @@ import { NavbarComponent } from './layout/navbar.component';
   selector: 'app-root',
   standalone: true,
   imports: [
-    RouterOutlet,   // 👈 ESTO ES LO QUE FALTABA
+    RouterOutlet,
     SidebarComponent,
     NavbarComponent
   ],
