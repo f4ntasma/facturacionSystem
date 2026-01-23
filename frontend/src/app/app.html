@@ -1,8 +1,14 @@
-<div class="d-flex">
+<!-- Layout completo para páginas normales -->
+<div *ngIf="showLayout" class="d-flex">
   <app-sidebar></app-sidebar>
 
   <div class="flex-grow-1">
     <app-navbar></app-navbar>
     <router-outlet></router-outlet>
   </div>
+</div>
+
+<!-- Solo router-outlet para login (sin layout) -->
+<div *ngIf="!showLayout" class="w-100 h-100">
+  <router-outlet></router-outlet>
 </div>
