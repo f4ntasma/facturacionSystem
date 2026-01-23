@@ -20,3 +20,9 @@
 - Generación de PDF (boleta/factura) y numeración oficial.
 - Integración real de pagos (tarjeta/Yape) y webhooks.
 - Control de stock avanzado (reservas, devoluciones), buscador con relevancia/multicliente.
+
+### Implementación y configuración de Cors
+- Se configuro el archivo dentro de configs, para configurar el archivos cors, para poder
+conectar el fronten "Angular" con el backend "SpringBoot".
+- Se implementó un componente de primeng para evitar tareas de creación de componentes desde
+cero, para reducir algo de trabajo, aunque aún falta modificar y ajustar.
