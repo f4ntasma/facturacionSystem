@@ -1,6 +1,7 @@
 com\facturacion\orden\TipoComprobante.class
 com\facturacion\orden\OrdenService.class
 com\facturacion\pago\PagoResponse.class
+com\facturacion\auth\ErrorResponse.class
 com\facturacion\orden\OrdenItem.class
 com\facturacion\orden\OrdenResponse.class
 com\facturacion\empresa\EmpresaRepository.class
@@ -25,6 +26,7 @@ com\facturacion\empresa\Empresa.class
 com\facturacion\config\SecurityConfig.class
 com\facturacion\orden\OrderStatus.class
 com\facturacion\orden\Orden.class
+com\facturacion\TestController.class
 com\facturacion\producto\ProductResponse.class
 com\facturacion\auth\dto\RegisterRequest.class
 com\facturacion\orden\OrdenRepository.class
@@ -32,7 +34,11 @@ com\facturacion\common\ApiError.class
 com\facturacion\empresa\EmpresaRequest.class
 com\facturacion\config\CorsConfig.class
 com\facturacion\producto\ProductoService.class
+com\facturacion\auth\LoginResponse$UserInfo.class
+com\facturacion\auth\LoginResponse.class
 com\facturacion\auth\dto\AuthRequest.class
+com\facturacion\auth\LoginRequest.class
+com\facturacion\auth\MessageResponse.class
 com\facturacion\producto\ProductRequest.class
 com\facturacion\carrito\CarritoItem.class
 com\facturacion\user\UserRepository.class

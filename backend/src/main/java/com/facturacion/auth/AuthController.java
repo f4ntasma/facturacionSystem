@@ -1,36 +1,31 @@
 package com.facturacion.auth;
 
-import com.facturacion.auth.dto.AuthRequest;
-import com.facturacion.auth.dto.AuthResponse;
-import com.facturacion.auth.dto.RegisterRequest;
-import jakarta.validation.Valid;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/v1/auth")
+@RequestMapping("/api/auth")
+@CrossOrigin(origins = "http://localhost:4200") // Permitir requests desde Angular
 public class AuthController {
 
-    private final AuthService authService;
-
-    public AuthController(AuthService authService) {
-        this.authService = authService;
-    }
-
-    @PostMapping("/register")
-    public AuthResponse register(@Valid @RequestBody RegisterRequest request) {
-        return authService.register(request);
-    }
+    @Autowired
+    private AuthService authService;
 
     @PostMapping("/login")
-    public AuthResponse login(@Valid @RequestBody AuthRequest request) {
-        return authService.login(request);
+    public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
+        try {
+            LoginResponse response = authService.authenticate(loginRequest);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            ErrorResponse errorResponse = new ErrorResponse("Usuario o contraseña incorrectos");
+            return ResponseEntity.status(401).body(errorResponse);
+        }
     }
 
     @PostMapping("/logout")
-    public java.util.Map<String, String> logout() {
-        return java.util.Map.of("message", "Logout OK (invalidar token en frontend; agregar blacklist/refresh tokens)");
+    public ResponseEntity<?> logout() {
+        MessageResponse messageResponse = new MessageResponse("Logout exitoso");
+        return ResponseEntity.ok(messageResponse);
     }
 }

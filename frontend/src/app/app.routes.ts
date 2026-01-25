@@ -1,21 +1,61 @@
 import { Routes } from '@angular/router';
-import { MesasComponent } from './pages/mesas/mesas.component';
-import { MesaDetalleComponent } from './pages/mesa-detalle/mesa-detalle.component';
-import { LoginComponent } from './pages/login/login';
+import { AuthGuard } from './guards/auth.guard';
 
 export const routes: Routes = [
-  // Login
-  { path: 'login', component: LoginComponent },
-  
-  // Redirigir a login por defecto
-  { path: '', redirectTo: '/login', pathMatch: 'full' },
-
-  // Ventana por piso
-  { path: 'pisos/:piso', component: MesasComponent },
-
-  // Detalle de mesa
-  { path: 'mesa/:id', component: MesaDetalleComponent },
-
-  // Cualquier otra cosa redirige a login
-  { path: '**', redirectTo: '/login' }
+  {
+    path: 'login',
+    loadComponent: () => import('./pages/login/login').then(m => m.LoginComponent)
+  },
+  {
+    path: '',
+    canActivate: [AuthGuard],
+    loadComponent: () => import('./layout/main-layout.component').then(m => m.MainLayoutComponent),
+    children: [
+      {
+        path: '',
+        redirectTo: '/empresas',
+        pathMatch: 'full'
+      },
+      {
+        path: 'empresas',
+        loadComponent: () => import('./pages/empresas/empresas-list.component').then(m => m.EmpresasListComponent)
+      },
+      {
+        path: 'empresas/nueva',
+        loadComponent: () => import('./pages/empresas/empresa-form.component').then(m => m.EmpresaFormComponent)
+      },
+      {
+        path: 'empresas/:id/editar',
+        loadComponent: () => import('./pages/empresas/empresa-form.component').then(m => m.EmpresaFormComponent)
+      },
+      {
+        path: 'productos',
+        loadComponent: () => import('./pages/productos/productos-list.component').then(m => m.ProductosListComponent)
+      },
+      {
+        path: 'productos/nuevo',
+        loadComponent: () => import('./pages/productos/producto-form.component').then(m => m.ProductoFormComponent)
+      },
+      {
+        path: 'productos/:id/editar',
+        loadComponent: () => import('./pages/productos/producto-form.component').then(m => m.ProductoFormComponent)
+      },
+      {
+        path: 'facturas',
+        loadComponent: () => import('./pages/facturas/facturas-list.component').then(m => m.FacturasListComponent)
+      },
+      {
+        path: 'facturas/nueva',
+        loadComponent: () => import('./pages/facturas/factura-form.component').then(m => m.FacturaFormComponent)
+      },
+      {
+        path: 'facturas/:id/editar',
+        loadComponent: () => import('./pages/facturas/factura-form.component').then(m => m.FacturaFormComponent)
+      }
+    ]
+  },
+  {
+    path: '**',
+    redirectTo: '/login'
+  }
 ];
