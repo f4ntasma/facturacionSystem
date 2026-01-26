@@ -8,12 +8,27 @@ export const routes: Routes = [
   },
   {
     path: '',
+    redirectTo: '/login',
+    pathMatch: 'full'
+  },
+  {
+    path: 'pisos/:piso',
+    canActivate: [AuthGuard],
+    loadComponent: () => import('./pages/mesas/mesas.component').then(m => m.MesasComponent)
+  },
+  {
+    path: 'mesa/:id',
+    canActivate: [AuthGuard],
+    loadComponent: () => import('./pages/mesa-detalle/mesa-detalle.component').then(m => m.MesaDetalleComponent)
+  },
+  {
+    path: 'admin',
     canActivate: [AuthGuard],
     loadComponent: () => import('./layout/main-layout.component').then(m => m.MainLayoutComponent),
     children: [
       {
         path: '',
-        redirectTo: '/empresas',
+        redirectTo: '/admin/empresas',
         pathMatch: 'full'
       },
       {

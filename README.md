@@ -147,7 +147,13 @@ docker-compose up --build --force-recreate
 
 ## Notas de Desarrollo
 
-- El backend usa H2 como base de datos en memoria
+- El backend usa H2 como base de datos en memoria, porque falta meter mariaDB
+- Spring Security con BCrypt para hashing de contraseñas
+- Swagger UI en `/swagger-ui.html`
+- API RESTful con documentación OpenAPI
+- Angular Material para UI
+- Responsive design
+- Lazy loading de módulos
 - JWT para autenticación
 - CORS configurado para desarrollo
 - Hot reload habilitado en desarrollo local
