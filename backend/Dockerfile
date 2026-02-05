@@ -9,7 +9,7 @@ COPY pom.xml .
 COPY src ./src
 
 # Instalar Maven
-RUN apt-get update && apt-get install -y maven
+RUN apk add --no-cache maven
 
 # Compilar la aplicación
 RUN mvn clean package -DskipTests
