@@ -1,5 +1,5 @@
-# Etapa 1: Construcción
-FROM node:18-alpine AS build
+# Etapa 1: Construcción y control de versiones
+FROM node:22-alpine AS build
 
 WORKDIR /app
 
