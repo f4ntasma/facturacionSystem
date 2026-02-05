@@ -78,10 +78,17 @@
             <version>2.3.0</version>
         </dependency>
         
-        <!-- H2 Database -->
+        <!-- H2 Database (para desarrollo local) -->
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        
+        <!-- MariaDB Driver -->
+        <dependency>
+            <groupId>org.mariadb.jdbc</groupId>
+            <artifactId>mariadb-java-client</artifactId>
             <scope>runtime</scope>
         </dependency>
         
