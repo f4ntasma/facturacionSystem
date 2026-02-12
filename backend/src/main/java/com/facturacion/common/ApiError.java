@@ -1,26 +1,21 @@
 package com.facturacion.common;
 
-import java.time.Instant;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class ApiError {
-    private final Instant timestamp = Instant.now();
-    private final String message;
-    private final String path;
-
-    public ApiError(String message, String path) {
-        this.message = message;
-        this.path = path;
-    }
-
-    public Instant getTimestamp() {
-        return timestamp;
-    }
-
-    public String getMessage() {
-        return message;
-    }
-
-    public String getPath() {
-        return path;
-    }
+    @Builder.Default
+    private LocalDateTime timestamp = LocalDateTime.now();
+    private int status;
+    private String error;
+    private String message;
+    private String path;
 }

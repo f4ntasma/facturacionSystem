@@ -8,19 +8,35 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import java.time.LocalDateTime;
+
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(NotFoundException.class)
     public ResponseEntity<ApiError> handleNotFound(NotFoundException ex, HttpServletRequest request) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(new ApiError(ex.getMessage(), request.getRequestURI()));
+        ApiError error = ApiError.builder()
+            .timestamp(LocalDateTime.now())
+            .status(HttpStatus.NOT_FOUND.value())
+            .error("Not Found")
+            .message(ex.getMessage())
+            .path(request.getRequestURI())
+            .build();
+        
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
     }
 
     @ExceptionHandler(BadRequestException.class)
     public ResponseEntity<ApiError> handleBadRequest(BadRequestException ex, HttpServletRequest request) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(new ApiError(ex.getMessage(), request.getRequestURI()));
+        ApiError error = ApiError.builder()
+            .timestamp(LocalDateTime.now())
+            .status(HttpStatus.BAD_REQUEST.value())
+            .error("Bad Request")
+            .message(ex.getMessage())
+            .path(request.getRequestURI())
+            .build();
+        
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -29,13 +45,28 @@ public class GlobalExceptionHandler {
                 .findFirst()
                 .map(FieldError::getDefaultMessage)
                 .orElse("Datos inválidos");
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(new ApiError(message, request.getRequestURI()));
+        
+        ApiError error = ApiError.builder()
+            .timestamp(LocalDateTime.now())
+            .status(HttpStatus.BAD_REQUEST.value())
+            .error("Validation Error")
+            .message(message)
+            .path(request.getRequestURI())
+            .build();
+        
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
     }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiError> handleGeneric(Exception ex, HttpServletRequest request) {
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(new ApiError("Error inesperado: " + ex.getMessage(), request.getRequestURI()));
+        ApiError error = ApiError.builder()
+            .timestamp(LocalDateTime.now())
+            .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
+            .error("Internal Server Error")
+            .message("Error inesperado: " + ex.getMessage())
+            .path(request.getRequestURI())
+            .build();
+        
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
     }
 }
