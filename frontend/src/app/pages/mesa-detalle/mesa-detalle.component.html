@@ -1,41 +1,66 @@
-<div class="row h-100">
+<div class="mesa-detalle-container">
 
   <!-- IZQUIERDA -->
-  <div class="col-md-6 text-center p-5">
-    <h4>← Mesa {{ mesaId }}</h4>
+  <div class="left-panel">
+    <button class="btn btn-link mb-3" (click)="volver()">← Volver</button>
 
-    <img
-      src="https://static.vecteezy.com/system/resources/thumbnails/021/950/175/small/white-table-isolated-on-a-transparent-background-png.png"
-      width="260"
-      class="my-4"
-    >
+    <h3>Pedido – Mesa {{ mesaId }}</h3>
 
-    <p class="text-muted">No hay pedidos.</p>
+    <p *ngIf="pedido.length === 0">No hay pedidos</p>
+
+    <div *ngFor="let item of pedido; let i = index" class="pedido-item">
+      <strong>{{ item.cantidad }} × {{ item.plato.nombre }}</strong>
+      <span>S/ {{ item.plato.precio * item.cantidad }}</span>
+
+      <div *ngIf="item.comentario">📝 {{ item.comentario }}</div>
+
+      <button class="btn btn-sm btn-danger mt-1" (click)="quitarPlato(i)">
+        Quitar
+      </button>
+    </div>
+
+    <hr />
+    <strong>Total: S/ {{ total() }}</strong>
   </div>
 
   <!-- DERECHA -->
-  <div class="col-md-6 p-4 border-start">
-    <h5 class="mb-3 text-danger">Productos</h5>
+  <div class="right-panel">
+    <h4>Productos</h4>
 
-    <div class="mb-3 d-flex gap-2">
-      <button class="btn btn-success">Todo</button>
-      <button class="btn btn-light">Plato de Fondo</button>
-      <button class="btn btn-light">Comida Rápida</button>
-    </div>
-
-    <input class="form-control mb-3" placeholder="Buscar producto">
-
-    <div class="list-group">
-      <div class="list-group-item d-flex justify-content-between">
-        Lomo Saltando <strong>S/ 15.00</strong>
-      </div>
-      <div class="list-group-item d-flex justify-content-between">
-        Ají de Gallina <strong>S/ 12.00</strong>
-      </div>
-      <div class="list-group-item d-flex justify-content-between">
-        Gaseosa <strong>S/ 8.00</strong>
-      </div>
+    <div
+      class="producto"
+      *ngFor="let plato of platos"
+      (click)="abrirModal(plato)"
+    >
+      {{ plato.nombre }}
+      <span>S/ {{ plato.precio }}</span>
     </div>
   </div>
 
+</div>
+
+<!-- MODAL -->
+<div class="modal-backdrop" *ngIf="mostrarModal"></div>
+
+<div class="modal-custom" *ngIf="mostrarModal">
+  <div class="modal-box">
+
+    <h5>{{ platoSeleccionado.nombre }}</h5>
+
+    <label>Cantidad</label>
+    <input type="number" class="form-control" min="1" [(ngModel)]="cantidad">
+
+    <label class="mt-2">Comentario</label>
+    <textarea class="form-control" [(ngModel)]="comentario"></textarea>
+
+    <div class="modal-actions mt-3">
+      <button class="btn btn-secondary" (click)="mostrarModal = false">
+        Cancelar
+      </button>
+      <button class="btn btn-success" (click)="agregarPlato()">
+        Agregar
+      </button>
+    </div>
+
+  </div>
 </div>
