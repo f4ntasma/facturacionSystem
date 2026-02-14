@@ -22,15 +22,10 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/mesa-detalle/mesa-detalle.component').then(m => m.MesaDetalleComponent)
   },
   {
-    path: 'admin',
+    path: '',
     canActivate: [AuthGuard],
     loadComponent: () => import('./layout/main-layout.component').then(m => m.MainLayoutComponent),
     children: [
-      {
-        path: '',
-        redirectTo: '/admin/empresas',
-        pathMatch: 'full'
-      },
       {
         path: 'empresas',
         loadComponent: () => import('./pages/empresas/empresas-list.component').then(m => m.EmpresasListComponent)
