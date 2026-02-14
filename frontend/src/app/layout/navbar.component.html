@@ -1,9 +1,26 @@
 <nav class="navbar bg-white border-bottom px-4">
-  <span class="navbar-brand">Mesas</span>
+  <span class="navbar-brand">Factullama</span>
 
   <ul class="nav gap-4">
-    <li>Mesas</li>
-    <li>Ventas</li>
-    <li>Cotizaciones</li>
+    <li
+      class="nav-item nav-link cursor-pointer"
+      (click)="irAMesas()"
+    >
+      Mesas
+    </li>
+
+    <li
+      class="nav-item nav-link cursor-pointer"
+      (click)="irAVentas()"
+    >
+      Ventas
+    </li>
+
+    <li
+      class="nav-item nav-link cursor-pointer"
+      (click)="irACotizaciones()"
+    >
+      Cotizaciones
+    </li>
   </ul>
 </nav>

@@ -1,0 +1,60 @@
+<h2>Ventas</h2>
+
+<!-- 🔍 Buscador y filtros -->
+<div>
+  <input
+    type="text"
+    placeholder="Buscar por cliente o DNI"
+    [(ngModel)]="searchTerm"
+    (input)="aplicarFiltros()"
+  />
+
+  <input
+    type="date"
+    [(ngModel)]="fechaDesde"
+    (change)="aplicarFiltros()"
+  />
+
+  <input
+    type="date"
+    [(ngModel)]="fechaHasta"
+    (change)="aplicarFiltros()"
+  />
+</div>
+
+<br />
+
+<!-- 📋 Tabla de ventas -->
+<table border="1" cellpadding="8">
+  <thead>
+    <tr>
+      <th>Venta</th>
+      <th>Cliente</th>
+      <th>DNI</th>
+      <th>Total</th>
+      <th>Fecha</th>
+      <th>Opciones</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <tr *ngFor="let venta of ventasFiltradas">
+      <td>{{ venta.id.toString().padStart(5, '0') }}</td>
+      <td>{{ venta.clienteNombre }} {{ venta.clienteApellido }}</td>
+      <td>{{ venta.dni }}</td>
+      <td>S/{{ venta.total.toFixed(2) }}</td>
+      <td>
+        {{ venta.fecha | date:'dd/MM/yyyy HH:mm' }}
+      </td>
+      <td>
+        <button (click)="toggleMenu(venta)">...</button>
+
+        <div *ngIf="venta.menuAbierto">
+          <button (click)="verDetalle(venta)">Ver detalle</button><br />
+          <button (click)="descargar(venta)">Descargar</button><br />
+          <button (click)="anular(venta)">Anular</button>
+        </div>
+      </td>
+    </tr>
+  </tbody>
+</table>
