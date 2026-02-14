@@ -15,7 +15,7 @@ sunat.certificado-path=classpath:certificado/certificado.pfx
 sunat.certificado-password=tu_password_aqui
 ```
 
-## 🔐 Obtener Certificado Digital
+## Obtener Certificado Digital
 
 ### Para Ambiente de Pruebas (BETA):
 SUNAT proporciona un certificado de prueba que puedes descargar desde:
@@ -29,7 +29,7 @@ Debes obtener un certificado digital de una entidad certificadora autorizada:
 - Reniec
 - Otras entidades autorizadas por INDECOPI
 
-## ⚠️ Seguridad
+## Seguridad
 
 **IMPORTANTE:**
 - Nunca subas tu certificado de producción al repositorio Git
@@ -37,7 +37,7 @@ Debes obtener un certificado digital de una entidad certificadora autorizada:
 - Usa variables de entorno para la contraseña en producción
 - Renueva el certificado antes de su vencimiento
 
-## 📝 Verificar Certificado
+## Verificar Certificado
 
 Puedes verificar tu certificado usando el endpoint:
 ```bash

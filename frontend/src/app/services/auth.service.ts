@@ -17,11 +17,12 @@ export interface LoginResponse {
   };
 }
 
+// Se modificó el http://localhost:8080/api por la http://localhost:8080/api
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
-  private apiUrl = 'http://localhost:8080/api'; // Volver a Spring Boot
+  private apiUrl = 'http://localhost:8081/api'; // Backend en puerto 8081
   private tokenKey = 'auth_token';
   private currentUserSubject = new BehaviorSubject<any>(null);
   public currentUser$ = this.currentUserSubject.asObservable();
