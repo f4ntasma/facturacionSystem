@@ -1,4 +1,6 @@
 import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 
 export interface Venta {
   id: number;
@@ -13,7 +15,8 @@ export interface Venta {
 @Component({
   standalone: true,
   selector: 'app-ventas',
-  templateUrl: './ventas.component.html'
+  templateUrl: './ventas.component.html',
+  imports: [CommonModule, FormsModule]
 })
 export class VentasComponent implements OnInit {
 
