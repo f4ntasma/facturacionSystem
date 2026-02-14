@@ -4,7 +4,7 @@
 -- Eliminar usuario admin si existe (para evitar duplicados)
 DELETE FROM users WHERE email = 'admin@facturacion.com';
 
--- Crear usuario admin
+-- Crear usuario admin hola como estas papu
 -- Password: admin (encriptado con BCrypt)
 -- $2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy = "admin"
 INSERT INTO users (id, email, password, nombre, role, activo, created_at, updated_at)
