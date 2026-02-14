@@ -12,11 +12,12 @@ export interface Empresa {
   email?: string;
 }
 
+// Se modificó el http://localhost:8080/api por la http://localhost:8080/api
 @Injectable({
   providedIn: 'root'
 })
 export class EmpresaService {
-  private apiUrl = 'http://localhost:8080/api/empresas';
+  private apiUrl = 'http://localhost:8081/api/empresas';
 
   constructor(
     private http: HttpClient,
