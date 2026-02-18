@@ -2,10 +2,24 @@
   <h6 class="mb-4">Nombre empresa</h6>
 
   <ul class="nav flex-column gap-3">
-    <li>Ventas</li>
-    <li>Productos</li>
-    <li>Clientes</li>
-    <li>Caja</li>
-    <li>Opciones</li>
+    <li class="nav-link cursor-pointer" (click)="irAVentas()">
+      Ventas
+    </li>
+
+    <li class="nav-link cursor-pointer" (click)="irAProductos()">
+      Productos
+    </li>
+
+    <li class="nav-link cursor-pointer" (click)="irAClientes()">
+      Clientes
+    </li>
+
+    <li class="nav-link cursor-pointer" (click)="irACaja()">
+      Caja
+    </li>
+
+    <li class="nav-link cursor-pointer" (click)="irAOpciones()">
+      Opciones
+    </li>
   </ul>
 </div>

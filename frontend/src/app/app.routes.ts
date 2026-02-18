@@ -58,6 +58,14 @@ export const routes: Routes = [
       {
         path: 'facturas/:id/editar',
         loadComponent: () => import('./pages/facturas/factura-form.component').then(m => m.FacturaFormComponent)
+      },
+      {
+        path: 'ventas',
+        loadComponent: () => import('./pages/ventas/ventas.component').then(m => m.VentasComponent)
+      },
+      {
+        path: 'cotizaciones',
+        loadComponent: () => import('./pages/cotizaciones/cotizaciones.component').then(m => m.CotizacionesComponent)
       }
     ]
   },

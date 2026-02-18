@@ -1,31 +1,22 @@
 <h2>Ventas</h2>
 
-<!-- 🔍 Buscador y filtros -->
 <div>
-  <input
-    type="text"
-    placeholder="Buscar por cliente o DNI"
-    [(ngModel)]="searchTerm"
-    (input)="aplicarFiltros()"
-  />
+  <input placeholder="Buscar cliente o DNI"
+         [(ngModel)]="searchTerm"
+         (input)="aplicarFiltros()">
 
-  <input
-    type="date"
-    [(ngModel)]="fechaDesde"
-    (change)="aplicarFiltros()"
-  />
+  <input type="date"
+         [(ngModel)]="fechaDesde"
+         (change)="aplicarFiltros()">
 
-  <input
-    type="date"
-    [(ngModel)]="fechaHasta"
-    (change)="aplicarFiltros()"
-  />
+  <input type="date"
+         [(ngModel)]="fechaHasta"
+         (change)="aplicarFiltros()">
 </div>
 
-<br />
+<br>
 
-<!-- 📋 Tabla de ventas -->
-<table border="1" cellpadding="8">
+<table border="1" cellpadding="8" width="100%">
   <thead>
     <tr>
       <th>Venta</th>
@@ -39,22 +30,52 @@
 
   <tbody>
     <tr *ngFor="let venta of ventasFiltradas">
-      <td>{{ venta.id.toString().padStart(5, '0') }}</td>
+      <td>{{ venta.id.toString().padStart(5,'0') }}</td>
       <td>{{ venta.clienteNombre }} {{ venta.clienteApellido }}</td>
       <td>{{ venta.dni }}</td>
-      <td>S/{{ venta.total.toFixed(2) }}</td>
+      <td>S/{{ venta.total }}</td>
+      <td>{{ venta.fecha | date:'dd/MM/yyyy HH:mm' }}</td>
       <td>
-        {{ venta.fecha | date:'dd/MM/yyyy HH:mm' }}
-      </td>
-      <td>
-        <button (click)="toggleMenu(venta)">...</button>
+        <button (click)="toggleMenu(venta)">⋮</button>
 
         <div *ngIf="venta.menuAbierto">
-          <button (click)="verDetalle(venta)">Ver detalle</button><br />
-          <button (click)="descargar(venta)">Descargar</button><br />
+          <button (click)="verDetalle(venta)">Ver detalle</button><br>
+          <button (click)="descargar(venta)">Descargar</button><br>
           <button (click)="anular(venta)">Anular</button>
         </div>
       </td>
     </tr>
   </tbody>
 </table>
+
+<!-- ✅ MODAL -->
+<div *ngIf="mostrarDetalle"
+     style="position:fixed; inset:0; background:rgba(0,0,0,.5);
+            display:flex; align-items:center; justify-content:center;">
+
+  <div style="background:white; padding:20px; width:500px">
+    <h3>Detalle de Venta</h3>
+
+    <p><b>Cliente:</b> {{ ventaSeleccionada.clienteNombre }} {{ ventaSeleccionada.clienteApellido }}</p>
+    <p><b>DNI:</b> {{ ventaSeleccionada.dni }}</p>
+
+    <table border="1" width="100%">
+      <tr>
+        <th>Producto</th>
+        <th>Cant.</th>
+        <th>Precio</th>
+        <th>Subtotal</th>
+      </tr>
+      <tr *ngFor="let p of ventaSeleccionada.productos">
+        <td>{{ p.nombre }}</td>
+        <td>{{ p.cantidad }}</td>
+        <td>S/{{ p.precio }}</td>
+        <td>S/{{ p.cantidad * p.precio }}</td>
+      </tr>
+    </table>
+
+    <h4>Total: S/{{ ventaSeleccionada.total }}</h4>
+
+    <button (click)="cerrarDetalle()">Cerrar</button>
+  </div>
+</div>

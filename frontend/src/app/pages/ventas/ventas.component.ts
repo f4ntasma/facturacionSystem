@@ -2,6 +2,12 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
+export interface ProductoVenta {
+  nombre: string;
+  cantidad: number;
+  precio: number;
+}
+
 export interface Venta {
   id: number;
   clienteNombre: string;
@@ -9,7 +15,8 @@ export interface Venta {
   dni: string;
   total: number;
   fecha: Date;
-  menuAbierto?: boolean; // solo UI
+  productos: ProductoVenta[];
+  menuAbierto?: boolean;
 }
 
 @Component({
@@ -20,21 +27,18 @@ export interface Venta {
 })
 export class VentasComponent implements OnInit {
 
-  // 🔹 Ventas simuladas (luego vendrán del backend)
   ventas: Venta[] = [];
-
-  // 🔹 Ventas filtradas para mostrar
   ventasFiltradas: Venta[] = [];
 
-  // 🔹 Filtros
-  searchTerm: string = '';
-  fechaDesde: string = '';
-  fechaHasta: string = '';
+  searchTerm = '';
+  fechaDesde = '';
+  fechaHasta = '';
+
+  // 🔹 MODAL
+  mostrarDetalle = false;
+  ventaSeleccionada!: Venta;
 
   ngOnInit(): void {
-    console.log('VentasComponent iniciado');
-
-    // Datos falsos de ejemplo
     this.ventas = [
       {
         id: 3,
@@ -42,7 +46,11 @@ export class VentasComponent implements OnInit {
         clienteApellido: 'Ramirez',
         dni: '71234567',
         total: 85,
-        fecha: new Date('2025-12-15T19:45')
+        fecha: new Date('2025-12-15T19:45'),
+        productos: [
+          { nombre: 'Hamburguesa', cantidad: 2, precio: 20 },
+          { nombre: 'Gaseosa', cantidad: 1, precio: 5 }
+        ]
       },
       {
         id: 2,
@@ -50,7 +58,11 @@ export class VentasComponent implements OnInit {
         clienteApellido: 'Lopez',
         dni: '70123456',
         total: 150,
-        fecha: new Date('2025-12-15T18:10')
+        fecha: new Date('2025-12-15T18:10'),
+        productos: [
+          { nombre: 'Parrilla', cantidad: 1, precio: 120 },
+          { nombre: 'Cerveza', cantidad: 2, precio: 15 }
+        ]
       },
       {
         id: 1,
@@ -58,62 +70,84 @@ export class VentasComponent implements OnInit {
         clienteApellido: 'Jose',
         dni: '70987654',
         total: 100,
-        fecha: new Date('2025-12-14T20:30')
+        fecha: new Date('2025-12-14T20:30'),
+        productos: [
+          { nombre: 'Pizza', cantidad: 1, precio: 60 },
+          { nombre: 'Jugo', cantidad: 2, precio: 20 }
+        ]
       }
     ];
 
-    // Ordenar por fecha (más reciente primero)
     this.ordenarVentas();
     this.aplicarFiltros();
   }
 
   ordenarVentas() {
-    this.ventas.sort(
-      (a, b) => b.fecha.getTime() - a.fecha.getTime()
-    );
+    this.ventas.sort((a, b) => b.fecha.getTime() - a.fecha.getTime());
   }
 
   aplicarFiltros() {
-    console.log('Aplicando filtros');
-
-    this.ventasFiltradas = this.ventas.filter(venta => {
-      const texto = `${venta.clienteNombre} ${venta.clienteApellido} ${venta.dni}`.toLowerCase();
-      const coincideBusqueda = texto.includes(this.searchTerm.toLowerCase());
+    this.ventasFiltradas = this.ventas.filter(v => {
+      const texto = `${v.clienteNombre} ${v.clienteApellido} ${v.dni}`.toLowerCase();
+      const coincideTexto = texto.includes(this.searchTerm.toLowerCase());
 
       let coincideFecha = true;
 
       if (this.fechaDesde) {
-        coincideFecha = venta.fecha >= new Date(this.fechaDesde);
+        coincideFecha = v.fecha >= new Date(this.fechaDesde);
       }
 
       if (this.fechaHasta) {
         const hasta = new Date(this.fechaHasta);
         hasta.setHours(23, 59, 59);
-        coincideFecha = coincideFecha && venta.fecha <= hasta;
+        coincideFecha = coincideFecha && v.fecha <= hasta;
       }
 
-      return coincideBusqueda && coincideFecha;
+      return coincideTexto && coincideFecha;
     });
-
-    console.log('Ventas filtradas:', this.ventasFiltradas);
   }
 
   toggleMenu(venta: Venta) {
+    this.ventasFiltradas.forEach(v => v.menuAbierto = false);
     venta.menuAbierto = !venta.menuAbierto;
   }
 
+  // ✅ CORREGIDO
   verDetalle(venta: Venta) {
-    console.log('Ver detalle de venta:', venta);
-    venta.menuAbierto = false;
+    this.ventasFiltradas.forEach(v => v.menuAbierto = false);
+    this.ventaSeleccionada = venta;
+    this.mostrarDetalle = true;
+  }
+
+  cerrarDetalle() {
+    this.mostrarDetalle = false;
   }
 
   descargar(venta: Venta) {
-    console.log('Descargar venta:', venta);
-    venta.menuAbierto = false;
+    let contenido = `VENTA #${venta.id}\n\n`;
+    contenido += `Cliente: ${venta.clienteNombre} ${venta.clienteApellido}\n`;
+    contenido += `DNI: ${venta.dni}\n\nPRODUCTOS:\n`;
+
+    venta.productos.forEach(p => {
+      contenido += `- ${p.nombre} x${p.cantidad} = S/${p.cantidad * p.precio}\n`;
+    });
+
+    contenido += `\nTOTAL: S/${venta.total}`;
+
+    const blob = new Blob([contenido], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `venta_${venta.id}.txt`;
+    a.click();
+
+    URL.revokeObjectURL(url);
   }
 
   anular(venta: Venta) {
-    console.log('Anular venta:', venta);
-    venta.menuAbierto = false;
+    if (!confirm(`¿Anular venta #${venta.id}?`)) return;
+    this.ventas = this.ventas.filter(v => v.id !== venta.id);
+    this.aplicarFiltros();
   }
 }

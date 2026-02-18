@@ -1,0 +1,80 @@
+<h2>Cotizaciones</h2>
+
+<button (click)="nuevaCotizacion()">+ Nueva cotización</button>
+
+<br><br>
+
+<input placeholder="Buscar"
+       [(ngModel)]="searchTerm"
+       (input)="aplicarFiltros()">
+
+<input type="date"
+       [(ngModel)]="fechaDesde"
+       (change)="aplicarFiltros()">
+
+<input type="date"
+       [(ngModel)]="fechaHasta"
+       (change)="aplicarFiltros()">
+
+<br><br>
+
+<table border="1" width="100%" cellpadding="8">
+  <thead>
+    <tr>
+      <th>Cotización</th>
+      <th>Cliente</th>
+      <th>Total</th>
+      <th>Fecha</th>
+      <th>Opciones</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <tr *ngFor="let c of cotizacionesFiltradas">
+      <td>{{ c.id.toString().padStart(5,'0') }}</td>
+      <td>{{ c.cliente }}</td>
+      <td>S/{{ c.total }}</td>
+      <td>{{ c.fecha | date:'dd/MM/yy' }}</td>
+      <td>
+        <button (click)="toggleMenu(c)">⋮</button>
+
+        <div *ngIf="c.menuAbierto">
+          <button (click)="verDetalle(c)">Ver detalle</button><br>
+          <button (click)="descargar(c)">Descargar</button><br>
+          <button (click)="anular(c)">Anular</button>
+        </div>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- MODAL DETALLE -->
+<div *ngIf="mostrarDetalle"
+     style="position:fixed; inset:0; background:rgba(0,0,0,.5);
+            display:flex; align-items:center; justify-content:center;">
+
+  <div style="background:white; padding:20px; width:500px">
+    <h3>Detalle de Cotización</h3>
+
+    <p><b>Cliente:</b> {{ cotizacionSeleccionada.cliente }}</p>
+
+    <table border="1" width="100%">
+      <tr>
+        <th>Producto</th>
+        <th>Cant.</th>
+        <th>Precio</th>
+        <th>Subtotal</th>
+      </tr>
+      <tr *ngFor="let p of cotizacionSeleccionada.productos">
+        <td>{{ p.nombre }}</td>
+        <td>{{ p.cantidad }}</td>
+        <td>S/{{ p.precio }}</td>
+        <td>S/{{ p.cantidad * p.precio }}</td>
+      </tr>
+    </table>
+
+    <h4>Total: S/{{ cotizacionSeleccionada.total }}</h4>
+
+    <button (click)="cerrarDetalle()">Cerrar</button>
+  </div>
+</div>
