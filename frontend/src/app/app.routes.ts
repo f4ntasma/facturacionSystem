@@ -1,74 +1,80 @@
 import { Routes } from '@angular/router';
-import { AuthGuard } from './guards/auth.guard';
 
 export const routes: Routes = [
+
   {
     path: 'login',
-    loadComponent: () => import('./pages/login/login').then(m => m.LoginComponent)
+    loadComponent: () =>
+      import('./pages/login/login').then(m => m.LoginComponent)
   },
+
   {
     path: '',
-    redirectTo: '/pisos/1',
-    pathMatch: 'full'
-  },
-  {
-    path: 'pisos/:piso',
-    loadComponent: () => import('./pages/mesas/mesas.component').then(m => m.MesasComponent)
-  },
-  {
-    path: 'mesa/:id',
-    loadComponent: () => import('./pages/mesa-detalle/mesa-detalle.component').then(m => m.MesaDetalleComponent)
-  },
-  {
-    path: '',
-    loadComponent: () => import('./layout/main-layout.component').then(m => m.MainLayoutComponent),
+    loadComponent: () =>
+      import('./layout/main-layout.component').then(m => m.MainLayoutComponent),
     children: [
+
+      {
+        path: 'pisos/:piso',
+        loadComponent: () =>
+          import('./pages/mesas/mesas.component').then(m => m.MesasComponent)
+      },
+      {
+        path: 'mesa/:id',
+        loadComponent: () =>
+          import('./pages/mesa-detalle/mesa-detalle.component')
+            .then(m => m.MesaDetalleComponent)
+      },
+
       {
         path: 'empresas',
-        loadComponent: () => import('./pages/empresas/empresas-list.component').then(m => m.EmpresasListComponent)
+        loadComponent: () =>
+          import('./pages/empresas/empresas-list.component')
+            .then(m => m.EmpresasListComponent)
       },
       {
         path: 'empresas/nueva',
-        loadComponent: () => import('./pages/empresas/empresa-form.component').then(m => m.EmpresaFormComponent)
+        loadComponent: () =>
+          import('./pages/empresas/empresa-form.component')
+            .then(m => m.EmpresaFormComponent)
       },
-      {
-        path: 'empresas/:id/editar',
-        loadComponent: () => import('./pages/empresas/empresa-form.component').then(m => m.EmpresaFormComponent)
-      },
+
       {
         path: 'productos',
-        loadComponent: () => import('./pages/productos/productos-list.component').then(m => m.ProductosListComponent)
+        loadComponent: () =>
+          import('./pages/productos/productos-list.component')
+            .then(m => m.ProductosListComponent)
       },
       {
         path: 'productos/nuevo',
-        loadComponent: () => import('./pages/productos/producto-form.component').then(m => m.ProductoFormComponent)
+        loadComponent: () =>
+          import('./pages/productos/producto-form.component')
+            .then(m => m.ProductoFormComponent)
       },
-      {
-        path: 'productos/:id/editar',
-        loadComponent: () => import('./pages/productos/producto-form.component').then(m => m.ProductoFormComponent)
-      },
+
       {
         path: 'facturas',
-        loadComponent: () => import('./pages/facturas/facturas-list.component').then(m => m.FacturasListComponent)
+        loadComponent: () =>
+          import('./pages/facturas/facturas-list.component')
+            .then(m => m.FacturasListComponent)
       },
-      {
-        path: 'facturas/nueva',
-        loadComponent: () => import('./pages/facturas/factura-form.component').then(m => m.FacturaFormComponent)
-      },
-      {
-        path: 'facturas/:id/editar',
-        loadComponent: () => import('./pages/facturas/factura-form.component').then(m => m.FacturaFormComponent)
-      },
+
       {
         path: 'ventas',
-        loadComponent: () => import('./pages/ventas/ventas.component').then(m => m.VentasComponent)
+        loadComponent: () =>
+          import('./pages/ventas/ventas.component')
+            .then(m => m.VentasComponent)
       },
+
       {
         path: 'cotizaciones',
-        loadComponent: () => import('./pages/cotizaciones/cotizaciones.component').then(m => m.CotizacionesComponent)
+        loadComponent: () =>
+          import('./pages/cotizaciones/cotizaciones.component')
+            .then(m => m.CotizacionesComponent)
       }
     ]
   },
+
   {
     path: '**',
     redirectTo: '/pisos/1'

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { TableModule } from 'primeng/table';
@@ -9,7 +9,9 @@ import { TagModule } from 'primeng/tag';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { ToastModule } from 'primeng/toast';
 import { ConfirmationService, MessageService } from 'primeng/api';
+
 import { ProductoService, Producto } from '../../services/producto.service';
+import { NavbarService } from '../../layout/navbar.service';
 
 @Component({
   selector: 'app-productos-list',
@@ -31,89 +33,53 @@ import { ProductoService, Producto } from '../../services/producto.service';
       <ng-template pTemplate="header">
         <div class="flex align-items-center justify-content-between p-3 pb-0">
           <h3 class="m-0">Gestión de Productos</h3>
-          <button pButton type="button" icon="pi pi-plus" label="Nuevo Producto" 
-                  routerLink="/productos/nuevo" class="p-button-success"></button>
+          <button
+            pButton
+            icon="pi pi-plus"
+            label="Nuevo Producto"
+            class="p-button-success"
+            routerLink="/productos/nuevo">
+          </button>
         </div>
       </ng-template>
 
-      <div class="mb-3">
-        <span class="p-input-icon-left w-full">
-          <i class="pi pi-search"></i>
-          <input pInputText type="text" placeholder="Buscar productos..." 
-                 class="w-full" (input)="onGlobalFilter($event)">
-        </span>
-      </div>
+      <p-table
+        [value]="productos"
+        [loading]="loading"
+        [paginator]="true"
+        [rows]="10"
+        responsiveLayout="scroll">
 
-      <p-table #dt [value]="productos" [loading]="loading" [paginator]="true" [rows]="10"
-               [globalFilterFields]="['nombre', 'descripcion', 'categoria']" responsiveLayout="scroll">
-        
         <ng-template pTemplate="header">
           <tr>
-            <th pSortableColumn="nombre">
-              Nombre <p-sortIcon field="nombre"></p-sortIcon>
-            </th>
-            <th>Descripción</th>
-            <th pSortableColumn="precio">
-              Precio <p-sortIcon field="precio"></p-sortIcon>
-            </th>
-            <th pSortableColumn="stock">
-              Stock <p-sortIcon field="stock"></p-sortIcon>
-            </th>
-            <th>Categoría</th>
-            <th>Estado</th>
+            <th>Nombre</th>
+            <th>Precio</th>
+            <th>Stock</th>
             <th>Acciones</th>
           </tr>
         </ng-template>
 
         <ng-template pTemplate="body" let-producto>
           <tr>
+            <td>{{ producto.nombre }}</td>
+            <td>{{ producto.precio | number:'1.2-2' }}</td>
             <td>
-              <span class="font-medium">{{ producto.nombre }}</span>
-            </td>
-            <td>{{ producto.descripcion || '-' }}</td>
-            <td>\${{ producto.precio | number:'1.2-2' }}</td>
-            <td>
-              <p-tag [value]="producto.stock.toString()" 
-                     [severity]="getStockSeverity(producto.stock)">
-              </p-tag>
-            </td>
-            <td>{{ producto.categoria || '-' }}</td>
-            <td>
-              <p-tag [value]="producto.stock > 0 ? 'Disponible' : 'Agotado'" 
-                     [severity]="producto.stock > 0 ? 'success' : 'danger'">
+              <p-tag
+                [value]="producto.stock.toString()"
+                [severity]="getStockSeverity(producto.stock)">
               </p-tag>
             </td>
             <td>
-              <div class="flex gap-2">
-                <button pButton type="button" icon="pi pi-eye" 
-                        class="p-button-rounded p-button-text p-button-info"
-                        [routerLink]="['/productos', producto.id]"
-                        pTooltip="Ver detalles"></button>
-                <button pButton type="button" icon="pi pi-pencil" 
-                        class="p-button-rounded p-button-text p-button-warning"
-                        [routerLink]="['/productos', producto.id, 'editar']"
-                        pTooltip="Editar"></button>
-                <button pButton type="button" icon="pi pi-trash" 
-                        class="p-button-rounded p-button-text p-button-danger"
-                        (click)="confirmarEliminar(producto)"
-                        pTooltip="Eliminar"></button>
-              </div>
+              <button
+                pButton
+                icon="pi pi-trash"
+                class="p-button-text p-button-danger"
+                (click)="confirmarEliminar(producto)">
+              </button>
             </td>
           </tr>
         </ng-template>
 
-        <ng-template pTemplate="emptymessage">
-          <tr>
-            <td colspan="7" class="text-center p-4">
-              <div class="flex flex-column align-items-center gap-3">
-                <i class="pi pi-box text-4xl text-400"></i>
-                <span class="text-lg">No hay productos registrados</span>
-                <button pButton type="button" label="Crear Primer Producto" 
-                        routerLink="/productos/nuevo" class="p-button-sm"></button>
-              </div>
-            </td>
-          </tr>
-        </ng-template>
       </p-table>
     </p-card>
 
@@ -121,73 +87,81 @@ import { ProductoService, Producto } from '../../services/producto.service';
     <p-toast></p-toast>
   `
 })
-export class ProductosListComponent implements OnInit {
+export class ProductosListComponent implements OnInit, OnDestroy {
+
   productos: Producto[] = [];
   loading = false;
 
   constructor(
     private productoService: ProductoService,
     private confirmationService: ConfirmationService,
-    private messageService: MessageService
+    private messageService: MessageService,
+    private navbarService: NavbarService
   ) {}
 
-  ngOnInit() {
-    this.loadProductos();
+  // 👉 ENTRADA A /productos
+  ngOnInit(): void {
+    console.log('🟢 ProductosListComponent INIT → navbar = productos');
+    this.navbarService.cambiarNavbar('productos');
+    //this.loadProductos();
   }
 
-  loadProductos() {
+  // 👉 SALIDA DE /productos
+  ngOnDestroy(): void {
+    console.log('🔴 ProductosListComponent DESTROY → navbar = main');
+    this.navbarService.cambiarNavbar('main');
+  }
+
+  loadProductos(): void {
     this.loading = true;
+    console.log('📦 Cargando productos...');
+
     this.productoService.getProductos().subscribe({
       next: (productos) => {
+        console.log('✅ Productos cargados:', productos.length);
         this.productos = productos;
         this.loading = false;
       },
       error: (error) => {
-        console.error('Error cargando productos:', error);
+        console.error('❌ Error cargando productos:', error);
+        this.loading = false;
         this.messageService.add({
           severity: 'error',
           summary: 'Error',
           detail: 'No se pudieron cargar los productos'
         });
-        this.loading = false;
       }
     });
   }
 
-  onGlobalFilter(event: any) {
-    const value = (event.target as HTMLInputElement).value;
-    // Implementar filtro global si es necesario
-  }
-
-  getStockSeverity(stock: number): "success" | "warn" | "danger" {
+  getStockSeverity(stock: number): 'success' | 'warn' | 'danger' {
     if (stock === 0) return 'danger';
     if (stock < 10) return 'warn';
     return 'success';
   }
 
-  confirmarEliminar(producto: Producto) {
+  confirmarEliminar(producto: Producto): void {
     this.confirmationService.confirm({
-      message: `¿Está seguro de eliminar el producto "${producto.nombre}"?`,
-      header: 'Confirmar Eliminación',
+      message: `¿Eliminar el producto "${producto.nombre}"?`,
+      header: 'Confirmación',
       icon: 'pi pi-exclamation-triangle',
-      accept: () => {
-        this.eliminarProducto(producto.id!);
-      }
+      accept: () => this.eliminarProducto(producto.id!)
     });
   }
 
-  eliminarProducto(id: number) {
+  eliminarProducto(id: number): void {
+    console.log('🗑️ Eliminando producto', id);
     this.productoService.deleteProducto(id).subscribe({
       next: () => {
         this.messageService.add({
           severity: 'success',
-          summary: 'Éxito',
+          summary: 'Eliminado',
           detail: 'Producto eliminado correctamente'
         });
         this.loadProductos();
       },
       error: (error) => {
-        console.error('Error eliminando producto:', error);
+        console.error('❌ Error eliminando producto:', error);
         this.messageService.add({
           severity: 'error',
           summary: 'Error',

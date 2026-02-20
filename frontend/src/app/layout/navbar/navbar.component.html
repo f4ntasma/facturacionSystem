@@ -1,0 +1,35 @@
+<nav class="navbar bg-white border-bottom px-4">
+  <span class="navbar-brand">
+    {{ modo === 'ventas' ? 'Factullama' : 'Productos' }}
+  </span>
+
+  <ul class="nav gap-4">
+
+    <!-- 🔵 NAVBAR VENTAS -->
+    <ng-container *ngIf="modo === 'ventas'">
+      <li class="nav-item nav-link cursor-pointer" (click)="irAMesas()">
+        Mesas
+      </li>
+      <li class="nav-item nav-link cursor-pointer" (click)="irAVentas()">
+        Ventas
+      </li>
+      <li class="nav-item nav-link cursor-pointer" (click)="irACotizaciones()">
+        Cotizaciones
+      </li>
+    </ng-container>
+
+    <!-- 🟢 NAVBAR PRODUCTOS -->
+    <ng-container *ngIf="modo === 'productos'">
+      <li class="nav-item nav-link cursor-pointer" (click)="irAProductos()">
+        Productos
+      </li>
+      <li class="nav-item nav-link cursor-pointer" (click)="irACombos()">
+        Combos
+      </li>
+      <li class="nav-item nav-link cursor-pointer" (click)="irACategorias()">
+        Categorías
+      </li>
+    </ng-container>
+
+  </ul>
+</nav>
