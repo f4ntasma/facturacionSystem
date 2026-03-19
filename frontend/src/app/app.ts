@@ -13,7 +13,6 @@ import { NavbarComponent } from './layout/navbar/navbar.component';
   imports: [
     RouterOutlet,
     SidebarComponent,
-    NavbarComponent,
     CommonModule
   ],
   templateUrl: './app.html',

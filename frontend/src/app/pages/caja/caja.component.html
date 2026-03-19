@@ -1,0 +1,84 @@
+<div>
+
+  <!-- Sidebar -->
+  <div>
+    <p>Nombre empresa</p>
+
+    <ul>
+      <li>Ventas</li>
+      <li>Productos</li>
+      <li>Clientes</li>
+      <li>Caja</li>
+      <li>Opciones</li>
+    </ul>
+  </div>
+
+  <!-- Contenido -->
+  <div>
+
+    <!-- Header -->
+    <div>
+      <h2>Caja actual</h2>
+      <h3>Historial</h3>
+    </div>
+
+    <!-- Caja actual -->
+    <div>
+      <div>
+        <p>Inicio</p>
+        <p>{{ inicioCaja }}</p>
+      </div>
+
+      <div>
+        <button (click)="cerrarCaja()">Cerrar caja</button>
+      </div>
+    </div>
+
+    <!-- Ingresos y salidas -->
+    <div>
+      <h3>Ingresos y salidas</h3>
+      <button (click)="agregarMovimiento()">+ Agregar movimiento</button>
+
+      <table border="1">
+        <thead>
+          <tr>
+            <th>Descripción</th>
+            <th>Tipo</th>
+            <th>Monto</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let mov of movimientos">
+            <td>{{ mov.descripcion }}</td>
+            <td>{{ mov.tipo }}</td>
+            <td>{{ mov.monto }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Resumen -->
+    <div>
+      <p>Ventas: {{ ventas }}</p>
+      <p>Ingresos y egresos: {{ ingresosEgresos }}</p>
+      <p>Total: {{ total }}</p>
+    </div>
+
+    <!-- Cuadre de caja -->
+    <div>
+      <h3>Cuadre de caja</h3>
+
+      <p>Total esperado: {{ total }}</p>
+
+      <label>Total contado:</label>
+      <input type="number" [(ngModel)]="totalContado">
+
+      <label>Descripción:</label>
+      <input type="text" [(ngModel)]="descripcionCuadre">
+
+      <button (click)="cuadrarCaja()">Cuadrar</button>
+    </div>
+
+  </div>
+
+</div>

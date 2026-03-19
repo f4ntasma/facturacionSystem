@@ -5,7 +5,7 @@ import { Router, NavigationEnd } from '@angular/router';
 @Component({
   selector: 'app-navbar',
   standalone: true,
-  imports: [CommonModule], // 🔥 ESTO ES LO QUE FALTABA
+  imports: [CommonModule],
   templateUrl: './navbar.component.html'
 })
 export class NavbarComponent implements OnInit {
