@@ -1,8 +1,8 @@
 <!-- Layout completo para páginas normales -->
-<div *ngIf="showLayout" class="d-flex">
+<div *ngIf="showLayout" class="d-flex layout-main">
   <app-sidebar></app-sidebar>
 
-  <div class="flex-grow-1">
+  <div class="flex-grow-1" style="padding: 24px; overflow-y: auto; background: var(--neutral-light);">
     <router-outlet></router-outlet>
   </div>
 </div>

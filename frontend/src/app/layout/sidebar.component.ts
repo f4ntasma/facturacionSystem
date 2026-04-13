@@ -32,6 +32,30 @@ export class SidebarComponent {
     this.router.navigate(['/productos']);
   }
 
+  irACotizaciones() {
+    console.log('➡️ Sidebar → Cotizaciones');
+    this.navbarService.cambiarNavbar('main');
+    this.router.navigate(['/cotizaciones']);
+  }
+
+  irAMesas() {
+    console.log('➡️ Sidebar → Mesas');
+    this.navbarService.cambiarNavbar('main');
+    this.router.navigate(['/mesas']);
+  }
+
+  irAFacturas() {
+    console.log('➡️ Sidebar → Facturas');
+    this.navbarService.cambiarNavbar('main');
+    this.router.navigate(['/facturas']);
+  }
+
+  irAEmpresas() {
+    console.log('➡️ Sidebar → Empresas');
+    this.navbarService.cambiarNavbar('main');
+    this.router.navigate(['/empresas']);
+  }
+
   // ---------------------
   // Métodos vacíos (placeholders)
   // ---------------------

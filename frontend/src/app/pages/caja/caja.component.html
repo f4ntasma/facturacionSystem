@@ -1,84 +1,133 @@
-<div>
-
-  <!-- Sidebar -->
-  <div>
-    <p>Nombre empresa</p>
-
-    <ul>
-      <li>Ventas</li>
-      <li>Productos</li>
-      <li>Clientes</li>
-      <li>Caja</li>
-      <li>Opciones</li>
-    </ul>
+<div class="fade-in">
+  
+  <!-- Page Header -->
+  <div class="d-flex justify-between items-center mb-4 w-100">
+    <div>
+      <h1 class="font-bold" style="font-size: 28px; color: var(--primary-blue);">Gestión de Caja</h1>
+      <p class="text-muted" style="font-size: 14px;">Control de ingresos, egresos y cuadre diario</p>
+    </div>
+    <div class="d-flex gap-2 text-right">
+      <button class="btn btn-danger" (click)="cerrarCaja()">
+        Cerrar Caja
+      </button>
+      <button class="btn btn-purple">
+        Imprimir Reporte
+      </button>
+    </div>
   </div>
 
-  <!-- Contenido -->
-  <div>
-
-    <!-- Header -->
-    <div>
-      <h2>Caja actual</h2>
-      <h3>Historial</h3>
-    </div>
-
-    <!-- Caja actual -->
-    <div>
-      <div>
-        <p>Inicio</p>
-        <p>{{ inicioCaja }}</p>
-      </div>
-
-      <div>
-        <button (click)="cerrarCaja()">Cerrar caja</button>
+  <!-- Resumen Cards -->
+  <div class="grid grid-4 mb-4">
+    <div class="card">
+      <div class="card-body">
+        <div class="text-muted mb-1" style="font-size: 12px; font-weight: 600; text-transform: uppercase;">Ventas del Día</div>
+        <div class="font-bold" style="font-size: 24px; color: var(--primary-blue);">S/ {{ ventas }}</div>
       </div>
     </div>
+    
+    <div class="card">
+      <div class="card-body">
+        <div class="text-muted mb-1" style="font-size: 12px; font-weight: 600; text-transform: uppercase;">Ingresos/Egresos</div>
+        <div class="font-bold" style="font-size: 24px; color: var(--accent-purple);">S/ {{ ingresosEgresos }}</div>
+      </div>
+    </div>
+    
+    <div class="card">
+      <div class="card-body">
+        <div class="text-muted mb-1" style="font-size: 12px; font-weight: 600; text-transform: uppercase;">Total Esperado</div>
+        <div class="font-bold" style="font-size: 24px; color: var(--success);">S/ {{ total }}</div>
+      </div>
+    </div>
+    
+    <div class="card">
+      <div class="card-body">
+        <div class="text-muted mb-1" style="font-size: 12px; font-weight: 600; text-transform: uppercase;">Inicio de Turno</div>
+        <div class="font-semibold" style="font-size: 16px; color: var(--neutral-black);">{{ inicioCaja }}</div>
+      </div>
+    </div>
+  </div>
 
-    <!-- Ingresos y salidas -->
-    <div>
-      <h3>Ingresos y salidas</h3>
-      <button (click)="agregarMovimiento()">+ Agregar movimiento</button>
-
-      <table border="1">
+  <!-- Movimientos -->
+  <div class="card mb-4">
+    <div class="card-header">
+      <div class="d-flex justify-between items-center w-100">
+        <h3>Movimientos de Caja</h3>
+        <button class="btn btn-success btn-sm" (click)="agregarMovimiento()">
+          Agregar Movimiento
+        </button>
+      </div>
+    </div>
+    <div class="card-body">
+      <table class="table">
         <thead>
           <tr>
             <th>Descripción</th>
             <th>Tipo</th>
             <th>Monto</th>
+            <th>Estado</th>
           </tr>
         </thead>
         <tbody>
           <tr *ngFor="let mov of movimientos">
-            <td>{{ mov.descripcion }}</td>
-            <td>{{ mov.tipo }}</td>
-            <td>{{ mov.monto }}</td>
+            <td class="font-medium">{{ mov.descripcion }}</td>
+            <td>
+              <span class="badge" 
+                [class.badge-success]="mov.tipo === 'Ingreso'" 
+                [class.badge-error]="mov.tipo === 'Egreso'">
+                {{ mov.tipo }}
+              </span>
+            </td>
+            <td class="font-bold" 
+              [class.text-success]="mov.tipo === 'Ingreso'" 
+              [class.text-error]="mov.tipo === 'Egreso'">
+              S/ {{ mov.monto }}
+            </td>
+            <td>
+              <span class="badge badge-info">Completado</span>
+            </td>
           </tr>
         </tbody>
       </table>
     </div>
+  </div>
 
-    <!-- Resumen -->
-    <div>
-      <p>Ventas: {{ ventas }}</p>
-      <p>Ingresos y egresos: {{ ingresosEgresos }}</p>
-      <p>Total: {{ total }}</p>
+  <!-- Cuadre de Caja -->
+  <div class="card">
+    <div class="card-header">
+      <h3>Cuadre de Caja</h3>
     </div>
-
-    <!-- Cuadre de caja -->
-    <div>
-      <h3>Cuadre de caja</h3>
-
-      <p>Total esperado: {{ total }}</p>
-
-      <label>Total contado:</label>
-      <input type="number" [(ngModel)]="totalContado">
-
-      <label>Descripción:</label>
-      <input type="text" [(ngModel)]="descripcionCuadre">
-
-      <button (click)="cuadrarCaja()">Cuadrar</button>
+    <div class="card-body">
+      <div class="grid grid-2">
+        <div>
+          <div class="form-group">
+            <label class="form-label">Total Esperado</label>
+            <input type="text" class="form-control" [value]="'S/ ' + total" disabled>
+          </div>
+        </div>
+        
+        <div>
+          <div class="form-group">
+            <label class="form-label">Total Contado</label>
+            <input type="number" class="form-control" [(ngModel)]="totalContado" placeholder="0.00">
+          </div>
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <label class="form-label">Observaciones del Cuadre</label>
+        <input type="text" class="form-control" [(ngModel)]="descripcionCuadre" placeholder="Ingrese observaciones...">
+      </div>
+      
+      <div class="d-flex justify-between items-center mt-3">
+        <div class="text-muted">
+          <span class="font-medium">Diferencia:</span> 
+          <span class="font-bold text-purple">S/ {{ total - totalContado }}</span>
+        </div>
+        <button class="btn btn-primary" (click)="cuadrarCaja()">
+          Guardar Cuadre
+        </button>
+      </div>
     </div>
-
   </div>
 
 </div>

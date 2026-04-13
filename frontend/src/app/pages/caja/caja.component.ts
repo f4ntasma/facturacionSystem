@@ -1,8 +1,13 @@
 import { Component } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-caja',
-  templateUrl: './caja.component.html'
+  standalone: true,
+  imports: [CommonModule, FormsModule],
+  templateUrl: './caja.component.html',
+  styleUrls: ['./caja.component.css']
 })
 export class CajaComponent {
 

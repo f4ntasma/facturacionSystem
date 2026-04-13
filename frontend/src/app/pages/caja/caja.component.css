@@ -1,0 +1,154 @@
+/* Estilos específicos para el componente de Caja */
+
+/* Contenedor principal */
+.caja-container {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* Cards de resumen con hover effect */
+.card {
+  transition: all 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+}
+
+/* Tabla de movimientos */
+.table {
+  font-size: 13px;
+}
+
+.table tbody tr {
+  transition: background 0.2s ease;
+}
+
+.table tbody tr:hover {
+  background: var(--info-light);
+}
+
+/* Badges de estado */
+.badge {
+  font-size: 11px;
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+}
+
+/* Input de formulario con focus */
+.form-control:focus {
+  border-color: var(--primary-blue);
+  box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.1);
+}
+
+/* Botones con animación */
+.btn {
+  transition: all 0.3s ease;
+}
+
+.btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+}
+
+/* Responsive design */
+@media (max-width: 1024px) {
+  .grid-4 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .grid-4,
+  .grid-2 {
+    grid-template-columns: 1fr;
+  }
+  
+  .card-body {
+    padding: 16px;
+  }
+  
+  .card-header {
+    padding: 16px;
+  }
+  
+  .btn {
+    padding: 8px 16px;
+    font-size: 13px;
+  }
+  
+  .table {
+    font-size: 12px;
+  }
+  
+  .table th,
+  .table td {
+    padding: 10px 12px;
+  }
+}
+
+/* Animación de entrada */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-in {
+  animation: slideIn 0.5s ease-out;
+}
+
+/* Cards de resumen con delay de animación */
+.grid > .card:nth-child(1) { animation-delay: 0.1s; }
+.grid > .card:nth-child(2) { animation-delay: 0.2s; }
+.grid > .card:nth-child(3) { animation-delay: 0.3s; }
+.grid > .card:nth-child(4) { animation-delay: 0.4s; }
+
+/* Estilo para diferencias positivas y negativas */
+.diferencia-positiva {
+  color: var(--success);
+  font-weight: 700;
+}
+
+.diferencia-negativa {
+  color: var(--error);
+  font-weight: 700;
+}
+
+/* Iconos en la tabla */
+.table-icon {
+  font-size: 16px;
+  margin-right: 8px;
+}
+
+/* Estado vacío */
+.empty-state {
+  text-align: center;
+  padding: 48px 24px;
+  color: var(--neutral-gray);
+}
+
+.empty-state-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+  opacity: 0.5;
+}
+
+/* Loading overlay */
+.loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}

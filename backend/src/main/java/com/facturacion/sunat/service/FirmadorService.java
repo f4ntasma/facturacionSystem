@@ -152,9 +152,6 @@ public class FirmadorService {
         }
     }
     
-    /**
-     * Verifica si el certificado está vigente
-     */
     public boolean certificadoVigente() {
         if (certificate == null) {
             return false;

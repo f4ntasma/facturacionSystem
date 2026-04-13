@@ -35,20 +35,20 @@ import { EmpresaService, Empresa } from '../../services/empresa.service';
       </ng-template>
 
       <form [formGroup]="productoForm" (ngSubmit)="onSubmit()" class="grid">
-        <div class="col-12 md:col-6">
-          <label for="nombre" class="block text-900 font-medium mb-2">Nombre *</label>
-          <input pInputText id="nombre" formControlName="nombre" 
+        <div class="col-12 md:col-6" style="margin-top: 4rem; background-color: #e2e5e860; border: 1px solid #040404; padding: 1rem; border-radius: 1.5rem">
+          <label for="nombre" class="block text-900 font-medium mb-2" style="color: #040404">Nombre *</label>
+          <input style="background-color: #d1d1e36c; border-radius: 5px; padding: 1rem" pInputText id="nombre" formControlName="nombre" 
                  class="w-full" placeholder="Nombre del producto"
                  [class.ng-invalid]="productoForm.get('nombre')?.invalid && productoForm.get('nombre')?.touched">
-          <small class="p-error block" 
+          <small class="p-error block" style="color: red; margin-top: 2rem" 
                  *ngIf="productoForm.get('nombre')?.invalid && productoForm.get('nombre')?.touched">
-            El nombre es requerido
+            El nombre es requerido*
           </small>
         </div>
 
-        <div class="col-12 md:col-6">
+        <div class="col-12 md:col-6" style="margin-top: 1rem; background-color: #e2e5e860; border: 1px solid #040404; padding: 1rem; border-radius: 1.5rem">
           <label for="categoria" class="block text-900 font-medium mb-2">Categoría</label>
-          <input pInputText id="categoria" formControlName="categoria" 
+          <input style= "background-color: #dbdbe36c; border-radius: 5px; padding: 1rem" pInputText id="categoria" formControlName="categoria" 
                  class="w-full" placeholder="Categoría del producto">
         </div>
 

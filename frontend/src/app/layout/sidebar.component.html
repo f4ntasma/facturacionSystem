@@ -1,25 +1,110 @@
-<div class="bg-light vh-100 p-3" style="width:220px">
-  <h6 class="mb-4">Nombre empresa</h6>
+<div class="sidebar" style="width: var(--sidebar-width); height: 100vh; background: linear-gradient(180deg, var(--primary-blue) 0%, var(--accent-purple) 100%); padding: 24px; display: flex; flex-direction: column; box-shadow: var(--shadow-xl);">
+  
+  <!-- Logo/Brand -->
+  <div style="margin-bottom: 32px; text-align: center;">
+    <h1 style="color: var(--white); font-size: 24px; font-weight: 700; margin: 0; text-transform: uppercase; letter-spacing: 2px;">
+      Factullama
+    </h1>
+  </div>
 
-  <ul class="nav flex-column gap-3">
-    <li class="nav-link cursor-pointer" (click)="irAVentas()">
-      Ventas
+  <!-- Navigation -->
+  <ul style="list-style: none; padding: 0; margin: 0; flex: 1;">
+    
+    <li style="margin-bottom: 6px;">
+      <div (click)="irAVentas()" 
+           style="padding: 12px 16px; border-radius: var(--radius); cursor: pointer; color: var(--white); font-weight: 500; display: flex; align-items: center; gap: 12px; transition: all 0.3s ease; background: rgba(255, 255, 255, 0.1);"
+           onmouseover="this.style.background='rgba(255, 255, 255, 0.2)'; this.style.transform='translateX(4px)'"
+           onmouseout="this.style.background='rgba(255, 255, 255, 0.1)'; this.style.transform='translateX(0)'">
+        <span style="font-size: 16px;"><img src="svg/cart-alt-2.svg" alt="Clientes" style="width: 16px; height: 16px;"></span>
+        <span style="font-size: 14px; font-weight: 500;">Ventas</span>
+      </div>
     </li>
 
-    <li class="nav-link cursor-pointer" (click)="irAProductos()">
-      Productos
+    <li style="margin-bottom: 6px;">
+      <div (click)="irAProductos()" 
+           style="padding: 12px 16px; border-radius: var(--radius); cursor: pointer; color: var(--white); font-weight: 500; display: flex; align-items: center; gap: 12px; transition: all 0.3s ease; background: rgba(255, 255, 255, 0.1);"
+           onmouseover="this.style.background='rgba(255, 255, 255, 0.2)'; this.style.transform='translateX(4px)'"
+           onmouseout="this.style.background='rgba(255, 255, 255, 0.1)'; this.style.transform='translateX(0)'">
+        <span style="font-size: 16px;"><img src="svg/layers-down-right.svg" alt="Clientes" style="width: 16px; height: 16px;"></span>
+        <span style="font-size: 14px; font-weight: 500;">Productos</span>
+      </div>
     </li>
 
-    <li class="nav-link cursor-pointer" (click)="irAClientes()">
-      Clientes
+    <li style="margin-bottom: 6px;">
+      <div (click)="irAClientes()" 
+           style="padding: 12px 16px; border-radius: var(--radius); cursor: pointer; color: var(--white); font-weight: 500; display: flex; align-items: center; gap: 12px; transition: all 0.3s ease; background: rgba(255, 255, 255, 0.1);"
+           onmouseover="this.style.background='rgba(255, 255, 255, 0.2)'; this.style.transform='translateX(4px)'"
+           onmouseout="this.style.background='rgba(255, 255, 255, 0.1)'; this.style.transform='translateX(0)'">
+        <span style="font-size: 16px;"><img src="svg/community.svg" alt="Clientes" style="width: 16px; height: 16px;"></span>
+        <span style="font-size: 14px; font-weight: 500;">Clientes</span>
+      </div>
     </li>
 
-    <li class="nav-link cursor-pointer" (click)="irACaja()">
-      Caja
+    <li style="margin-bottom: 6px;">
+      <div (click)="irACotizaciones()" 
+           style="padding: 12px 16px; border-radius: var(--radius); cursor: pointer; color: var(--white); font-weight: 500; display: flex; align-items: center; gap: 12px; transition: all 0.3s ease; background: rgba(255, 255, 255, 0.1);"
+           onmouseover="this.style.background='rgba(255, 255, 255, 0.2)'; this.style.transform='translateX(4px)'"
+           onmouseout="this.style.background='rgba(255, 255, 255, 0.1)'; this.style.transform='translateX(0)'">
+        <span style="font-size: 16px;"><img src="svg/widget.svg" alt="Clientes" style="width: 16px; height: 16px;"></span>
+        <span style="font-size: 14px; font-weight: 500;">Cotizaciones</span>
+      </div>
     </li>
 
-    <li class="nav-link cursor-pointer" (click)="irAOpciones()">
-      Opciones
+    <li style="margin-bottom: 6px;">
+      <div (click)="irAMesas()" 
+           style="padding: 12px 16px; border-radius: var(--radius); cursor: pointer; color: var(--white); font-weight: 500; display: flex; align-items: center; gap: 12px; transition: all 0.3s ease; background: rgba(255, 255, 255, 0.1);"
+           onmouseover="this.style.background='rgba(255, 255, 255, 0.2)'; this.style.transform='translateX(4px)'"
+           onmouseout="this.style.background='rgba(255, 255, 255, 0.1)'; this.style.transform='translateX(0)'">
+        <span style="font-size: 16px;"><img src="svg/grid.svg" alt="Clientes" style="width: 16px; height: 16px;"></span>
+        <span style="font-size: 14px; font-weight: 500;">Mesas</span>
+      </div>
     </li>
+
+    <li style="margin-bottom: 6px;">
+      <div (click)="irACaja()" 
+           style="padding: 12px 16px; border-radius: var(--radius); cursor: pointer; color: var(--white); font-weight: 500; display: flex; align-items: center; gap: 12px; transition: all 0.3s ease; background: rgba(255, 255, 255, 0.1);"
+           onmouseover="this.style.background='rgba(255, 255, 255, 0.2)'; this.style.transform='translateX(4px)'"
+           onmouseout="this.style.background='rgba(255, 255, 255, 0.1)'; this.style.transform='translateX(0)'">
+        <span style="font-size: 16px;"><img src="svg/print-dollar.svg" alt="Clientes" style="width: 16px; height: 16px;"></span>
+        <span style="font-size: 14px; font-weight: 500;">Caja</span>
+      </div>
+    </li>
+
+    <li style="margin-bottom: 6px;">
+      <div (click)="irAFacturas()" 
+           style="padding: 12px 16px; border-radius: var(--radius); cursor: pointer; color: var(--white); font-weight: 500; display: flex; align-items: center; gap: 12px; transition: all 0.3s ease; background: rgba(255, 255, 255, 0.1);"
+           onmouseover="this.style.background='rgba(255, 255, 255, 0.2)'; this.style.transform='translateX(4px)'"
+           onmouseout="this.style.background='rgba(255, 255, 255, 0.1)'; this.style.transform='translateX(0)'">
+        <span style="font-size: 16px;"><img src="svg/scroll.svg" alt="Clientes" style="width: 16px; height: 16px;"></span>
+        <span style="font-size: 14px; font-weight: 500;">Facturas</span>
+      </div>
+    </li>
+
+    <li style="margin-bottom: 6px;">
+      <div (click)="irAEmpresas()" 
+           style="padding: 12px 16px; border-radius: var(--radius); cursor: pointer; color: var(--white); font-weight: 500; display: flex; align-items: center; gap: 12px; transition: all 0.3s ease; background: rgba(255, 255, 255, 0.1);"
+           onmouseover="this.style.background='rgba(255, 255, 255, 0.2)'; this.style.transform='translateX(4px)'"
+           onmouseout="this.style.background='rgba(255, 255, 255, 0.1)'; this.style.transform='translateX(0)'">
+        <span style="font-size: 16px;"><img src="svg/chart-trend.svg" alt="Clientes" style="width: 16px; height: 16px;"></span>
+        <span style="font-size: 14px; font-weight: 500;">Empresas</span>
+      </div>
+    </li>
+
+    <li style="margin-bottom: 6px;">
+      <div (click)="irAOpciones()" 
+           style="padding: 12px 16px; border-radius: var(--radius); cursor: pointer; color: var(--white); font-weight: 500; display: flex; align-items: center; gap: 12px; transition: all 0.3s ease; background: rgba(255, 255, 255, 0.1);"
+           onmouseover="this.style.background='rgba(255, 255, 255, 0.2)'; this.style.transform='translateX(4px)'"
+           onmouseout="this.style.background='rgba(255, 255, 255, 0.1)'; this.style.transform='translateX(0)'">
+        <span style="font-size: 16px;"><img src="svg/slider.svg" alt="Clientes" style="width: 16px; height: 16px;"></span>
+        <span style="font-size: 14px; font-weight: 500;">Opciones</span>
+      </div>
+    </li>
+
   </ul>
+
+  <!-- Footer -->
+  <div style="margin-top: auto; padding-top: 24px; border-top: 1px solid rgba(255, 255, 255, 0.2); text-align: center;">
+    <p style="color: rgba(255, 255, 255, 0.8); font-size: 10px; margin: 0;">© 2026 Factullama</p>
+  </div>
+
 </div>

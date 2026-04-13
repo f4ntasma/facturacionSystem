@@ -1,81 +1,212 @@
-<h2>Ventas</h2>
-
-<div>
-  <input placeholder="Buscar cliente o DNI"
-         [(ngModel)]="searchTerm"
-         (input)="aplicarFiltros()">
-
-  <input type="date"
-         [(ngModel)]="fechaDesde"
-         (change)="aplicarFiltros()">
-
-  <input type="date"
-         [(ngModel)]="fechaHasta"
-         (change)="aplicarFiltros()">
+<div class="fade-in">
+  
+<!-- Page Header -->
+<div style="display: flex; flex-direction: row; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 1rem;">
+  <div>
+    <h1 class="font-bold" style="font-size: 28px; color: var(--primary-blue);">Gestión de Ventas</h1>
+    <p class="text-muted" style="font-size: 14px; margin-top: 1.5rem;">Historial y gestión de ventas realizadas</p>
+  </div>
+  <button class="btn btn-primary">
+    Nueva Venta
+  </button>
 </div>
 
-<br>
-
-<table border="1" cellpadding="8" width="100%">
-  <thead>
-    <tr>
-      <th>Venta</th>
-      <th>Cliente</th>
-      <th>DNI</th>
-      <th>Total</th>
-      <th>Fecha</th>
-      <th>Opciones</th>
-    </tr>
-  </thead>
-
-  <tbody>
-    <tr *ngFor="let venta of ventasFiltradas">
-      <td>{{ venta.id.toString().padStart(5,'0') }}</td>
-      <td>{{ venta.clienteNombre }} {{ venta.clienteApellido }}</td>
-      <td>{{ venta.dni }}</td>
-      <td>S/{{ venta.total }}</td>
-      <td>{{ venta.fecha | date:'dd/MM/yyyy HH:mm' }}</td>
-      <td>
-        <button (click)="toggleMenu(venta)">⋮</button>
-
-        <div *ngIf="venta.menuAbierto">
-          <button (click)="verDetalle(venta)">Ver detalle</button><br>
-          <button (click)="descargar(venta)">Descargar</button><br>
-          <button (click)="anular(venta)">Anular</button>
+  <!-- Filtros -->
+  <div class="card mb-4">
+    <div class="card-header">
+      <h3>Filtros de Búsqueda</h3>
+    </div>
+    <div class="card-body">
+      <div class="grid grid-4">
+        <div class="form-group">
+          <label class="form-label">Buscar Cliente o DNI</label>
+          <input type="text" 
+                 class="form-control" 
+                 placeholder="Ingrese nombre, apellido o DNI..."
+                 [(ngModel)]="searchTerm"
+                 (input)="aplicarFiltros()">
         </div>
-      </td>
-    </tr>
-  </tbody>
-</table>
+        
+        <div class="form-group" style="margin-top: 1.5rem">
+          <label class="form-label">Fecha Desde</label>
+          <input type="date" 
+                 class="form-control"
+                 [(ngModel)]="fechaDesde"
+                 (change)="aplicarFiltros()">
+        </div>
+        
+        <div class="form-group" style="margin-top: 1.5rem">
+          <label class="form-label">Fecha Hasta</label>
+          <input type="date" 
+                 class="form-control"
+                 [(ngModel)]="fechaHasta"
+                 (change)="aplicarFiltros()">
+        </div>
+        
+        <div class="form-group" style="display: flex; align-items: flex-end; margin-top: 1.5rem">
+          <button class="btn btn-secondary" style="width: 100%;">
+            Limpiar Filtros
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
 
-<!-- ✅ MODAL -->
-<div *ngIf="mostrarDetalle"
-     style="position:fixed; inset:0; background:rgba(0,0,0,.5);
-            display:flex; align-items:center; justify-content:center;">
+  <!-- Tabla de Ventas -->
+  <div class="card">
+    <div class="card-header">
+      <div class="d-flex justify-between items-center w-100">
+        <h3>Ventas Realizadas</h3>
+        <span class="badge badge-purple">{{ ventasFiltradas.length }} Ventas</span>
+      </div>
+    </div>
+    <div class="card-body">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>N° Venta</th>
+            <th>Cliente</th>
+            <th>DNI</th>
+            <th>Total</th>
+            <th>Fecha</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let venta of ventasFiltradas">
+            <td class="font-bold text-primary">{{ venta.id.toString().padStart(5,'0') }}</td>
+            <td class="font-medium">{{ venta.clienteNombre }} {{ venta.clienteApellido }}</td>
+            <td class="text-muted">{{ venta.dni }}</td>
+            <td class="font-bold" style="font-size: 16px; color: var(--success);">S/ {{ venta.total }}</td>
+            <td>{{ venta.fecha | date:'dd/MM/yyyy HH:mm' }}</td>
+            <td>
+              <span class="badge badge-success" style="background-color: rgb(166, 102, 219);">Completada</span>
+            </td>
+            <td>
+              <div class="d-flex gap-4">
+                <button class="btn btn-sm btn-ghost" (click)="verDetalle(venta)" title="Ver detalle" style="background-color: beige;">
+                  Ver
+                </button>
+                <button class="btn btn-sm btn-ghost" (click)="descargar(venta)" title="Descargar" style="background-color: cadetblue; color: white;">
+                  Descargar
+                </button>
+                <button class="btn btn-sm btn-danger" (click)="anular(venta)" title="Anular">
+                  Anular
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      
+      <div *ngIf="ventasFiltradas.length === 0" class="empty-state">
+        <div class="empty-icon">📭</div>
+        <h3>No se encontraron ventas</h3>
+        <p>Intenta con otros filtros de búsqueda</p>
+      </div>
+    </div>
+  </div>
 
-  <div style="background:white; padding:20px; width:500px">
-    <h3>Detalle de Venta</h3>
+</div>
 
-    <p><b>Cliente:</b> {{ ventaSeleccionada.clienteNombre }} {{ ventaSeleccionada.clienteApellido }}</p>
-    <p><b>DNI:</b> {{ ventaSeleccionada.dni }}</p>
-
-    <table border="1" width="100%">
-      <tr>
-        <th>Producto</th>
-        <th>Cant.</th>
-        <th>Precio</th>
-        <th>Subtotal</th>
-      </tr>
-      <tr *ngFor="let p of ventaSeleccionada.productos">
-        <td>{{ p.nombre }}</td>
-        <td>{{ p.cantidad }}</td>
-        <td>S/{{ p.precio }}</td>
-        <td>S/{{ p.cantidad * p.precio }}</td>
-      </tr>
-    </table>
-
-    <h4>Total: S/{{ ventaSeleccionada.total }}</h4>
-
-    <button (click)="cerrarDetalle()">Cerrar</button>
+<!-- Modal de Detalle -->
+<div *ngIf="mostrarDetalle" 
+     class="modal-overlay"
+     style="position: fixed; inset: 0; background: rgba(0, 0, 0, 0.6); 
+            display: flex; align-items: center; justify-content: center; z-index: 1000;">
+  
+  <div class="modal-content" 
+       style="background: var(--white); padding: 32px; width: 600px; 
+              border-radius: var(--radius-lg); box-shadow: var(--shadow-xl);
+              animation: slideUp 0.3s ease-out;">
+    
+    <div class="d-flex justify-between items-center mb-4">
+      <h2 style="color: var(--primary-blue); margin: 0;">Detalle de Venta</h2>
+      <button class="btn btn-sm btn-ghost" (click)="cerrarDetalle()">
+        Cerrar
+      </button>
+    </div>
+    
+    <div class="grid grid-2 mb-4">
+      <div class="card">
+        <div class="card-body">
+          <div class="text-muted mb-1" style="font-size: 12px;">Cliente</div>
+          <div class="font-semibold">{{ ventaSeleccionada.clienteNombre }} {{ ventaSeleccionada.clienteApellido }}</div>
+        </div>
+      </div>
+      
+      <div class="card">
+        <div class="card-body">
+          <div class="text-muted mb-1" style="font-size: 12px;">DNI</div>
+          <div class="font-semibold">{{ ventaSeleccionada.dni }}</div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="card mb-4">
+      <div class="card-header">
+        <h4>Productos</h4>
+      </div>
+      <div class="card-body" style="padding: 0;">
+        <table class="table" style="box-shadow: none; border-radius: 0;">
+          <thead>
+            <tr>
+              <th>Producto</th>
+              <th>Cant.</th>
+              <th>Precio Unit.</th>
+              <th>Subtotal</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let p of ventaSeleccionada.productos">
+              <td class="font-medium">{{ p.nombre }}</td>
+              <td>{{ p.cantidad }}</td>
+              <td>S/ {{ p.precio }}</td>
+              <td class="font-bold">S/ {{ p.cantidad * p.precio }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    
+    <div class="d-flex justify-between items-center" style="background: var(--neutral-light); padding: 20px; border-radius: var(--radius);">
+      <div>
+        <span class="text-muted" style="font-size: 14px;">Total de la venta:</span>
+      </div>
+      <div class="font-bold" style="font-size: 24px; color: var(--success);">S/ {{ ventaSeleccionada.total }}</div>
+    </div>
+    
+    <div class="d-flex justify-end gap-2 mt-4">
+      <button class="btn btn-outline" (click)="descargar(ventaSeleccionada)">
+        Descargar
+      </button>
+      <button class="btn btn-primary" (click)="cerrarDetalle()">
+        Cerrar
+      </button>
+    </div>
+    
   </div>
 </div>
+
+<style>
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.modal-overlay {
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+</style>
