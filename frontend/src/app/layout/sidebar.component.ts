@@ -23,53 +23,57 @@ export class SidebarComponent {
   irAVentas() {
     console.log('➡️ Sidebar → Ventas');
     this.navbarService.cambiarNavbar('main');
-    this.router.navigate(['/ventas']);
+    this.router.navigate(['/app/ventas']);
   }
 
   irAProductos() {
     console.log('➡️ Sidebar → Productos');
     this.navbarService.cambiarNavbar('productos');
-    this.router.navigate(['/productos']);
+    this.router.navigate(['/app/productos']);
   }
 
   irACotizaciones() {
     console.log('➡️ Sidebar → Cotizaciones');
     this.navbarService.cambiarNavbar('main');
-    this.router.navigate(['/cotizaciones']);
+    this.router.navigate(['/app/cotizaciones']);
   }
 
   irAMesas() {
     console.log('➡️ Sidebar → Mesas');
     this.navbarService.cambiarNavbar('main');
-    this.router.navigate(['/mesas']);
+    this.router.navigate(['/app/pisos/1']);
   }
 
   irAFacturas() {
     console.log('➡️ Sidebar → Facturas');
     this.navbarService.cambiarNavbar('main');
-    this.router.navigate(['/facturas']);
+    this.router.navigate(['/app/facturas']);
   }
 
   irAEmpresas() {
     console.log('➡️ Sidebar → Empresas');
     this.navbarService.cambiarNavbar('main');
-    this.router.navigate(['/empresas']);
+    this.router.navigate(['/app/empresas']);
   }
 
   // ---------------------
-  // Métodos vacíos (placeholders)
+  // Métodos de navegación
   // ---------------------
   irAClientes() {
-      console.log('➡️ Sidebar → Clientes (pendiente)');
-    }
+    console.log('➡️ Sidebar → Clientes');
+    this.navbarService.cambiarNavbar('main');
+    this.router.navigate(['/app/clientes']);
+  }
 
   irACaja() {
-    console.log('➡️ Sidebar → Caja (pendiente)');
-    // Aquí iría la lógica de navegación a Caja cuando esté lista
+    console.log('➡️ Sidebar → Caja');
+    this.navbarService.cambiarNavbar('main');
+    this.router.navigate(['/app/caja']);
   }
 
   irAOpciones() {
-    console.log('➡️ Sidebar → Opciones (pendiente)');
-    // Aquí iría la lógica de navegación a Opciones cuando esté lista
+    console.log('➡️ Sidebar → Opciones');
+    this.navbarService.cambiarNavbar('main');
+    this.router.navigate(['/app/opciones']);
   }
 }

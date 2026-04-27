@@ -1,0 +1,804 @@
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&family=Poppins:wght@400;500;600&display=swap');
+
+  :root {
+    --blue: #1e3a8a;
+    --blue-mid: #2d52b8;
+    --blue-light: #3b82f6;
+    --purple: #7c3aed;
+    --purple-light: #a78bfa;
+    --black: #1f2937;
+    --gray: #6b7280;
+    --light: #f3f4f6;
+    --white: #fff;
+    --green: #059669;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Poppins', sans-serif;
+    background: var(--white);
+    color: var(--black);
+    overflow-x: hidden;
+  }
+
+  /* NAVBAR */
+  .navbar {
+    background: rgba(255,255,255,0.97);
+    backdrop-filter: blur(12px);
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 1000;
+    padding: 14px 40px;
+    box-shadow: 0 1px 0 rgba(0,0,0,0.08);
+  }
+
+  .navbar-inner {
+    max-width: 1280px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 0;
+  }
+
+  .navbar-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    justify-self: start;
+  }
+
+  .navbar-center {
+    display: flex;
+    justify-content: center;
+  }
+
+  .logo {
+    font-family: 'Arial', Georgia, serif;
+    font-weight: 700;
+    font-size: 24px;
+    color: var(--blue);
+    letter-spacing: 2px;
+  }
+
+  .nav-links {
+    display: flex;
+    gap: 50px;
+    list-style: none;
+  }
+
+  .nav-links a {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--black);
+    transition: color .25s;
+    cursor: pointer;
+  }
+
+  .nav-links a:hover { color: var(--blue); }
+
+  .navbar-right {
+    display: flex;
+    justify-content: flex-end;
+    justify-self: end;
+  }
+
+  .nav-social {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    font-size: 13px;
+    font-weight: 500;
+  }
+
+  .nav-social a {
+    text-decoration: none;
+    color: var(--gray);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: color .25s;
+  }
+
+  .nav-social a:hover { color: var(--blue); }
+
+  .btn-admin {
+    background: var(--purple);
+    color: var(--white);
+    border: none;
+    padding: 10px 24px;
+    border-radius: 6px;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 800;
+    font-size: 13px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background .25s, transform .2s;
+  }
+
+  .btn-admin:hover { background: var(--blue); transform: translateY(-1px); }
+
+  /* HERO */
+  .hero {
+    background: linear-gradient(135deg, var(--blue) 0%, var(--blue-mid) 55%, var(--purple) 100%);
+    min-height: 100vh;
+    position: relative;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    padding-top: 80px;
+  }
+
+  .hero::after {
+    content: '';
+    position: absolute;
+    bottom: -2px; left: 0; right: 0;
+    height: 180px;
+    background: var(--white);
+    clip-path: polygon(0 60%, 100% 0, 100% 100%, 0 100%);
+  }
+
+  .hero-circle {
+    position: absolute;
+    right: -80px; top: -80px;
+    width: 520px; height: 520px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.06);
+    pointer-events: none;
+  }
+
+  .hero-circle2 {
+    position: absolute;
+    right: 60px; top: 80px;
+    width: 320px; height: 320px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.05);
+    pointer-events: none;
+  }
+
+  .hero-inner {
+    max-width: 1280px;
+    margin: 0 auto;
+    width: 100%;
+    padding: 60px 40px 200px;
+    display: grid;
+    grid-template-columns: 1fr 480px;
+    align-items: center;
+    gap: 40px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .hero-text h1 {
+    font-family: 'Nunito', sans-serif;
+    font-weight: 900;
+    font-size: 52px;
+    line-height: 1.1;
+    color: var(--white);
+    margin-bottom: 20px;
+  }
+
+  .hero-text p {
+    font-size: 17px;
+    color: rgba(255,255,255,0.88);
+    line-height: 1.7;
+    max-width: 480px;
+    margin-bottom: 36px;
+  }
+
+  .hero-btns {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .btn-primary {
+    background: var(--purple);
+    color: var(--white);
+    border: none;
+    padding: 14px 32px;
+    border-radius: 8px;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 800;
+    font-size: 14px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background .25s, transform .2s, box-shadow .2s;
+    box-shadow: 0 4px 16px rgba(124,58,237,0.4);
+  }
+
+  .btn-primary:hover {
+    background: #6d28d9;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(124,58,237,0.5);
+  }
+
+  .btn-outline {
+    background: transparent;
+    color: var(--white);
+    border: 2px solid rgba(255,255,255,0.7);
+    padding: 14px 32px;
+    border-radius: 8px;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 800;
+    font-size: 14px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background .25s, border-color .25s;
+  }
+
+  .btn-outline:hover {
+    background: rgba(255,255,255,0.12);
+    border-color: var(--white);
+  }
+
+  .petWeb {
+    max-width: 120%;
+    height: auto;
+    display: block;
+    margin: 0 auto;  
+  }
+
+  /* SECTIONS */
+  .section { padding: 80px 40px; }
+
+  .section-inner {
+    max-width: 1280px;
+    margin: 0 auto;
+  }
+
+  .section-label {
+    display: inline-block;
+    background: linear-gradient(135deg, var(--blue), var(--purple));
+    color: var(--white);
+    font-family: 'Nunito', sans-serif;
+    font-weight: 800;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 6px 16px;
+    border-radius: 20px;
+    margin-bottom: 16px;
+  }
+
+  .section-title {
+    font-family: 'Nunito', sans-serif;
+    font-weight: 900;
+    font-size: 38px;
+    color: var(--blue);
+    margin-bottom: 12px;
+    line-height: 1.15;
+  }
+
+  .section-sub {
+    font-size: 16px;
+    color: var(--gray);
+    margin-bottom: 52px;
+    max-width: 520px;
+  }
+
+  /* FEATURES */
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+  }
+
+  .feat-card {
+    background: var(--white);
+    border: 1.5px solid #e5e7eb;
+    border-radius: 16px;
+    padding: 32px 28px;
+    transition: border-color .25s, transform .25s, box-shadow .25s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .feat-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--blue), var(--purple));
+    opacity: 0;
+    transition: opacity .25s;
+  }
+
+  .feat-card:hover { border-color: var(--blue-light); transform: translateY(-6px); box-shadow: 0 16px 40px rgba(30,58,138,0.12); }
+  .feat-card:hover::before { opacity: 1; }
+
+  .feat-icon {
+    width: 52px; height: 52px;
+    background: linear-gradient(135deg, var(--blue), var(--purple));
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    margin-bottom: 18px;
+  }
+
+  .feat-card h3 {
+    font-family: 'Nunito', sans-serif;
+    font-weight: 800;
+    font-size: 17px;
+    color: var(--blue);
+    margin-bottom: 8px;
+  }
+
+  .feat-card p { font-size: 14px; color: var(--gray); line-height: 1.6; }
+
+  /* PRODUCTS */
+  .products-bg { background: #f8f9ff; padding: 80px 40px; }
+
+  .products-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+  }
+
+  .prod-card {
+    background: var(--white);
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1.5px solid #e5e7eb;
+    transition: transform .25s, box-shadow .25s;
+  }
+
+  .prod-card:hover { transform: translateY(-8px); box-shadow: 0 20px 48px rgba(30,58,138,0.14); }
+
+  .prod-card.popular { border-color: var(--blue); box-shadow: 0 0 0 2px var(--blue); }
+
+  .prod-thumb {
+    height: 160px;
+    background: linear-gradient(135deg, var(--blue), var(--purple));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 56px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .prod-thumb::after {
+    content: '';
+    position: absolute;
+    bottom: -20px; left: 0; right: 0;
+    height: 40px;
+    background: var(--white);
+    clip-path: ellipse(55% 100% at 50% 100%);
+  }
+
+  .prod-thumb.purple-thumb { background: linear-gradient(135deg, var(--purple), var(--blue)); }
+  .prod-thumb.teal-thumb { background: linear-gradient(135deg, #0f766e, var(--blue)); }
+
+  .prod-body { padding: 20px 20px 24px; }
+
+  .prod-badge {
+    display: inline-block;
+    background: #eff6ff;
+    color: var(--blue);
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 20px;
+    margin-bottom: 10px;
+  }
+
+  .prod-badge.popular-badge { background: #f3f0ff; color: var(--purple); }
+  .prod-badge.green-badge { background: #f0fdf4; color: #059669; }
+
+  .prod-body h3 {
+    font-family: 'Nunito', sans-serif;
+    font-weight: 800;
+    font-size: 16px;
+    color: var(--black);
+    margin-bottom: 6px;
+  }
+
+  .prod-body p { font-size: 13px; color: var(--gray); margin-bottom: 14px; }
+
+  .prod-price {
+    font-family: 'Nunito', sans-serif;
+    font-weight: 900;
+    font-size: 22px;
+    color: var(--green);
+  }
+
+  .prod-price.purple-price { color: var(--purple); }
+  .prod-price span { font-size: 13px; font-weight: 500; color: var(--gray); }
+
+  /* ABOUT */
+  .about-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 60px;
+    align-items: center;
+  }
+
+  .about-visual {
+    background: linear-gradient(135deg, var(--blue) 0%, var(--purple) 100%);
+    border-radius: 24px;
+    height: 380px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .about-visual::before {
+    content: '';
+    position: absolute;
+    width: 260px; height: 260px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.08);
+    top: -60px; right: -60px;
+  }
+
+  .about-visual-emoji { font-size: 80px; position: relative; z-index: 1; }
+
+  .about-stat-row { display: flex; gap: 24px; margin-top: 32px; }
+
+  .stat-box {
+    flex: 1;
+    background: var(--light);
+    border-radius: 12px;
+    padding: 20px;
+    border-left: 4px solid var(--blue);
+  }
+
+  .stat-box.purple { border-left-color: var(--purple); }
+
+  .stat-num {
+    font-family: 'Nunito', sans-serif;
+    font-weight: 900;
+    font-size: 28px;
+    color: var(--blue);
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+
+  .stat-box.purple .stat-num { color: var(--purple); }
+  .stat-label { font-size: 13px; color: var(--gray); }
+
+  .about-text h3 {
+    font-family: 'Nunito', sans-serif;
+    font-weight: 900;
+    font-size: 32px;
+    color: var(--blue);
+    line-height: 1.2;
+    margin-bottom: 20px;
+  }
+
+  .about-text p { font-size: 15px; color: var(--gray); line-height: 1.8; margin-bottom: 14px; }
+
+  /* OTHER PRODUCTS */
+  .other-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+
+  .other-card {
+    background: linear-gradient(135deg, var(--blue) 0%, var(--purple) 100%);
+    border-radius: 16px;
+    padding: 32px 28px;
+    color: var(--white);
+    transition: transform .25s, box-shadow .25s;
+  }
+
+  .other-card:hover { transform: translateY(-6px); box-shadow: 0 20px 48px rgba(30,58,138,0.3); }
+  .other-card.purple-card { background: linear-gradient(135deg, var(--purple), #4f46e5); }
+  .other-card.teal-card { background: linear-gradient(135deg, #0f766e, var(--blue)); }
+
+  .other-icon { font-size: 32px; margin-bottom: 16px; display: block; }
+
+  .other-card h3 { font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 18px; margin-bottom: 8px; }
+  .other-card p { font-size: 14px; opacity: .85; line-height: 1.6; }
+
+  /* CTA BANNER */
+  .cta-banner {
+    background: linear-gradient(135deg, var(--blue), var(--purple));
+    padding: 64px 40px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .cta-banner::before {
+    content: '';
+    position: absolute;
+    width: 400px; height: 400px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.05);
+    top: -100px; left: -100px;
+  }
+
+  .cta-banner::after {
+    content: '';
+    position: absolute;
+    width: 300px; height: 300px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.05);
+    bottom: -80px; right: -60px;
+  }
+
+  .cta-banner h2 {
+    font-family: 'Nunito', sans-serif;
+    font-weight: 900;
+    font-size: 36px;
+    color: var(--white);
+    margin-bottom: 12px;
+    position: relative; z-index: 1;
+  }
+
+  .cta-banner p { color: rgba(255,255,255,0.85); font-size: 16px; margin-bottom: 32px; position: relative; z-index: 1; }
+
+  .btn-white {
+    background: var(--white);
+    color: var(--blue);
+    border: none;
+    padding: 14px 36px;
+    border-radius: 8px;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 900;
+    font-size: 14px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    cursor: pointer;
+    position: relative; z-index: 1;
+    transition: transform .2s, box-shadow .2s;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+  }
+
+  .btn-white:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(0,0,0,0.2); }
+
+  /* FOOTER */
+  .footer { background: var(--black); color: var(--white); padding: 40px; }
+
+  .footer-inner {
+    max-width: 1280px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  .footer-logo { font-family: 'Nunito', sans-serif; font-weight: 900; font-size: 20px; letter-spacing: 3px; text-transform: uppercase; }
+
+  .footer-links { display: flex; gap: 24px; list-style: none; }
+
+  .footer-links a { color: rgba(255,255,255,0.7); text-decoration: none; font-size: 14px; transition: color .2s; }
+  .footer-links a:hover { color: var(--white); }
+
+  .footer-copy { font-size: 13px; color: rgba(255,255,255,0.5); }
+
+  /* RESPONSIVE */
+  @media (max-width: 1024px) {
+    .hero-inner { grid-template-columns: 1fr; }
+    .hero-image { display: none; }
+    .products-grid { grid-template-columns: repeat(2,1fr); }
+    .features-grid, .other-grid { grid-template-columns: repeat(2,1fr); }
+    .about-grid { grid-template-columns: 1fr; }
+  }
+
+  @media (max-width: 640px) {
+    .nav-links, .nav-social { display: none; }
+    .features-grid, .other-grid, .products-grid { grid-template-columns: 1fr; }
+    .hero-text h1 { font-size: 36px; }
+    .section-title { font-size: 28px; }
+    .hero-btns { flex-direction: column; }
+    .about-stat-row { flex-direction: column; }
+    .footer-inner { flex-direction: column; text-align: center; }
+  }
+</style>
+
+<!-- ====== NAVBAR ====== -->
+<nav class="navbar">
+  <div class="navbar-inner">
+    <div class="navbar-left">
+      <img src="/svg/iconFactulow.png" alt="Factullama Logo" style="height: 40px;">
+      <div class="logo">Factullama</div>
+    </div>
+    <div class="navbar-center">
+    <ul class="nav-links">
+      <li><a (click)="scrollToSection('home')">Inicio</a></li>
+      <li><a (click)="scrollToSection('products')">Productos</a></li>
+      <li><a (click)="scrollToSection('about')">Nosotros</a></li>
+      <li><a (click)="scrollToSection('other')">Más</a></li>
+    </ul>
+    </div>
+    <div class="navbar-right">
+      <button class="btn-admin" (click)="irARegistro()">Registrarse</button>
+    </div>
+  </div>
+</nav>
+
+<!-- ====== HERO ====== -->
+<section id="home" class="hero">
+  <div class="hero-circle"></div>
+  <div class="hero-circle2"></div>
+  <div class="hero-inner">
+    <div class="hero-text">
+      <div class="section-label">Sistema de Facturación #1 en Perú</div>
+      <h1>Facturación<br>Inteligente<br>para tu Negocio</h1>
+      <p>Gestiona ventas, inventario y facturación electrónica desde un solo lugar. Rápido, simple y 100% legal ante SUNAT.</p>
+      <div class="hero-btns">
+        <button class="btn-primary" (click)="irARegistro()">Comenzar Ahora</button>
+        <button class="btn-outline">Ver Demo</button>
+      </div>
+    </div>
+    <div class="hero-image">
+      <img src="/svg/pet.png" alt="pet" class="petWeb">
+    </div>
+  </div>
+</section>
+
+<!-- ====== FEATURES ====== -->
+<section class="section">
+  <div class="section-inner">
+    <h2 class="section-title">Todo lo que necesitas<br>para gestionar tu negocio</h2>
+    <p class="section-sub">Herramientas profesionales diseñadas para pequeñas y medianas empresas peruanas.</p>
+    <div class="features-grid">
+      <div class="feat-card">
+        <div class="feat-icon">📊</div>
+        <h3>Gestión de Ventas</h3>
+        <p>Control completo de tus ventas en tiempo real con reportes detallados y comparativos.</p>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon">📦</div>
+        <h3>Inventario</h3>
+        <p>Gestiona tu stock con alertas automáticas de productos bajos y reabastecimiento.</p>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon">🧾</div>
+        <h3>Facturación Electrónica</h3>
+        <p>Genera facturas electrónicas válidas ante SUNAT automáticamente con formato legal.</p>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon">👥</div>
+        <h3>Gestión de Clientes</h3>
+        <p>Base de datos de clientes con historial de compras, preferencias y fidelización.</p>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon">💰</div>
+        <h3>Control de Caja</h3>
+        <p>Cuadre de caja diario automático con reportes de ingresos, egresos y flujo.</p>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon">📈</div>
+        <h3>Reportes y Analítica</h3>
+        <p>Dashboards y reportes avanzados para tomar decisiones estratégicas con datos reales.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ====== PRODUCTS ====== -->
+<section id="products" class="products-bg">
+  <div class="section-inner">
+    <div style="text-align:center;">
+      <div class="section-label">Planes</div>
+      <h2 class="section-title" style="text-align:center;">Nuestros Productos</h2>
+      <p class="section-sub" style="margin: 0 auto 52px; text-align:center;">Soluciones adaptadas al tamaño de tu negocio</p>
+    </div>
+    <div class="products-grid">
+      <div class="prod-card">
+        <div class="prod-thumb">🏪</div>
+        <div class="prod-body">
+          <div class="prod-badge">Básico</div>
+          <h3>Factullama Básico</h3>
+          <p>Ideal para pequeños negocios que inician</p>
+          <div class="prod-price">S/ 99 <span>/ mes</span></div>
+        </div>
+      </div>
+      <div class="prod-card popular">
+        <div class="prod-thumb purple-thumb">🏢</div>
+        <div class="prod-body">
+          <div class="prod-badge popular-badge">★ Más popular</div>
+          <h3>Factullama Pro</h3>
+          <p>Para empresas en crecimiento acelerado</p>
+          <div class="prod-price purple-price">S/ 199 <span>/ mes</span></div>
+        </div>
+      </div>
+      <div class="prod-card">
+        <div class="prod-thumb">🏭</div>
+        <div class="prod-body">
+          <div class="prod-badge">Enterprise</div>
+          <h3>Factullama Enterprise</h3>
+          <p>Solución completa para grandes empresas</p>
+          <div class="prod-price">S/ 399 <span>/ mes</span></div>
+        </div>
+      </div>
+      <div class="prod-card">
+        <div class="prod-thumb teal-thumb">🍽️</div>
+        <div class="prod-body">
+          <div class="prod-badge green-badge">Restaurantes</div>
+          <h3>Factullama Restó</h3>
+          <p>Especializado para el sector gastronómico</p>
+          <div class="prod-price">S/ 149 <span>/ mes</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ====== ABOUT ====== -->
+<section id="about" class="section">
+  <div class="section-inner">
+    <div class="about-grid">
+      <div class="about-visual">
+        <div class="about-visual-emoji">🚀</div>
+      </div>
+      <div class="about-text">
+        <div class="section-label">Sobre Nosotros</div>
+        <h3>Transformando la gestión empresarial peruana</h3>
+        <p>Factullama nació con la misión de simplificar la gestión de negocios pequeños y medianos. Creemos que cada empresario merece acceso a herramientas profesionales sin complicaciones.</p>
+        <p>Con más de 5 años en el mercado, hemos ayudado a miles de empresas a optimizar sus procesos, reducir errores y aumentar su rentabilidad.</p>
+        <p>Nuestro equipo está comprometido con la innovación constante para mantenernos a la vanguardia tecnológica.</p>
+        <div class="about-stat-row">
+          <div class="stat-box">
+            <div class="stat-num">5,000+</div>
+            <div class="stat-label">Empresas activas</div>
+          </div>
+          <div class="stat-box purple">
+            <div class="stat-num">5 años</div>
+            <div class="stat-label">En el mercado</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ====== OTHER PRODUCTS ====== -->
+<section id="other" class="products-bg">
+  <div class="section-inner">
+    <div class="section-label">Ecosistema</div>
+    <h2 class="section-title">Otros Productos</h2>
+    <p class="section-sub">Explora más soluciones de la familia Factullama</p>
+    <div class="other-grid">
+      <div class="other-card">
+        <span class="other-icon">📱</span>
+        <h3>Factullama Móvil</h3>
+        <p>App móvil para gestionar tu negocio desde cualquier lugar, en tiempo real.</p>
+      </div>
+      <div class="other-card purple-card">
+        <span class="other-icon">🔌</span>
+        <h3>API Factullama</h3>
+        <p>Integra Factullama con tus sistemas existentes mediante nuestra API robusta.</p>
+      </div>
+      <div class="other-card teal-card">
+        <span class="other-icon">🎓</span>
+        <h3>Factullama Academy</h3>
+        <p>Cursos y capacitaciones para maximizar el uso de la plataforma.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ====== CTA BANNER ====== -->
+<div class="cta-banner">
+  <h2>¿Listo para transformar tu negocio?</h2>
+  <p>Únete a más de 5,000 empresas que ya confían en Factullama</p>
+  <button class="btn-white" (click)="irARegistro()">Comenzar Gratis Hoy</button>
+</div>
+
+<!-- ====== FOOTER ====== -->
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="footer-logo">Factullama</div>
+    <ul class="footer-links">
+      <li><a href="#">Términos</a></li>
+      <li><a href="#">Privacidad</a></li>
+      <li><a href="#">Soporte</a></li>
+      <li><a href="#">Contacto</a></li>
+    </ul>
+    <div class="footer-copy">© 2026 Factullama. Todos los derechos reservados.</div>
+  </div>
+</footer>

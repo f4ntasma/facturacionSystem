@@ -7,6 +7,7 @@ import { CardModule } from 'primeng/card';
 import { InputTextModule } from 'primeng/inputtext';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { ToastModule } from 'primeng/toast';
+import { FormsModule } from '@angular/forms';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { EmpresaService, Empresa } from '../../services/empresa.service';
 
@@ -16,6 +17,7 @@ import { EmpresaService, Empresa } from '../../services/empresa.service';
   imports: [
     CommonModule,
     RouterModule,
+    FormsModule,
     TableModule,
     ButtonModule,
     CardModule,
@@ -24,92 +26,13 @@ import { EmpresaService, Empresa } from '../../services/empresa.service';
     ToastModule
   ],
   providers: [ConfirmationService, MessageService],
-  template: `
-    <p-card>
-      <ng-template pTemplate="header">
-        <div class="flex align-items-center justify-content-between p-3 pb-0">
-          <h3 class="m-0">Gestión de Empresas</h3>
-          <button pButton type="button" icon="pi pi-plus" label="Nueva Empresa" 
-                  routerLink="/empresas/nueva" class="p-button-success"></button>
-        </div>
-      </ng-template>
-
-      <div class="mb-3">
-        <span class="p-input-icon-left w-full">
-          <i class="pi pi-search"></i>
-          <input pInputText type="text" placeholder="Buscar empresas..." 
-                 class="w-full" (input)="onGlobalFilter($event)">
-        </span>
-      </div>
-
-      <p-table #dt [value]="empresas" [loading]="loading" [paginator]="true" [rows]="10"
-               [globalFilterFields]="['nombre', 'ruc', 'email']" responsiveLayout="scroll">
-        
-        <ng-template pTemplate="header">
-          <tr>
-            <th pSortableColumn="nombre">
-              Nombre <p-sortIcon field="nombre"></p-sortIcon>
-            </th>
-            <th pSortableColumn="ruc">
-              RUC <p-sortIcon field="ruc"></p-sortIcon>
-            </th>
-            <th>Dirección</th>
-            <th>Teléfono</th>
-            <th>Email</th>
-            <th>Acciones</th>
-          </tr>
-        </ng-template>
-
-        <ng-template pTemplate="body" let-empresa>
-          <tr>
-            <td>
-              <span class="font-medium">{{ empresa.nombre }}</span>
-            </td>
-            <td>{{ empresa.ruc }}</td>
-            <td>{{ empresa.direccion }}</td>
-            <td>{{ empresa.telefono || '-' }}</td>
-            <td>{{ empresa.email || '-' }}</td>
-            <td>
-              <div class="flex gap-2">
-                <button pButton type="button" icon="pi pi-eye" 
-                        class="p-button-rounded p-button-text p-button-info"
-                        [routerLink]="['/empresas', empresa.id]"
-                        pTooltip="Ver detalles"></button>
-                <button pButton type="button" icon="pi pi-pencil" 
-                        class="p-button-rounded p-button-text p-button-warning"
-                        [routerLink]="['/empresas', empresa.id, 'editar']"
-                        pTooltip="Editar"></button>
-                <button pButton type="button" icon="pi pi-trash" 
-                        class="p-button-rounded p-button-text p-button-danger"
-                        (click)="confirmarEliminar(empresa)"
-                        pTooltip="Eliminar"></button>
-              </div>
-            </td>
-          </tr>
-        </ng-template>
-
-        <ng-template pTemplate="emptymessage">
-          <tr>
-            <td colspan="6" class="text-center p-4">
-              <div class="flex flex-column align-items-center gap-3">
-                <i class="pi pi-building text-4xl text-400"></i>
-                <span class="text-lg">No hay empresas registradas</span>
-                <button pButton type="button" label="Crear Primera Empresa" 
-                        routerLink="/empresas/nueva" class="p-button-sm"></button>
-              </div>
-            </td>
-          </tr>
-        </ng-template>
-      </p-table>
-    </p-card>
-
-    <p-confirmDialog></p-confirmDialog>
-    <p-toast></p-toast>
-  `
+  templateUrl: './empresas-list.component.html'
 })
 export class EmpresasListComponent implements OnInit {
   empresas: Empresa[] = [];
   loading = false;
+  error = false;
+  searchTerm = '';
 
   constructor(
     private empresaService: EmpresaService,
@@ -123,10 +46,12 @@ export class EmpresasListComponent implements OnInit {
 
   loadEmpresas() {
     this.loading = true;
+    this.error = false;
     this.empresaService.getEmpresas().subscribe({
       next: (empresas) => {
         this.empresas = empresas;
         this.loading = false;
+        this.error = false;
       },
       error: (error) => {
         console.error('Error cargando empresas:', error);
@@ -135,6 +60,7 @@ export class EmpresasListComponent implements OnInit {
           summary: 'Error',
           detail: 'No se pudieron cargar las empresas'
         });
+        this.error = true;
         this.loading = false;
       }
     });

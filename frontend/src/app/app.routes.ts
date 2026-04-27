@@ -3,13 +3,19 @@ import { Routes } from '@angular/router';
 export const routes: Routes = [
 
   {
+    path: '',
+    loadComponent: () =>
+      import('./pages/landing/landing.component').then(m => m.LandingComponent)
+  },
+
+  {
     path: 'login',
     loadComponent: () =>
       import('./pages/login/login').then(m => m.LoginComponent)
   },
 
   {
-    path: '',
+    path: 'app',
     loadComponent: () =>
       import('./layout/main-layout.component').then(m => m.MainLayoutComponent),
     children: [
@@ -71,12 +77,45 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./pages/cotizaciones/cotizaciones.component')
             .then(m => m.CotizacionesComponent)
+      },
+
+      {
+        path: 'clientes',
+        loadComponent: () =>
+          import('./pages/clientes/clientes-list.component')
+            .then(m => m.ClientesListComponent)
+      },
+      {
+        path: 'clientes/nuevo',
+        loadComponent: () =>
+          import('./pages/clientes/cliente-form.component')
+            .then(m => m.ClienteFormComponent)
+      },
+      {
+        path: 'clientes/:id',
+        loadComponent: () =>
+          import('./pages/clientes/cliente-form.component')
+            .then(m => m.ClienteFormComponent)
+      },
+
+      {
+        path: 'caja',
+        loadComponent: () =>
+          import('./pages/caja/caja.component')
+            .then(m => m.CajaComponent)
+      },
+
+      {
+        path: 'opciones',
+        loadComponent: () =>
+          import('./pages/opciones/opciones.component')
+            .then(m => m.OpcionesComponent)
       }
     ]
   },
 
   {
     path: '**',
-    redirectTo: '/pisos/1'
+    redirectTo: ''
   }
 ];

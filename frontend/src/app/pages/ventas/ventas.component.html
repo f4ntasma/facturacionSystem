@@ -101,9 +101,8 @@
       </table>
       
       <div *ngIf="ventasFiltradas.length === 0" class="empty-state">
-        <div class="empty-icon">📭</div>
-        <h3>No se encontraron ventas</h3>
-        <p>Intenta con otros filtros de búsqueda</p>
+        <h3 style="text-align: center; color: var(--text-secondary);">No se encontraron ventas</h3>
+        <p style="text-align: center; color: var(--text-secondary);">Intenta con otros filtros de búsqueda</p>
       </div>
     </div>
   </div>
@@ -113,49 +112,46 @@
 <!-- Modal de Detalle -->
 <div *ngIf="mostrarDetalle" 
      class="modal-overlay"
-     style="position: fixed; inset: 0; background: rgba(0, 0, 0, 0.6); 
+     style="position: fixed; inset: 0; background: rgba(2, 2, 2, 0.6); 
             display: flex; align-items: center; justify-content: center; z-index: 1000;">
   
   <div class="modal-content" 
-       style="background: var(--white); padding: 32px; width: 600px; 
-              border-radius: var(--radius-lg); box-shadow: var(--shadow-xl);
+       style="background: #fff; padding: 32px; width: 600px; 
+              border-radius: 1rem; box-shadow: var(--shadow-xl);
               animation: slideUp 0.3s ease-out;">
     
     <div class="d-flex justify-between items-center mb-4">
       <h2 style="color: var(--primary-blue); margin: 0;">Detalle de Venta</h2>
-      <button class="btn btn-sm btn-ghost" (click)="cerrarDetalle()">
-        Cerrar
-      </button>
     </div>
     
     <div class="grid grid-2 mb-4">
       <div class="card">
         <div class="card-body">
-          <div class="text-muted mb-1" style="font-size: 12px;">Cliente</div>
-          <div class="font-semibold">{{ ventaSeleccionada.clienteNombre }} {{ ventaSeleccionada.clienteApellido }}</div>
+          <div class="text-muted mb-1" style="font-size: 12px; background-color: rgba(236, 199, 168, 0.59); border-radius: 1rem; margin-right: 28rem; padding-left:0.5rem;">Cliente</div>
+          <div class="font-semibold" style="margin-left: 0.5rem ;">{{ ventaSeleccionada.clienteNombre }} {{ ventaSeleccionada.clienteApellido }}</div>
         </div>
       </div>
       
-      <div class="card">
+      <div class="card" style="margin-top: 1rem;">
         <div class="card-body">
-          <div class="text-muted mb-1" style="font-size: 12px;">DNI</div>
-          <div class="font-semibold">{{ ventaSeleccionada.dni }}</div>
+          <div class="text-muted mb-1" style="font-size: 12px; background-color: rgba(168, 236, 234, 0.312); border-radius: 1rem; margin-right: 28.5rem; padding-left:0.8rem;">DNI</div>
+          <div class="font-semibold" style="margin-left: 0.5rem ;">{{ ventaSeleccionada.dni }}</div>
         </div>
       </div>
     </div>
     
     <div class="card mb-4">
-      <div class="card-header">
-        <h4>Productos</h4>
+      <div class="card-header" style="background-color: rgba(245, 245, 220, 0.47);">
+        <h4>Consumo</h4>
       </div>
       <div class="card-body" style="padding: 0;">
         <table class="table" style="box-shadow: none; border-radius: 0;">
           <thead>
             <tr>
-              <th>Producto</th>
-              <th>Cant.</th>
-              <th>Precio Unit.</th>
-              <th>Subtotal</th>
+              <th style="background-color: #f680802d;">Productos</th>
+              <th style="background-color: #f680802d;">Cant.</th>
+              <th style="background-color: #f680802d;">Precio Unit.</th>
+              <th style="background-color: #f680802d;">Subtotal</th>
             </tr>
           </thead>
           <tbody>
@@ -170,18 +166,19 @@
       </div>
     </div>
     
+    
     <div class="d-flex justify-between items-center" style="background: var(--neutral-light); padding: 20px; border-radius: var(--radius);">
       <div>
-        <span class="text-muted" style="font-size: 14px;">Total de la venta:</span>
+        <span class="text-totalsell" style="font-size: 14px; margin-left: 18rem; color: rgb(55, 54, 54); margin-bottom: 0.5rem;">Total de la venta:</span>
       </div>
-      <div class="font-bold" style="font-size: 24px; color: var(--success);">S/ {{ ventaSeleccionada.total }}</div>
+      <div class="font-bold" style="font-size: 24px; color: var(--success); margin-left: 2rem; padding-left: 0;">S/ {{ ventaSeleccionada.total }}</div>
     </div>
     
-    <div class="d-flex justify-end gap-2 mt-4">
-      <button class="btn btn-outline" (click)="descargar(ventaSeleccionada)">
+    <div class="d-flex justify-end mt-4">
+      <button class="btn btn-outline" (click)="descargar(ventaSeleccionada)" style="margin-left: 20rem; background-color: rgb(255, 111, 0); color: white;">
         Descargar
       </button>
-      <button class="btn btn-primary" (click)="cerrarDetalle()">
+      <button class="btn btn-primary" (click)="cerrarDetalle()" style="margin-left: 1rem;">
         Cerrar
       </button>
     </div>

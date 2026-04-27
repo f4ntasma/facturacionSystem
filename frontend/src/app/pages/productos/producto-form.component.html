@@ -1,0 +1,106 @@
+<div class="fade-in">
+  
+  <!-- Page Header -->
+  <div class="d-flex justify-between items-center mb-4 w-100">
+    <div>
+      <h1 class="font-bold" style="font-size: 28px; color: var(--primary-blue);">{{ isEditing ? 'Editar Producto' : 'Nuevo Producto' }}</h1>
+      <p class="text-muted" style="font-size: 14px;">{{ isEditing ? 'Actualiza la información del producto' : 'Registra un nuevo producto en el inventario' }}</p>
+    </div>
+    <div class="text-right">
+      <button class="btn btn-outline" (click)="volver()">
+        Volver
+      </button>
+    </div>
+  </div>
+
+  <!-- Formulario -->
+  <div class="card">
+    <div class="card-header">
+      <h3>Información del Producto</h3>
+    </div>
+    <div class="card-body">
+      <form [formGroup]="productoForm" (ngSubmit)="onSubmit()">
+        <div class="grid grid-2">
+          <div class="form-group">
+            <label class="form-label">Nombre *</label>
+            <input type="text" 
+                   class="form-control" 
+                   formControlName="nombre" 
+                   placeholder="Nombre del producto">
+            <small class="text-error" 
+                   *ngIf="productoForm.get('nombre')?.invalid && productoForm.get('nombre')?.touched">
+              El nombre es requerido
+            </small>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Categoría</label>
+            <input type="text" 
+                   class="form-control" 
+                   formControlName="categoria" 
+                   placeholder="Categoría del producto">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Precio *</label>
+            <input type="number" 
+                   class="form-control" 
+                   formControlName="precio" 
+                   placeholder="0.00"
+                   [min]="0.01"
+                   step="0.01">
+            <small class="text-error" 
+                   *ngIf="productoForm.get('precio')?.invalid && productoForm.get('precio')?.touched">
+              El precio es requerido y debe ser mayor a 0
+            </small>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Stock *</label>
+            <input type="number" 
+                   class="form-control" 
+                   formControlName="stock" 
+                   placeholder="0"
+                   [min]="0">
+            <small class="text-error" 
+                   *ngIf="productoForm.get('stock')?.invalid && productoForm.get('stock')?.touched">
+              El stock es requerido
+            </small>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Descripción</label>
+          <input type="text" 
+                 class="form-control" 
+                 formControlName="descripcion" 
+                 placeholder="Descripción del producto">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Empresa ID *</label>
+          <input type="number" 
+                 class="form-control" 
+                 formControlName="empresaId" 
+                 placeholder="ID de la empresa">
+          <small class="text-error" 
+                 *ngIf="productoForm.get('empresaId')?.invalid && productoForm.get('empresaId')?.touched">
+            Debe ingresar el ID de la empresa
+          </small>
+        </div>
+
+        <div class="d-flex justify-end gap-2 mt-4">
+          <button class="btn btn-secondary" (click)="volver()">
+            Cancelar
+          </button>
+          <button class="btn btn-success" 
+                  [disabled]="productoForm.invalid || loading"
+                  (click)="onSubmit()">
+            {{ loading ? 'Guardando...' : (isEditing ? 'Actualizar' : 'Crear') }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+</div>

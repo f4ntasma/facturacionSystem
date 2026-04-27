@@ -25,28 +25,28 @@ export class ProductosListComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    console.log('🟢 ProductosListComponent INIT → navbar = productos');
+    console.log('ProductosListComponent INIT → navbar = productos');
     this.navbarService.cambiarNavbar('productos');
     this.loadProductos();
   }
 
   ngOnDestroy(): void {
-    console.log('🔴 ProductosListComponent DESTROY → navbar = main');
+    console.log('ProductosListComponent DESTROY → navbar = main');
     this.navbarService.cambiarNavbar('main');
   }
 
   loadProductos(): void {
     this.loading = true;
-    console.log('📦 Cargando productos...');
+    console.log('Cargando productos...');
 
     this.productoService.getProductos().subscribe({
       next: (productos) => {
-        console.log('✅ Productos cargados:', productos.length);
+        console.log('Productos cargados:', productos.length);
         this.productos = productos;
         this.loading = false;
       },
       error: (error) => {
-        console.error('❌ Error cargando productos:', error);
+        console.error('Error cargando productos:', error);
         this.loading = false;
       }
     });
@@ -71,14 +71,14 @@ export class ProductosListComponent implements OnInit, OnDestroy {
   }
 
   eliminarProducto(id: number): void {
-    console.log('🗑️ Eliminando producto', id);
+    console.log('Eliminando producto', id);
     this.productoService.deleteProducto(id).subscribe({
       next: () => {
-        console.log('✅ Producto eliminado');
+        console.log('Producto eliminado');
         this.loadProductos();
       },
       error: (error) => {
-        console.error('❌ Error eliminando producto:', error);
+        console.error('Error eliminando producto:', error);
       }
     });
   }

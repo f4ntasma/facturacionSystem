@@ -1,0 +1,94 @@
+<div class="fade-in">
+  
+  <!-- Page Header -->
+  <div class="d-flex justify-between items-center mb-4 w-100">
+    <div>
+      <h1 class="font-bold" style="font-size: 28px; color: var(--primary-blue);">Gestión de Facturas</h1>
+      <p class="text-muted" style="font-size: 14px;">Facturación electrónica y comprobantes</p>
+    </div>
+    <div class="text-right">
+      <button class="btn btn-success" routerLink="/facturas/nueva">
+        Nueva Factura
+      </button>
+    </div>
+  </div>
+
+  <!-- Buscador -->
+  <div class="card mb-4">
+    <div class="card-body">
+      <div class="form-group">
+        <label class="form-label">Buscar Factura</label>
+        <input type="text" 
+               class="form-control" 
+               placeholder="Ingrese número, cliente o RUC..."
+               [(ngModel)]="searchTerm"
+               (input)="onGlobalFilter($event)">
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabla de Facturas -->
+  <div class="card">
+    <div class="card-header">
+      <div class="d-flex justify-between items-center w-100">
+        <h3>Facturas Emitidas</h3>
+        <span class="badge badge-purple">{{ facturas.length }} Facturas</span>
+      </div>
+    </div>
+    <div class="card-body">
+      <div *ngIf="loading" class="d-flex justify-center items-center" style="padding: 48px;">
+        <div class="spinner"></div>
+      </div>
+      
+      <table class="table" *ngIf="!loading">
+        <thead>
+          <tr>
+            <th>Número</th>
+            <th>Fecha</th>
+            <th>Cliente</th>
+            <th>RUC</th>
+            <th>Total</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let factura of facturas">
+            <td class="font-bold text-primary">{{ factura.numero }}</td>
+            <td>{{ factura.fecha | date:'dd/MM/yyyy' }}</td>
+            <td class="font-medium">{{ factura.clienteNombre }}</td>
+            <td class="text-muted">{{ factura.clienteRuc || '-' }}</td>
+            <td class="font-bold" style="font-size: 16px; color: var(--success);">${{ factura.total | number:'1.2-2' }}</td>
+            <td>
+              <span class="badge" [ngClass]="getEstadoClass(factura.estado)">
+                {{ factura.estado || 'PENDIENTE' }}
+              </span>
+            </td>
+            <td>
+              <div class="d-flex gap-2">
+                <button class="btn btn-sm btn-ghost" [routerLink]="['/facturas', factura.id]" title="Ver detalles">
+                  Ver
+                </button>
+                <button class="btn btn-sm btn-ghost" (click)="descargarPDF(factura.id!)" title="Descargar PDF">
+                  PDF
+                </button>
+                <button class="btn btn-sm btn-ghost" [routerLink]="['/facturas', factura.id, 'editar']" title="Editar">
+                  Editar
+                </button>
+                <button class="btn btn-sm btn-danger" (click)="confirmarEliminar(factura)" title="Eliminar">
+                  Eliminar
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      
+      <div *ngIf="!loading && facturas.length === 0" class="empty-state">
+        <h3 style="text-align: center; color: var(--neutral-gray);">No hay facturas registradas</h3>
+        <p style="text-align: center; color: var(--neutral-gray);">Crea una nueva factura para comenzar</p>
+      </div>
+    </div>
+  </div>
+
+</div>

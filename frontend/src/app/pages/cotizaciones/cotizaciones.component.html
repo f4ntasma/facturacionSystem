@@ -113,25 +113,22 @@
 <!-- Modal de Detalle -->
 <div *ngIf="mostrarDetalle" 
      class="modal-overlay"
-     style="position: fixed; inset: 0; background: rgba(0, 0, 0, 0.6); 
+     style="position: fixed; inset: 0; background: rgba(2, 2, 2, 0.6); 
             display: flex; align-items: center; justify-content: center; z-index: 1000;">
   
   <div class="modal-content" 
-       style="background: var(--white); padding: 32px; width: 600px; 
-              border-radius: var(--radius-lg); box-shadow: var(--shadow-xl);
+       style="background: #fff; padding: 32px; width: 600px; 
+              border-radius: 1rem; box-shadow: var(--shadow-xl);
               animation: slideUp 0.3s ease-out;">
     
     <div class="d-flex justify-between items-center mb-4">
-      <h2 style="color: var(--accent-purple); margin: 0;">Detalle de Cotización</h2>
-      <button class="btn btn-sm btn-ghost" (click)="cerrarDetalle()">
-        Cerrar
-      </button>
+      <h2 style="color: rgb(2, 2, 2); margin: 0;">Detalle de Cotización</h2>
     </div>
     
     <div class="card mb-4">
       <div class="card-body">
-        <div class="text-muted mb-1" style="font-size: 12px;">Cliente</div>
-        <div class="font-semibold" style="font-size: 18px;">{{ cotizacionSeleccionada.cliente }}</div>
+        <div class="text-muted mb-1" style="font-size: 12px; background-color: rgba(236, 199, 168, 0.59); border-radius: 1rem; margin-right: 28rem; padding-left:0.5rem;">Cliente</div>
+        <div class="font-semibold" style="font-size: 18px; margin-left: 0.5rem;">{{ cotizacionSeleccionada.cliente }}</div>
       </div>
     </div>
     
@@ -163,16 +160,16 @@
     
     <div class="d-flex justify-between items-center" style="background: var(--neutral-light); padding: 20px; border-radius: var(--radius);">
       <div>
-        <span class="text-muted" style="font-size: 14px;">Total de la cotización:</span>
+        <span class="text-muted" style="font-size: 14px; margin-left: 17rem; color: rgb(55, 54, 54); margin-bottom: 0.5rem;">Total de la cotización:</span>
       </div>
-      <div class="font-bold" style="font-size: 24px; color: var(--accent-purple);">S/ {{ cotizacionSeleccionada.total }}</div>
+      <div class="font-bold" style="font-size: 24px; color: var(--accent-purple); margin-left: 1rem; padding-left: 0;">S/ {{ cotizacionSeleccionada.total }}</div>
     </div>
     
     <div class="d-flex justify-end gap-2 mt-4">
-      <button class="btn btn-outline" (click)="descargar(cotizacionSeleccionada)">
+      <button class="btn btn-outline" (click)="descargar(cotizacionSeleccionada)" style="margin-left: 21rem; background-color: rgb(255, 111, 0); color: white;">
         Descargar
       </button>
-      <button class="btn btn-primary" (click)="cerrarDetalle()">
+      <button class="btn btn-primary" (click)="cerrarDetalle()" style="margin-left: 1rem;">
         Cerrar
       </button>
     </div>

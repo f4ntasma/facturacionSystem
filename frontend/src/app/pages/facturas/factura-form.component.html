@@ -1,0 +1,151 @@
+<div class="fade-in">
+  
+  <!-- Page Header -->
+  <div class="d-flex justify-between items-center mb-4 w-100">
+    <div>
+      <h1 class="font-bold" style="font-size: 28px; color: var(--primary-blue);">{{ isEditing ? 'Editar Factura' : 'Nueva Factura' }}</h1>
+      <p class="text-muted" style="font-size: 14px;">{{ isEditing ? 'Actualiza la información de la factura' : 'Emite una nueva factura electrónica' }}</p>
+    </div>
+    <div class="text-right">
+      <button class="btn btn-outline" (click)="volver()">
+        Volver
+      </button>
+    </div>
+  </div>
+
+  <!-- Información del Cliente -->
+  <div class="card mb-4">
+    <div class="card-header">
+      <h3>Información del Cliente</h3>
+    </div>
+    <div class="card-body">
+      <form [formGroup]="facturaForm">
+        <div class="grid grid-3">
+          <div class="form-group">
+            <label class="form-label">Nombre del Cliente *</label>
+            <input type="text" 
+                   class="form-control" 
+                   formControlName="clienteNombre" 
+                   placeholder="Nombre del cliente">
+          </div>
+          <div class="form-group">
+            <label class="form-label">RUC</label>
+            <input type="text" 
+                   class="form-control" 
+                   formControlName="clienteRuc" 
+                   placeholder="RUC del cliente">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Empresa ID *</label>
+            <input type="number" 
+                   class="form-control" 
+                   formControlName="empresaId" 
+                   placeholder="ID de la empresa">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Dirección</label>
+          <input type="text" 
+                 class="form-control" 
+                 formControlName="clienteDireccion" 
+                 placeholder="Dirección del cliente">
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Items de la Factura -->
+  <div class="card mb-4">
+    <div class="card-header">
+      <div class="d-flex justify-between items-center w-100">
+        <h3>Items de la Factura</h3>
+        <button class="btn btn-success btn-sm" (click)="agregarItem()">
+          Agregar Item
+        </button>
+      </div>
+    </div>
+    <div class="card-body">
+      <form [formGroup]="facturaForm">
+        <div formArrayName="items">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Producto ID</th>
+                <th>Cantidad</th>
+                <th>Precio</th>
+                <th>Subtotal</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of items.controls; let i = index" [formGroupName]="i">
+                <td>
+                  <input type="number" 
+                         class="form-control" 
+                         formControlName="productoId" 
+                         placeholder="ID">
+                </td>
+                <td>
+                  <input type="number" 
+                         class="form-control" 
+                         formControlName="cantidad" 
+                         [min]="1"
+                         (input)="calcularSubtotal(i)">
+                </td>
+                <td>
+                  <input type="number" 
+                         class="form-control" 
+                         formControlName="precio" 
+                         [readonly]="true">
+                </td>
+                <td class="font-bold">${{ getSubtotal(i) | number:'1.2-2' }}</td>
+                <td>
+                  <button class="btn btn-sm btn-danger" (click)="eliminarItem(i)">
+                    Eliminar
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </form>
+      
+      <div *ngIf="items.length === 0" class="empty-state">
+        <p style="text-align: center; color: var(--neutral-gray);">No hay items agregados</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Totales -->
+  <div class="card mb-4">
+    <div class="card-body">
+      <div class="d-flex justify-between items-center" style="background: var(--neutral-light); padding: 20px; border-radius: var(--radius);">
+        <div>
+          <div class="text-muted" style="font-size: 14px;">Subtotal:</div>
+          <div class="font-semibold" style="font-size: 18px;">${{ subtotal | number:'1.2-2' }}</div>
+        </div>
+        <div>
+          <div class="text-muted" style="font-size: 14px;">Impuesto (12%):</div>
+          <div class="font-semibold" style="font-size: 18px;">${{ impuesto | number:'1.2-2' }}</div>
+        </div>
+        <div>
+          <div class="text-muted" style="font-size: 14px;">Total:</div>
+          <div class="font-bold" style="font-size: 24px; color: var(--success);">${{ total | number:'1.2-2' }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Botones -->
+  <div class="d-flex justify-end gap-2">
+    <button class="btn btn-secondary" (click)="volver()">
+      Cancelar
+    </button>
+    <button class="btn btn-success" 
+            [disabled]="facturaForm.invalid || items.length === 0 || loading"
+            (click)="onSubmit()">
+      {{ loading ? 'Guardando...' : (isEditing ? 'Actualizar' : 'Crear') }}
+    </button>
+  </div>
+
+</div>

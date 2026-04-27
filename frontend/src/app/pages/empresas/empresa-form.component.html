@@ -1,0 +1,95 @@
+<div class="fade-in">
+  
+  <!-- Page Header -->
+  <div class="d-flex justify-between items-center mb-4 w-100">
+    <div>
+      <h1 class="font-bold" style="font-size: 28px; color: var(--primary-blue);">{{ isEditing ? 'Editar Empresa' : 'Nueva Empresa' }}</h1>
+      <p class="text-muted" style="font-size: 14px;">{{ isEditing ? 'Actualiza la información de la empresa' : 'Registra una nueva empresa en el sistema' }}</p>
+    </div>
+    <div class="text-right">
+      <button class="btn btn-outline" (click)="volver()">
+        Volver
+      </button>
+    </div>
+  </div>
+
+  <!-- Formulario -->
+  <div class="card">
+    <div class="card-header">
+      <h3>Información de la Empresa</h3>
+    </div>
+    <div class="card-body">
+      <form [formGroup]="empresaForm" (ngSubmit)="onSubmit()">
+        <div class="grid grid-2">
+          <div class="form-group">
+            <label class="form-label">Nombre *</label>
+            <input type="text" 
+                   class="form-control" 
+                   formControlName="nombre" 
+                   placeholder="Nombre de la empresa">
+            <small class="text-error" 
+                   *ngIf="empresaForm.get('nombre')?.invalid && empresaForm.get('nombre')?.touched">
+              El nombre es requerido
+            </small>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">RUC *</label>
+            <input type="text" 
+                   class="form-control" 
+                   formControlName="ruc" 
+                   placeholder="RUC de la empresa">
+            <small class="text-error" 
+                   *ngIf="empresaForm.get('ruc')?.invalid && empresaForm.get('ruc')?.touched">
+              El RUC es requerido
+            </small>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Teléfono</label>
+            <input type="text" 
+                   class="form-control" 
+                   formControlName="telefono" 
+                   placeholder="Teléfono de contacto">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Email</label>
+            <input type="email" 
+                   class="form-control" 
+                   formControlName="email" 
+                   placeholder="Email de contacto">
+            <small class="text-error" 
+                   *ngIf="empresaForm.get('email')?.invalid && empresaForm.get('email')?.touched">
+              Ingrese un email válido
+            </small>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Dirección *</label>
+          <input type="text" 
+                 class="form-control" 
+                 formControlName="direccion" 
+                 placeholder="Dirección de la empresa">
+          <small class="text-error" 
+                 *ngIf="empresaForm.get('direccion')?.invalid && empresaForm.get('direccion')?.touched">
+            La dirección es requerida
+          </small>
+        </div>
+
+        <div class="d-flex justify-end gap-2 mt-4">
+          <button class="btn btn-secondary" (click)="volver()">
+            Cancelar
+          </button>
+          <button class="btn btn-success" 
+                  [disabled]="empresaForm.invalid || loading"
+                  (click)="onSubmit()">
+            {{ loading ? 'Guardando...' : (isEditing ? 'Actualizar' : 'Crear') }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+</div>

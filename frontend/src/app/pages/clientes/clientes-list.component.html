@@ -1,0 +1,85 @@
+<div class="fade-in">
+  
+  <!-- Page Header -->
+  <div class="d-flex justify-between items-center mb-4 w-100">
+    <div>
+      <h1 class="font-bold" style="font-size: 28px; color: var(--primary-blue);">Gestión de Clientes</h1>
+      <p class="text-muted" style="font-size: 14px;">Registro y administración de clientes</p>
+    </div>
+    <div class="text-right">
+      <button class="btn btn-success" routerLink="/clientes/nuevo">
+        Nuevo Cliente
+      </button>
+    </div>
+  </div>
+
+  <!-- Buscador -->
+  <div class="card mb-4">
+    <div class="card-body">
+      <div class="form-group">
+        <label class="form-label">Buscar Cliente</label>
+        <input type="text" 
+               class="form-control" 
+               placeholder="Ingrese nombre, apellido o DNI..."
+               [(ngModel)]="searchTerm"
+               (input)="onGlobalFilter($event)">
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabla de Clientes -->
+  <div class="card">
+    <div class="card-header">
+      <div class="d-flex justify-between items-center w-100">
+        <h3>Clientes Registrados</h3>
+        <span class="badge badge-purple">{{ clientes.length }} Clientes</span>
+      </div>
+    </div>
+    <div class="card-body">
+      <div *ngIf="loading" class="d-flex justify-center items-center" style="padding: 48px;">
+        <div class="spinner"></div>
+      </div>
+      
+      <table class="table" *ngIf="!loading">
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>Apellido</th>
+            <th>DNI</th>
+            <th>Teléfono</th>
+            <th>Email</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let cliente of clientes">
+            <td class="font-medium">{{ cliente.nombre }}</td>
+            <td class="font-medium">{{ cliente.apellido }}</td>
+            <td class="font-bold text-primary">{{ cliente.dni }}</td>
+            <td>{{ cliente.telefono || '-' }}</td>
+            <td>{{ cliente.email || '-' }}</td>
+            <td>
+              <div class="d-flex gap-2">
+                <button class="btn btn-sm btn-ghost" [routerLink]="['/clientes', cliente.id]" title="Ver detalles">
+                  Ver
+                </button>
+                <button class="btn btn-sm btn-ghost" [routerLink]="['/clientes', cliente.id, 'editar']" title="Editar">
+                  Editar
+                </button>
+                <button class="btn btn-sm btn-danger" (click)="eliminarCliente(cliente.id!)" title="Eliminar">
+                  Eliminar
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      
+      <div *ngIf="!loading && clientes.length === 0" class="empty-state">
+        <h3 style="text-align: center; color: var(--neutral-gray);">No hay clientes registrados</h3>
+        <p style="text-align: center; color: var(--neutral-gray);">Crea un nuevo cliente para comenzar</p>
+      </div>
+    </div>
+  </div>
+
+</div>

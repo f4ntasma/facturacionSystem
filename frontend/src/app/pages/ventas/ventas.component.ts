@@ -112,7 +112,6 @@ export class VentasComponent implements OnInit {
     venta.menuAbierto = !venta.menuAbierto;
   }
 
-  // ✅ CORREGIDO
   verDetalle(venta: Venta) {
     this.ventasFiltradas.forEach(v => v.menuAbierto = false);
     this.ventaSeleccionada = venta;

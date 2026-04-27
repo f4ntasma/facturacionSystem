@@ -68,3 +68,17 @@ body{font-family:Segoe UI,Roboto,Helvetica Neue,Arial,sans-serif;background:var(
 .mb-4{margin-bottom:32px}
 .p-4{padding:32px}
 .gap-2{gap:8px}
+.empty-state{padding:48px 24px;text-align:center}
+.empty-state h3{font-size:20px;color:var(--neutral-gray);margin-bottom:8px}
+.empty-state p{font-size:14px;color:var(--neutral-gray);margin:0}
+.error-state{padding:48px 24px;text-align:center;background:var(--error-light);border-radius:var(--radius-md);border:2px solid var(--error)}
+.error-state h3{font-size:20px;color:var(--error);margin-bottom:8px}
+.error-state p{font-size:14px;color:var(--neutral-gray);margin:0}
+.error-icon{font-size:48px;margin-bottom:16px}
+.text-error{color:var(--error)}
+.text-success{color:var(--success)}
+.text-purple{color:var(--accent-purple)}
+.badge-success{background:var(--success-light);color:var(--success);border:1px solid var(--success)}
+.badge-warning{background:var(--warning-light);color:var(--warning);border:1px solid var(--warning)}
+.badge-error{background:var(--error-light);color:var(--error);border:1px solid var(--error)}
+.badge-info{background:var(--info-light);color:var(--info);border:1px solid var(--info)}

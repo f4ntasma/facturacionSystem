@@ -35,8 +35,10 @@ export class App implements OnInit {
   }
 
   private checkRoute(url: string) {
-    // Ocultar layout en la página de login
-    this.showLayout = !url.includes('/login');
+    // Ocultar layout en la página de login, landing page y cualquier ruta que no sea /app/*
+    const isLandingOrLogin = url === '/' || url.includes('/login');
+    const isAppRoute = url.startsWith('/app');
+    this.showLayout = isAppRoute && !isLandingOrLogin;
     console.log('Current URL:', url, 'Show Layout:', this.showLayout);
   }
 }
