@@ -599,7 +599,7 @@
 </style>
 
 <!-- ====== NAVBAR ====== -->
-<nav class="navbar">
+<!-- <nav class="navbar">
   <div class="navbar-inner">
     <div class="navbar-left">
       <img src="/svg/iconFactulow.png" alt="Factullama Logo" style="height: 40px;">
@@ -618,7 +618,33 @@
     </div>
   </div>
 </nav>
-
+-->
+<nav class="navbar navbar-expand-md bg-inverse fixed-top scrolling-navbar svelte-6a1rqy" style="--background: linear-gradient(95deg, #8e44ad 40%, #d287f2 100%);">
+  <div class="container">
+    <a href="/" class="navbar-brand svelte-6a1rqy">
+      <img src="/svg/iconFactulow.png" alt="Factullama Logo" class="svelte-6a1rqy" style="height: 45px;"><a style="font-family: 'Nunito', sans-serif; font-weight: bold; font-size: 24px;">FACTULLAMA</a>
+    </a> 
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+      <i class="lni-menu"></i>
+    </button>   
+    <div class="collapse navbar-collapse" id="navbarCollapse">
+      <ul class="navbar-nav mr-auto w-100 justify-content-end">
+        <li class="nav-item">
+          <a class="nav-link page-scroll" href="/#home">Inicio</a>
+        </li> 
+        <li class="nav-item">
+          <a class="nav-link page-scroll" href="/#products">Productos</a>
+        </li> 
+        <li class="nav-item">
+          <a class="nav-link page-scroll" href="/#nosotros">Nosotros</a>
+        </li> 
+        <li class="nav-item">
+          <a class="btn btn-singin" href="/admin" target="_blank">Login/Sigin</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
 <!-- ====== HERO ====== -->
 <section id="home" class="hero">
   <div class="hero-circle"></div>
