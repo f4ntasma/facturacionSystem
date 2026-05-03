@@ -25,16 +25,16 @@ export class NavbarComponent implements OnInit {
   }
 
   private detectarModo(url: string) {
-    this.modo = url.startsWith('/productos') ? 'productos' : 'ventas';
+    this.modo = url.startsWith('/app/productos') ? 'productos' : 'ventas';
   }
 
   // Ventas
-  irAMesas() { this.router.navigate(['/pisos/1']); }
-  irAVentas() { this.router.navigate(['/ventas']); }
-  irACotizaciones() { this.router.navigate(['/cotizaciones']); }
+  irAMesas() { this.router.navigate(['/app/pisos/1']); }
+  irAVentas() { this.router.navigate(['/app/ventas']); }
+  irACotizaciones() { this.router.navigate(['/app/cotizaciones']); }
 
   // Productos
-  irAProductos() { this.router.navigate(['/productos']); }
-  irACombos() { this.router.navigate(['/combos']); }
-  irACategorias() { this.router.navigate(['/categorias']); }
+  irAProductos() { this.router.navigate(['/app/productos']); }
+  irACombos() { this.router.navigate(['/app/combos']); }
+  irACategorias() { this.router.navigate(['/app/categorias']); }
 }

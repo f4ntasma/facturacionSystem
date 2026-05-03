@@ -7,7 +7,7 @@
       <p class="text-muted" style="font-size: 14px;">{{ isEditing ? 'Actualiza la información del cliente' : 'Registra un nuevo cliente en el sistema' }}</p>
     </div>
     <div class="text-right">
-      <button class="btn btn-outline" (click)="volver()">
+      <button class="btn btn-outline" style="background-color: rgb(210, 95, 210); margin-left: 56rem; color: #f8f8f8" (click)="volver()">
         Volver
       </button>
     </div>
@@ -27,7 +27,7 @@
                    class="form-control" 
                    formControlName="nombre" 
                    placeholder="Nombre del cliente">
-            <small class="text-error" 
+            <small class="text-error" style="color: red;"
                    *ngIf="clienteForm.get('nombre')?.invalid && clienteForm.get('nombre')?.touched">
               El nombre es requerido
             </small>
@@ -39,7 +39,7 @@
                    class="form-control" 
                    formControlName="apellido" 
                    placeholder="Apellido del cliente">
-            <small class="text-error" 
+            <small class="text-error" style="color: red;"
                    *ngIf="clienteForm.get('apellido')?.invalid && clienteForm.get('apellido')?.touched">
               El apellido es requerido
             </small>
@@ -51,7 +51,7 @@
                    class="form-control" 
                    formControlName="dni" 
                    placeholder="DNI del cliente">
-            <small class="text-error" 
+            <small class="text-error" style="color: red;" 
                    *ngIf="clienteForm.get('dni')?.invalid && clienteForm.get('dni')?.touched">
               El DNI es requerido
             </small>

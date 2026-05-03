@@ -69,7 +69,7 @@ export class ClienteFormComponent implements OnInit {
       operation.subscribe({
         next: (cliente) => {
           this.loading = false;
-          this.router.navigate(['/clientes']);
+          this.router.navigate(['/app/clientes']);
         },
         error: (error) => {
           console.error('Error guardando cliente:', error);
@@ -80,6 +80,6 @@ export class ClienteFormComponent implements OnInit {
   }
 
   volver() {
-    this.router.navigate(['/clientes']);
+    this.router.navigate(['/app/clientes']);
   }
 }

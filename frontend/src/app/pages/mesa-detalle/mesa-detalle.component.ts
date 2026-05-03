@@ -50,7 +50,7 @@ export class MesaDetalleComponent implements OnInit {
   }
 
   volver() {
-    this.router.navigate(['/mesas']);
+    this.router.navigate(['/app/pisos/1']);
   }
 
   abrirModal(plato: Plato) {

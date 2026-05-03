@@ -10,11 +10,11 @@ export class NavbarService {
   navbar$ = this.navbarSource.asObservable();
 
   constructor() {
-    console.log('🧠 NavbarService INSTANCIADO');
+    console.log('NavbarService Inst...');
   }
 
   cambiarNavbar(mode: NavbarMode) {
-    console.log('🧭 NavbarService → cambiarNavbar:', mode);
+    console.log('NvSc → changerNv:', mode);
     this.navbarSource.next(mode);
   }
 }

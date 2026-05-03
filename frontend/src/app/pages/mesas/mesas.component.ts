@@ -51,7 +51,7 @@ export class MesasComponent {
   }
 
   abrirMesa(mesa: Mesa) {
-    this.router.navigate(['/mesa', mesa.id]);
+    this.router.navigate(['/app/mesa', mesa.id]);
   }
 
   agregarMesa() {
@@ -86,17 +86,17 @@ export class MesasComponent {
   }
 
   /* =====================================================
-     🔴 NUEVA LÓGICA: ELIMINAR + CREAR EN OTRO PISO
+    NUEVA LÓGICA: ELIMINAR + CREAR EN OTRO PISO
      ===================================================== */
   guardarCambiosMesa() {
     if (!this.mesaEditando) return;
 
     const mesaOriginal = this.mesaEditando;
 
-    // 1️⃣ eliminar la mesa original
+    // 1. Eliminar la mesa original
     this.mesas = this.mesas.filter(m => m.id !== mesaOriginal.id);
 
-    // 2️⃣ crear nueva mesa en el piso seleccionado
+    // 2. Crear nueva mesa en el piso seleccionado
     const nuevoId = this.mesas.length
       ? Math.max(...this.mesas.map(m => m.id)) + 1
       : 1;
@@ -107,10 +107,10 @@ export class MesasComponent {
       piso: this.formMesa.piso
     });
 
-    // 3️⃣ cambiar vista al nuevo piso
+    // 3. Cambiar vista al nuevo piso
     this.pisoActual = this.formMesa.piso;
 
-    // limpiar estado
+    // 4. Limpiar estado
     this.mesaEditando = null;
     this.openDropdownId = null;
   }

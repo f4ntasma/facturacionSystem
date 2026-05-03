@@ -7,7 +7,7 @@
       <p class="text-muted" style="font-size: 14px;">Facturación electrónica y comprobantes</p>
     </div>
     <div class="text-right">
-      <button class="btn btn-success" routerLink="/facturas/nueva">
+      <button class="btn btn-success" routerLink="/app/facturas/nueva">
         Nueva Factura
       </button>
     </div>
@@ -66,13 +66,13 @@
             </td>
             <td>
               <div class="d-flex gap-2">
-                <button class="btn btn-sm btn-ghost" [routerLink]="['/facturas', factura.id]" title="Ver detalles">
+                <button class="btn btn-sm btn-ghost" [routerLink]="['/app/facturas', factura.id]" title="Ver detalles">
                   Ver
                 </button>
                 <button class="btn btn-sm btn-ghost" (click)="descargarPDF(factura.id!)" title="Descargar PDF">
                   PDF
                 </button>
-                <button class="btn btn-sm btn-ghost" [routerLink]="['/facturas', factura.id, 'editar']" title="Editar">
+                <button class="btn btn-sm btn-ghost" [routerLink]="['/app/facturas', factura.id, 'editar']" title="Editar">
                   Editar
                 </button>
                 <button class="btn btn-sm btn-danger" (click)="confirmarEliminar(factura)" title="Eliminar">

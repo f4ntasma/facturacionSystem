@@ -7,7 +7,7 @@
       <p class="text-muted" style="font-size: 14px;">Registro y administración de empresas</p>
     </div>
     <div class="text-right">
-      <button class="btn btn-success" routerLink="/empresas/nueva">
+      <button class="btn btn-success" routerLink="/app/empresas/nueva">
         Nueva Empresa
       </button>
     </div>
@@ -69,10 +69,10 @@
             <td>{{ empresa.email || '-' }}</td>
             <td>
               <div class="d-flex gap-2">
-                <button class="btn btn-sm btn-ghost" [routerLink]="['/empresas', empresa.id]" title="Ver detalles">
+                <button class="btn btn-sm btn-ghost" [routerLink]="['/app/empresas', empresa.id]" title="Ver detalles">
                   Ver
                 </button>
-                <button class="btn btn-sm btn-ghost" [routerLink]="['/empresas', empresa.id, 'editar']" title="Editar">
+                <button class="btn btn-sm btn-ghost" [routerLink]="['/app/empresas', empresa.id, 'editar']" title="Editar">
                   Editar
                 </button>
                 <button class="btn btn-sm btn-danger" (click)="confirmarEliminar(empresa)" title="Eliminar">

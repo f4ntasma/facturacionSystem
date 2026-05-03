@@ -88,7 +88,7 @@ export class LoginComponent {
 
     constructor(
         private router: Router,
-        // ❌ BACKEND DESACTIVADO
+        // BACKEND DESACTIVADO
         // private authService: AuthService
     ) {}
 
@@ -104,20 +104,20 @@ export class LoginComponent {
         this.errorMessage = '';
 
         // ================================
-        // ❌ LOGIN CON BACKEND (DESACTIVADO)
+        // LOGIN CON BACKEND (DESACTIVADO)
         // ================================
         /*
         this.authService.login({
             username: this.username,
             password: this.password
         }).subscribe({
-            next: () => this.router.navigate(['/pisos/1']),
+            next: () => this.router.navigate(['/app/ventas']),
             error: () => this.errorMessage = 'Credenciales incorrectas'
         });
         */
 
         // ================================
-        // ✅ LOGIN LOCAL (ACTIVO)
+        // LOGIN LOCAL (ACTIVO)
         // ================================
         setTimeout(() => {
             this.isLoading = false;
@@ -126,7 +126,7 @@ export class LoginComponent {
             localStorage.setItem('isLogged', 'true');
 
             // Redirección
-            this.router.navigate(['/pisos/1']);
+            this.router.navigate(['/app/ventas']);
         }, 500);
     }
 }

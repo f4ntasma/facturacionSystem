@@ -204,7 +204,7 @@ export class FacturaFormComponent implements OnInit {
             detail: `Factura ${this.isEditing ? 'actualizada' : 'creada'} correctamente`
           });
           setTimeout(() => {
-            this.router.navigate(['/facturas']);
+            this.router.navigate(['/app/facturas']);
           }, 1500);
         },
         error: (error) => {
@@ -221,6 +221,6 @@ export class FacturaFormComponent implements OnInit {
   }
 
   volver() {
-    this.router.navigate(['/facturas']);
+    this.router.navigate(['/app/facturas']);
   }
 }

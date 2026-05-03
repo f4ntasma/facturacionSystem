@@ -113,7 +113,7 @@ export class ProductoFormComponent implements OnInit {
             detail: `Producto ${this.isEditing ? 'actualizado' : 'creado'} correctamente`
           });
           setTimeout(() => {
-            this.router.navigate(['/productos']);
+            this.router.navigate(['/app/productos']);
           }, 1500);
         },
         error: (error) => {
@@ -130,6 +130,6 @@ export class ProductoFormComponent implements OnInit {
   }
 
   volver() {
-    this.router.navigate(['/productos']);
+    this.router.navigate(['/app/productos']);
   }
 }

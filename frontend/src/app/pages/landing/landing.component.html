@@ -65,7 +65,7 @@
 
   .nav-links {
     display: flex;
-    gap: 50px;
+    gap: 80px;
     list-style: none;
   }
 
@@ -73,7 +73,7 @@
     font-family: 'Playfair Display', Georgia, serif;
     font-size: 15px;
     font-weight: 500;
-    color: var(--black);
+    color: black;
     transition: color .25s;
     cursor: pointer;
   }
@@ -239,7 +239,7 @@
   }
 
   .petWeb {
-    max-width: 120%;
+    max-width: 150%;
     height: auto;
     display: block;
     margin: 0 auto;  
@@ -356,7 +356,7 @@
   .prod-card.popular { border-color: var(--blue); box-shadow: 0 0 0 2px var(--blue); }
 
   .prod-thumb {
-    height: 160px;
+    height: 60px;
     background: linear-gradient(135deg, var(--blue), var(--purple));
     display: flex;
     align-items: center;
@@ -372,7 +372,7 @@
     bottom: -20px; left: 0; right: 0;
     height: 40px;
     background: var(--white);
-    clip-path: ellipse(55% 100% at 50% 100%);
+    clip-path: ellipse(70% 100% at 50% 100%);
   }
 
   .prod-thumb.purple-thumb { background: linear-gradient(135deg, var(--purple), var(--blue)); }
@@ -384,7 +384,7 @@
     display: inline-block;
     background: #eff6ff;
     color: var(--blue);
-    font-size: 11px;
+    font-size: 17 px;
     font-weight: 600;
     padding: 3px 10px;
     border-radius: 20px;
@@ -630,16 +630,16 @@
     <div class="collapse navbar-collapse" id="navbarCollapse">
       <ul class="navbar-nav mr-auto w-100 justify-content-end">
         <li class="nav-item">
-          <a class="nav-link page-scroll" href="/#home">Inicio</a>
+          <a class="nav-link page-scroll" style="margin-right: 1rem;" href="/#home">Inicio</a>
         </li> 
         <li class="nav-item">
-          <a class="nav-link page-scroll" href="/#products">Productos</a>
+          <a class="nav-link page-scroll" style="margin-right: 1rem;" href="/#products">Productos</a>
         </li> 
         <li class="nav-item">
-          <a class="nav-link page-scroll" href="/#nosotros">Nosotros</a>
+          <a class="nav-link page-scroll" style="margin-right: 1rem;" href="/#nosotros">Nosotros</a>
         </li> 
         <li class="nav-item">
-          <a class="btn btn-singin" href="/admin" target="_blank">Login/Sigin</a>
+          <a class="btn btn-singin" style="background-color: #2d52b8; color: #f8f8f8; margin-left: 2rem;" href="/login">Login/Sigin</a>
         </li>
       </ul>
     </div>
@@ -715,38 +715,80 @@
     </div>
     <div class="products-grid">
       <div class="prod-card">
-        <div class="prod-thumb">🏪</div>
+        <div class="prod-thumb"></div>
         <div class="prod-body">
           <div class="prod-badge">Básico</div>
           <h3>Factullama Básico</h3>
           <p>Ideal para pequeños negocios que inician</p>
+          <li style="list-style: none; padding: 0; margin: 0;">
+            <ul style="padding: 0;">Gratis por 30 días</ul>
+            <ul style="padding: 0;">250 comprobantes por mes</ul>
+            <ul style="padding: 0;">250 comprobantes por mes</ul>
+            <ul style="padding: 0;">1 local 1 usuario</ul>
+            <ul style="padding: 0;">1 local 1 usuario</ul>
+          </li>
           <div class="prod-price">S/ 99 <span>/ mes</span></div>
         </div>
       </div>
       <div class="prod-card popular">
-        <div class="prod-thumb purple-thumb">🏢</div>
+        <div class="prod-thumb purple-thumb"></div>
         <div class="prod-body">
           <div class="prod-badge popular-badge">★ Más popular</div>
           <h3>Factullama Pro</h3>
           <p>Para empresas en crecimiento acelerado</p>
+          <li style="list-style: none; padding: 0; margin: 0;">
+            <ul style="padding: 0;">Gratis por 30 días</ul>
+            <ul style="padding: 0;">250 comprobantes por mes</ul>
+            <ul style="padding: 0;">250 comprobantes por mes</ul>
+            <ul style="padding: 0;">250 comprobantes por mes</ul>
+            <ul style="padding: 0;">1 local 1 usuario</ul>
+            <ul style="padding: 0;">1 local 1 usuario</ul>
+            <ul style="padding: 0;">1 local 1 usuario</ul>
+          </li>
           <div class="prod-price purple-price">S/ 199 <span>/ mes</span></div>
         </div>
       </div>
       <div class="prod-card">
-        <div class="prod-thumb">🏭</div>
+        <div class="prod-thumb"></div>
         <div class="prod-body">
           <div class="prod-badge">Enterprise</div>
           <h3>Factullama Enterprise</h3>
           <p>Solución completa para grandes empresas</p>
+          <li style="list-style: none; padding: 0; margin: 0;">
+            <ul style="padding: 0;"> Gratis por 30 días</ul>
+            <ul style="padding: 0;">250 comprobantes por mes</ul>
+            <ul style="padding: 0;">250 comprobantes por mes</ul>
+            <ul style="padding: 0;">1 local 1 usuario</ul>
+            <ul style="padding: 0;">1 local 1 usuario</ul>
+            <ul style="padding: 0;">1 local 1 usuario</ul>
+            <ul style="padding: 0;">1 local 1 usuario</ul>
+            <ul style="padding: 0;">1 local 1 usuario</ul>
+            <ul style="padding: 0;">1 local 1 usuario</ul>
+            <ul style="padding: 0;">1 local 1 usuario</ul>
+          </li>
           <div class="prod-price">S/ 399 <span>/ mes</span></div>
         </div>
       </div>
       <div class="prod-card">
-        <div class="prod-thumb teal-thumb">🍽️</div>
+        <div class="prod-thumb teal-thumb"></div>
         <div class="prod-body">
           <div class="prod-badge green-badge">Restaurantes</div>
           <h3>Factullama Restó</h3>
           <p>Especializado para el sector gastronómico</p>
+          <li style="list-style: none; padding: 0; margin: 0;">
+            <ul style="padding: 0;">Gratis por 30 días</ul>
+            <ul style="padding: 0;">250 comprobantes por mes</ul>
+            <ul style="padding: 0;">1 local 1 usuario</ul>
+            <ul style="padding: 0;">1 local 1 usuario</ul>
+            <ul style="padding: 0;">1 local 1 usuario</ul>
+            <ul style="padding: 0;">1 local 1 usuario</ul>
+            <ul style="padding: 0;">1 local 1 usuario</ul>
+            <ul style="padding: 0;">1 local 1 usuario</ul>
+            <ul style="padding: 0;">1 local 1 usuario</ul>
+            <ul style="padding: 0;">1 local 1 usuario</ul>
+            <ul style="padding: 0;">1 local 1 usuario</ul>
+            <ul style="padding: 0;">1 local 1 usuario</ul>
+          </li>
           <div class="prod-price">S/ 149 <span>/ mes</span></div>
         </div>
       </div>
@@ -759,7 +801,11 @@
   <div class="section-inner">
     <div class="about-grid">
       <div class="about-visual">
-        <div class="about-visual-emoji">🚀</div>
+        <div class="about-visual-emoji"><svg  xmlns="http://www.w3.org/2000/svg" width="24" height="24"  
+fill="currentColor" viewBox="0 0 24 24" >
+<!--Boxicons v3.0.8 https://boxicons.com | License  https://docs.boxicons.com/free-->
+<path d="M15.62 7.5a.62.62 0 1 0 0 1.24.62.62 0 1 0 0-1.24m2.76 0a.62.62 0 1 0 0 1.24.62.62 0 1 0 0-1.24"></path><path d="M20 4h-6l-2-2v7c0 .34.04.68.1 1H5.5C4.67 10 4 9.33 4 8.5S4.67 7 5.5 7C7.06 7 10 6.16 10 3V2H8v1c0 1.88-2.09 2-2.5 2C3.57 5 2 6.57 2 8.5c0 1.42.85 2.63 2.06 3.18L5 21.1a1 1 0 0 0 1 .9h3c.55 0 1-.45 1-1v-3h4v3c0 .55.45 1 1 1h3c.51 0 .94-.38.99-.89l.89-8.04c1.27-.91 2.11-2.39 2.11-4.07V2zm-2.9 16H16v-3c0-.55-.45-1-1-1H9c-.55 0-1 .45-1 1v3H6.9l-.8-8H13v-.03A4.97 4.97 0 0 0 17 14c.27 0 .52-.04.78-.08zM20 9c0 1.65-1.35 3-3 3s-3-1.35-3-3V6h6z"></path>
+</svg></div>
       </div>
       <div class="about-text">
         <div class="section-label">Sobre Nosotros</div>
@@ -777,32 +823,6 @@
             <div class="stat-label">En el mercado</div>
           </div>
         </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ====== OTHER PRODUCTS ====== -->
-<section id="other" class="products-bg">
-  <div class="section-inner">
-    <div class="section-label">Ecosistema</div>
-    <h2 class="section-title">Otros Productos</h2>
-    <p class="section-sub">Explora más soluciones de la familia Factullama</p>
-    <div class="other-grid">
-      <div class="other-card">
-        <span class="other-icon">📱</span>
-        <h3>Factullama Móvil</h3>
-        <p>App móvil para gestionar tu negocio desde cualquier lugar, en tiempo real.</p>
-      </div>
-      <div class="other-card purple-card">
-        <span class="other-icon">🔌</span>
-        <h3>API Factullama</h3>
-        <p>Integra Factullama con tus sistemas existentes mediante nuestra API robusta.</p>
-      </div>
-      <div class="other-card teal-card">
-        <span class="other-icon">🎓</span>
-        <h3>Factullama Academy</h3>
-        <p>Cursos y capacitaciones para maximizar el uso de la plataforma.</p>
       </div>
     </div>
   </div>
