@@ -13,6 +13,61 @@
     </div>
   </div>
 
+  <!-- Información del Documento -->
+  <div class="card mb-4">
+    <div class="card-header">
+      <h3>Información del Documento</h3>
+    </div>
+    <div class="card-body">
+      <form [formGroup]="facturaForm">
+        <div class="grid grid-3">
+          <div class="form-group">
+            <label class="form-label">Tipo de Documento *</label>
+            <select class="form-control" formControlName="tipoDoc">
+              <option value="01">01 - Factura</option>
+              <option value="03">03 - Boleta</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Serie *</label>
+            <input type="text" 
+                   class="form-control" 
+                   formControlName="serie" 
+                   placeholder="Ej: F001">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Correlativo *</label>
+            <input type="text" 
+                   class="form-control" 
+                   formControlName="correlativo" 
+                   placeholder="Ej: 000001">
+          </div>
+        </div>
+        <div class="grid grid-3">
+          <div class="form-group">
+            <label class="form-label">Fecha de Emisión *</label>
+            <input type="date" 
+                   class="form-control" 
+                   formControlName="fechaEmision">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Fecha de Vencimiento</label>
+            <input type="date" 
+                   class="form-control" 
+                   formControlName="fecVencimiento">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Moneda *</label>
+            <select class="form-control" formControlName="tipoMoneda">
+              <option value="PEN">PEN - Soles</option>
+              <option value="USD">USD - Dólares</option>
+            </select>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <!-- Información del Cliente -->
   <div class="card mb-4">
     <div class="card-header">
@@ -22,25 +77,25 @@
       <form [formGroup]="facturaForm">
         <div class="grid grid-3">
           <div class="form-group">
-            <label class="form-label">Nombre del Cliente *</label>
-            <input type="text" 
-                   class="form-control" 
-                   formControlName="clienteNombre" 
-                   placeholder="Nombre del cliente">
+            <label class="form-label">Tipo Doc. Cliente *</label>
+            <select class="form-control" formControlName="clienteTipoDoc">
+              <option value="1">1 - DNI</option>
+              <option value="6">6 - RUC</option>
+            </select>
           </div>
           <div class="form-group">
-            <label class="form-label">RUC</label>
+            <label class="form-label">Número Doc. *</label>
             <input type="text" 
                    class="form-control" 
                    formControlName="clienteRuc" 
-                   placeholder="RUC del cliente">
+                   placeholder="DNI o RUC">
           </div>
           <div class="form-group">
-            <label class="form-label">Empresa ID *</label>
-            <input type="number" 
+            <label class="form-label">Nombre/Razón Social *</label>
+            <input type="text" 
                    class="form-control" 
-                   formControlName="empresaId" 
-                   placeholder="ID de la empresa">
+                   formControlName="clienteNombre" 
+                   placeholder="Nombre completo o Razón Social">
           </div>
         </div>
         <div class="form-group">
@@ -48,7 +103,16 @@
           <input type="text" 
                  class="form-control" 
                  formControlName="clienteDireccion" 
-                 placeholder="Dirección del cliente">
+                 placeholder="Dirección fiscal">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Empresa Emisora *</label>
+          <select class="form-control" formControlName="empresaId">
+            <option value="">Seleccione una empresa</option>
+            <option *ngFor="let empresa of empresas" [value]="empresa.id">
+              {{ empresa.nombre }} - {{ empresa.ruc }}
+            </option>
+          </select>
         </div>
       </form>
     </div>
@@ -70,9 +134,13 @@
           <table class="table">
             <thead>
               <tr>
-                <th>Producto ID</th>
+                <th>Código</th>
+                <th>Descripción</th>
+                <th>Unidad</th>
                 <th>Cantidad</th>
-                <th>Precio</th>
+                <th>Precio Unit.</th>
+                <th>Valor Venta</th>
+                <th>IGV</th>
                 <th>Subtotal</th>
                 <th>Acciones</th>
               </tr>
@@ -80,25 +148,40 @@
             <tbody>
               <tr *ngFor="let item of items.controls; let i = index" [formGroupName]="i">
                 <td>
-                  <input type="number" 
+                  <input type="text" 
                          class="form-control" 
-                         formControlName="productoId" 
-                         placeholder="ID">
+                         formControlName="codProducto" 
+                         placeholder="Código">
+                </td>
+                <td>
+                  <input type="text" 
+                         class="form-control" 
+                         formControlName="descripcion" 
+                         placeholder="Descripción">
+                </td>
+                <td>
+                  <select class="form-control" formControlName="unidadMedida">
+                    <option value="NIU">NIU - Unidad</option>
+                    <option value="KG">KG - Kilogramo</option>
+                    <option value="LTR">LTR - Litro</option>
+                  </select>
                 </td>
                 <td>
                   <input type="number" 
                          class="form-control" 
                          formControlName="cantidad" 
                          [min]="1"
-                         (input)="calcularSubtotal(i)">
+                         (input)="calcularItem(i)">
                 </td>
                 <td>
                   <input type="number" 
                          class="form-control" 
-                         formControlName="precio" 
-                         [readonly]="true">
+                         formControlName="mtoValorUnitario" 
+                         (input)="calcularItem(i)">
                 </td>
-                <td class="font-bold">${{ getSubtotal(i) | number:'1.2-2' }}</td>
+                <td class="font-bold">{{ getValorVenta(i) | number:'1.2-2' }}</td>
+                <td class="font-bold">{{ getIGV(i) | number:'1.2-2' }}</td>
+                <td class="font-bold">{{ getSubtotalItem(i) | number:'1.2-2' }}</td>
                 <td>
                   <button class="btn btn-sm btn-danger" (click)="eliminarItem(i)">
                     Eliminar
@@ -121,16 +204,20 @@
     <div class="card-body">
       <div class="d-flex justify-between items-center" style="background: var(--neutral-light); padding: 20px; border-radius: var(--radius);">
         <div>
-          <div class="text-muted" style="font-size: 14px;">Subtotal:</div>
-          <div class="font-semibold" style="font-size: 18px;">${{ subtotal | number:'1.2-2' }}</div>
+          <div class="text-muted" style="font-size: 14px;">Op. Gravadas:</div>
+          <div class="font-semibold" style="font-size: 18px;">S/ {{ mtoOperGravadas | number:'1.2-2' }}</div>
         </div>
         <div>
-          <div class="text-muted" style="font-size: 14px;">Impuesto (12%):</div>
-          <div class="font-semibold" style="font-size: 18px;">${{ impuesto | number:'1.2-2' }}</div>
+          <div class="text-muted" style="font-size: 14px;">IGV (18%):</div>
+          <div class="font-semibold" style="font-size: 18px;">S/ {{ mtoIGV | number:'1.2-2' }}</div>
+        </div>
+        <div>
+          <div class="text-muted" style="font-size: 14px;">Valor Venta:</div>
+          <div class="font-semibold" style="font-size: 18px;">S/ {{ valorVenta | number:'1.2-2' }}</div>
         </div>
         <div>
           <div class="text-muted" style="font-size: 14px;">Total:</div>
-          <div class="font-bold" style="font-size: 24px; color: var(--success);">${{ total | number:'1.2-2' }}</div>
+          <div class="font-bold" style="font-size: 24px; color: var(--success);">S/ {{ mtoImpVenta | number:'1.2-2' }}</div>
         </div>
       </div>
     </div>

@@ -1,0 +1,131 @@
+<div class="fade-in">
+  
+  <!-- Page Header -->
+  <div class="d-flex justify-between items-center mb-4 w-100">
+    <div>
+      <h1 class="font-bold" style="font-size: 28px; color: var(--primary-blue);">Información del Cliente</h1>
+      <p class="text-muted" style="font-size: 14px;">Complete los datos del cliente y empresa emisora</p>
+    </div>
+    <div class="text-right">
+      <button class="btn btn-outline" (click)="volver()">
+        Volver
+      </button>
+    </div>
+  </div>
+
+  <!-- Formulario Cliente -->
+  <div class="card mb-4">
+    <div class="card-header">
+      <h3>Datos del Cliente</h3>
+    </div>
+    <div class="card-body">
+      <form [formGroup]="clienteForm">
+        <div class="grid grid-3">
+          <div class="form-group">
+            <label class="form-label">Tipo Doc. Cliente *</label>
+            <select class="form-control" formControlName="tipoDoc">
+              <option value="1">1 - DNI</option>
+              <option value="6">6 - RUC</option>
+            </select>
+            <small class="text-muted">Catálogo No. 01</small>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Número Doc. *</label>
+            <input type="text" 
+                   class="form-control" 
+                   formControlName="numDoc" 
+                   placeholder="DNI o RUC">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Razón Social / Nombre *</label>
+            <input type="text" 
+                   class="form-control" 
+                   formControlName="rznSocial" 
+                   placeholder="Nombre completo o Razón Social">
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Dirección del Cliente -->
+  <div class="card mb-4">
+    <div class="card-header">
+      <h3>Dirección Fiscal</h3>
+    </div>
+    <div class="card-body">
+      <form [formGroup]="clienteForm">
+        <div class="form-group">
+          <label class="form-label">Dirección</label>
+          <input type="text" 
+                 class="form-control" 
+                 formControlName="direccion" 
+                 placeholder="Dirección completa">
+        </div>
+        <div class="grid grid-3">
+          <div class="form-group">
+            <label class="form-label">Departamento</label>
+            <input type="text" 
+                   class="form-control" 
+                   formControlName="departamento" 
+                   placeholder="Ej: LIMA">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Provincia</label>
+            <input type="text" 
+                   class="form-control" 
+                   formControlName="provincia" 
+                   placeholder="Ej: LIMA">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Distrito</label>
+            <input type="text" 
+                   class="form-control" 
+                   formControlName="distrito" 
+                   placeholder="Ej: LIMA">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Ubigeo</label>
+          <input type="text" 
+                 class="form-control" 
+                 formControlName="ubigueo" 
+                 placeholder="Código de ubigeo (6 dígitos)">
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Empresa Emisora -->
+  <div class="card mb-4">
+    <div class="card-header">
+      <h3>Empresa Emisora</h3>
+    </div>
+    <div class="card-body">
+      <form [formGroup]="clienteForm">
+        <div class="form-group">
+          <label class="form-label">Seleccione la Empresa *</label>
+          <select class="form-control" formControlName="empresaId">
+            <option value="">Seleccione una empresa</option>
+            <option *ngFor="let empresa of empresas" [value]="empresa.id">
+              {{ empresa.nombre }} - {{ empresa.ruc }}
+            </option>
+          </select>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Botones -->
+  <div class="d-flex justify-between gap-2">
+    <button class="btn btn-secondary" (click)="volver()">
+      ← Anterior
+    </button>
+    <button class="btn btn-success" 
+            [disabled]="clienteForm.invalid"
+            (click)="guardarYContinuar()">
+      Guardar y Continuar →
+    </button>
+  </div>
+
+</div>

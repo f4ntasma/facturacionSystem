@@ -1,0 +1,165 @@
+<div class="fade-in">
+  
+  <!-- Page Header -->
+  <div class="d-flex justify-between items-center mb-4 w-100">
+    <div>
+      <h1 class="font-bold" style="font-size: 28px; color: var(--primary-blue);">Información Adicional</h1>
+      <p class="text-muted" style="font-size: 14px;">Leyendas, guías y documentos relacionados</p>
+    </div>
+    <div class="text-right">
+      <button class="btn btn-outline" (click)="volver()">
+        Volver
+      </button>
+    </div>
+  </div>
+
+  <!-- Leyendas -->
+  <div class="card mb-4">
+    <div class="card-header">
+      <div class="d-flex justify-between items-center w-100">
+        <h3>Leyendas</h3>
+        <button class="btn btn-success btn-sm" (click)="agregarLeyenda()">
+          + Agregar Leyenda
+        </button>
+      </div>
+    </div>
+    <div class="card-body">
+      <form [formGroup]="adicionalForm">
+        <div formArrayName="legends">
+          <div *ngFor="let legend of legends.controls; let i = index" [formGroupName]="i" class="mb-3">
+            <div class="grid grid-2">
+              <div class="form-group">
+                <label class="form-label">Código *</label>
+                <select class="form-control" formControlName="code">
+                  <option value="1000">1000 - Monto en letras</option>
+                  <option value="1002">1002 - Transferencia gratuita</option>
+                  <option value="2000">2000 - Leyenda</option>
+                </select>
+                <small class="text-muted">Catálogo No. 15</small>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Valor *</label>
+                <input type="text" 
+                       class="form-control" 
+                       formControlName="value" 
+                       placeholder="Ej: SON CIEN CON 00/100 SOLES">
+              </div>
+            </div>
+            <button class="btn btn-sm btn-danger" (click)="eliminarLeyenda(i)">
+              Eliminar
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Guías de Remisión -->
+  <div class="card mb-4">
+    <div class="card-header">
+      <div class="d-flex justify-between items-center w-100">
+        <h3>Guías de Remisión</h3>
+        <button class="btn btn-success btn-sm" (click)="agregarGuia()">
+          + Agregar Guía
+        </button>
+      </div>
+    </div>
+    <div class="card-body">
+      <form [formGroup]="adicionalForm">
+        <div formArrayName="guias">
+          <div *ngFor="let guia of guias.controls; let i = index" [formGroupName]="i" class="mb-3">
+            <div class="grid grid-2">
+              <div class="form-group">
+                <label class="form-label">Tipo Doc. *</label>
+                <select class="form-control" formControlName="tipoDoc">
+                  <option value="09">09 - Guía de Remisión Remitente</option>
+                  <option value="31">31 - Guía de Remisión Transportista</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Número Doc. *</label>
+                <input type="text" 
+                       class="form-control" 
+                       formControlName="nroDoc" 
+                       placeholder="Ej: T001-000001">
+              </div>
+            </div>
+            <button class="btn btn-sm btn-danger" (click)="eliminarGuia(i)">
+              Eliminar
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Documentos Relacionados -->
+  <div class="card mb-4">
+    <div class="card-header">
+      <div class="d-flex justify-between items-center w-100">
+        <h3>Documentos Relacionados</h3>
+        <button class="btn btn-success btn-sm" (click)="agregarRelDoc()">
+          + Agregar Documento
+        </button>
+      </div>
+    </div>
+    <div class="card-body">
+      <form [formGroup]="adicionalForm">
+        <div formArrayName="relDocs">
+          <div *ngFor="let relDoc of relDocs.controls; let i = index" [formGroupName]="i" class="mb-3">
+            <div class="grid grid-2">
+              <div class="form-group">
+                <label class="form-label">Tipo Doc. *</label>
+                <select class="form-control" formControlName="tipoDoc">
+                  <option value="01">01 - Factura</option>
+                  <option value="03">03 - Boleta</option>
+                  <option value="12">12 - Ticket</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Número Doc. *</label>
+                <input type="text" 
+                       class="form-control" 
+                       formControlName="nroDoc" 
+                       placeholder="Ej: F001-000001">
+              </div>
+            </div>
+            <button class="btn btn-sm btn-danger" (click)="eliminarRelDoc(i)">
+              Eliminar
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Observación -->
+  <div class="card mb-4">
+    <div class="card-header">
+      <h3>Observación</h3>
+    </div>
+    <div class="card-body">
+      <form [formGroup]="adicionalForm">
+        <div class="form-group">
+          <label class="form-label">Observación</label>
+          <textarea class="form-control" 
+                    formControlName="observacion" 
+                    rows="3"
+                    placeholder="Observaciones adicionales..."></textarea>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Botones -->
+  <div class="d-flex justify-between gap-2">
+    <button class="btn btn-secondary" (click)="volver()">
+      ← Anterior
+    </button>
+    <button class="btn btn-success" 
+            (click)="enviarFactura()">
+      Enviar a SUNAT ✓
+    </button>
+  </div>
+
+</div>

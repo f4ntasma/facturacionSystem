@@ -51,16 +51,56 @@ export class FacturaFormComponent implements OnInit {
     private messageService: MessageService
   ) {
     this.facturaForm = this.fb.group({
+      // Datos del documento
+      tipoDoc: ['01', [Validators.required]], // 01 = Factura, 03 = Boleta
+      serie: ['F001', [Validators.required]],
+      correlativo: ['', [Validators.required]],
+      fechaEmision: [new Date().toISOString().split('T')[0], [Validators.required]],
+      fecVencimiento: [''],
+      tipoMoneda: ['PEN', [Validators.required]],
+      tipoOperacion: ['0101', [Validators.required]], // Venta interna
+      
+      // Datos del cliente
       clienteNombre: ['', [Validators.required]],
       clienteRuc: [''],
       clienteDireccion: [''],
+      clienteTipoDoc: ['1'], // 1 = DNI, 6 = RUC
+      
+      // Datos de la empresa
       empresaId: [null, [Validators.required]],
+      
+      // Montos
+      mtoOperGravadas: [0],
+      mtoOperInafectas: [0],
+      mtoOperExoneradas: [0],
+      mtoIGV: [0],
+      mtoImpVenta: [0],
+      subTotal: [0],
+      valorVenta: [0],
+      
+      // Items
       items: this.fb.array([])
     });
   }
 
   get items() {
     return this.facturaForm.get('items') as FormArray;
+  }
+
+  get mtoOperGravadas() {
+    return this.facturaForm.get('mtoOperGravadas')?.value || 0;
+  }
+
+  get mtoIGV() {
+    return this.facturaForm.get('mtoIGV')?.value || 0;
+  }
+
+  get valorVenta() {
+    return this.facturaForm.get('valorVenta')?.value || 0;
+  }
+
+  get mtoImpVenta() {
+    return this.facturaForm.get('mtoImpVenta')?.value || 0;
   }
 
   ngOnInit() {
@@ -131,9 +171,17 @@ export class FacturaFormComponent implements OnInit {
 
   agregarItem() {
     const itemGroup = this.fb.group({
-      productoId: [null, [Validators.required]],
+      codProducto: ['', [Validators.required]],
+      descripcion: ['', [Validators.required]],
+      unidadMedida: ['NIU', [Validators.required]],
       cantidad: [1, [Validators.required, Validators.min(1)]],
-      precio: [0, [Validators.required]]
+      mtoValorUnitario: [0, [Validators.required, Validators.min(0)]],
+      mtoBaseIgv: [0],
+      porcentajeIgv: [18],
+      igv: [0],
+      tipAfeIgv: [10], // Gravado - Operación Onerosa
+      mtoValorVenta: [0],
+      mtoPrecioUnitario: [0]
     });
 
     this.items.push(itemGroup);
@@ -144,41 +192,76 @@ export class FacturaFormComponent implements OnInit {
     this.calcularTotales();
   }
 
-  onProductoChange(index: number, event: any) {
-    const productoId = event.value;
-    const producto = this.productos.find(p => p.id === productoId);
-    
-    if (producto) {
-      const itemGroup = this.items.at(index);
-      itemGroup.patchValue({
-        precio: producto.precio
-      });
-      this.calcularSubtotal(index);
-    }
-  }
-
-  calcularSubtotal(index: number) {
-    setTimeout(() => {
-      this.calcularTotales();
-    });
-  }
-
-  getSubtotal(index: number): number {
+  calcularItem(index: number) {
     const item = this.items.at(index);
     const cantidad = item.get('cantidad')?.value || 0;
-    const precio = item.get('precio')?.value || 0;
-    return cantidad * precio;
+    const precioUnitario = item.get('mtoValorUnitario')?.value || 0;
+    const porcentajeIgv = item.get('porcentajeIgv')?.value || 18;
+    
+    // Calcular valor venta (base IGV)
+    const valorVenta = cantidad * precioUnitario;
+    
+    // Calcular IGV
+    const igv = valorVenta * (porcentajeIgv / 100);
+    
+    // Calcular precio unitario (con IGV)
+    const precioUnitarioConIgv = precioUnitario * (1 + porcentajeIgv / 100);
+    
+    // Calcular subtotal (precio con IGV)
+    const subtotal = cantidad * precioUnitarioConIgv;
+    
+    item.patchValue({
+      mtoBaseIgv: valorVenta,
+      igv: igv,
+      mtoValorVenta: valorVenta,
+      mtoPrecioUnitario: precioUnitarioConIgv
+    });
+    
+    this.calcularTotales();
+  }
+
+  getValorVenta(index: number): number {
+    const item = this.items.at(index);
+    return item.get('mtoValorVenta')?.value || 0;
+  }
+
+  getIGV(index: number): number {
+    const item = this.items.at(index);
+    return item.get('igv')?.value || 0;
+  }
+
+  getSubtotalItem(index: number): number {
+    const item = this.items.at(index);
+    const cantidad = item.get('cantidad')?.value || 0;
+    const precioUnitario = item.get('mtoPrecioUnitario')?.value || 0;
+    return cantidad * precioUnitario;
   }
 
   calcularTotales() {
-    this.subtotal = 0;
+    let mtoOperGravadas = 0;
+    let mtoIGV = 0;
+    let mtoImpVenta = 0;
+    let valorVenta = 0;
     
     for (let i = 0; i < this.items.length; i++) {
-      this.subtotal += this.getSubtotal(i);
+      mtoOperGravadas += this.getValorVenta(i);
+      mtoIGV += this.getIGV(i);
+      valorVenta += this.getValorVenta(i);
     }
     
-    this.impuesto = this.subtotal * 0.12; // 12% de impuesto
-    this.total = this.subtotal + this.impuesto;
+    mtoImpVenta = mtoOperGravadas + mtoIGV;
+    
+    this.facturaForm.patchValue({
+      mtoOperGravadas: mtoOperGravadas,
+      mtoIGV: mtoIGV,
+      mtoImpVenta: mtoImpVenta,
+      valorVenta: valorVenta,
+      subTotal: mtoOperGravadas
+    });
+    
+    this.subtotal = mtoOperGravadas;
+    this.impuesto = mtoIGV;
+    this.total = mtoImpVenta;
   }
 
   onSubmit() {

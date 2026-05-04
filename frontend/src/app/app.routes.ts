@@ -64,6 +64,54 @@ export const routes: Routes = [
           import('./pages/facturas/facturas-list.component')
             .then(m => m.FacturasListComponent)
       },
+      {
+        path: 'facturas/nuevo',
+        loadComponent: () =>
+          import('./pages/facturas/factura-wizard.component')
+            .then(m => m.FacturaWizardComponent)
+      },
+      {
+        path: 'facturas/nuevo/documento',
+        loadComponent: () =>
+          import('./pages/facturas/sections/documento.component')
+            .then(m => m.FacturaDocumentoComponent)
+      },
+      {
+        path: 'facturas/nuevo/cliente',
+        loadComponent: () =>
+          import('./pages/facturas/sections/cliente.component')
+            .then(m => m.FacturaClienteComponent)
+      },
+      {
+        path: 'facturas/nuevo/items',
+        loadComponent: () =>
+          import('./pages/facturas/sections/items.component')
+            .then(m => m.FacturaItemsComponent)
+      },
+      {
+        path: 'facturas/nuevo/totales',
+        loadComponent: () =>
+          import('./pages/facturas/sections/totales.component')
+            .then(m => m.FacturaTotalesComponent)
+      },
+      {
+        path: 'facturas/nuevo/adicional',
+        loadComponent: () =>
+          import('./pages/facturas/sections/adicional.component')
+            .then(m => m.FacturaAdicionalComponent)
+      },
+      {
+        path: 'facturas/nueva',
+        loadComponent: () =>
+          import('./pages/facturas/factura-form.component')
+            .then(m => m.FacturaFormComponent)
+      },
+      {
+        path: 'facturas/:id',
+        loadComponent: () =>
+          import('./pages/facturas/factura-form.component')
+            .then(m => m.FacturaFormComponent)
+      },
 
       {
         path: 'ventas',
