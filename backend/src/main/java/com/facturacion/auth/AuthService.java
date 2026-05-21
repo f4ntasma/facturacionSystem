@@ -27,7 +27,7 @@ public class AuthService {
 
     public LoginResponse authenticate(LoginRequest loginRequest) throws Exception {
         try {
-            String emailOrUsername = loginRequest.getUsername();
+            String emailOrUsername = loginRequest.getEmail();
             User user = userRepository.findByEmail(emailOrUsername)
                     .orElseThrow(() -> new Exception("Usuario no encontrado"));
             Authentication authentication = authenticationManager.authenticate(

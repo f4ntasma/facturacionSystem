@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { RouterModule } from '@angular/router';
+import { OrdenService, Orden } from '../../services/orden.service';
 
 export interface ProductoVenta {
   nombre: string;
@@ -9,7 +11,7 @@ export interface ProductoVenta {
 }
 
 export interface Venta {
-  id: number;
+  id: string;
   clienteNombre: string;
   clienteApellido: string;
   dni: string;
@@ -17,69 +19,71 @@ export interface Venta {
   fecha: Date;
   productos: ProductoVenta[];
   menuAbierto?: boolean;
+  estado?: string;
 }
 
 @Component({
   standalone: true,
   selector: 'app-ventas',
   templateUrl: './ventas.component.html',
-  imports: [CommonModule, FormsModule]
+  imports: [CommonModule, FormsModule, RouterModule]
 })
 export class VentasComponent implements OnInit {
 
   ventas: Venta[] = [];
   ventasFiltradas: Venta[] = [];
+  loading = false;
+  error = false;
 
   searchTerm = '';
   fechaDesde = '';
   fechaHasta = '';
 
-  // 🔹 MODAL
+  // 🔹 MODAL DETALLE
   mostrarDetalle = false;
   ventaSeleccionada!: Venta;
 
-  ngOnInit(): void {
-    this.ventas = [
-      {
-        id: 3,
-        clienteNombre: 'Carlos',
-        clienteApellido: 'Ramirez',
-        dni: '71234567',
-        total: 85,
-        fecha: new Date('2025-12-15T19:45'),
-        productos: [
-          { nombre: 'Hamburguesa', cantidad: 2, precio: 20 },
-          { nombre: 'Gaseosa', cantidad: 1, precio: 5 }
-        ]
-      },
-      {
-        id: 2,
-        clienteNombre: 'Maria',
-        clienteApellido: 'Lopez',
-        dni: '70123456',
-        total: 150,
-        fecha: new Date('2025-12-15T18:10'),
-        productos: [
-          { nombre: 'Parrilla', cantidad: 1, precio: 120 },
-          { nombre: 'Cerveza', cantidad: 2, precio: 15 }
-        ]
-      },
-      {
-        id: 1,
-        clienteNombre: 'Juan',
-        clienteApellido: 'Jose',
-        dni: '70987654',
-        total: 100,
-        fecha: new Date('2025-12-14T20:30'),
-        productos: [
-          { nombre: 'Pizza', cantidad: 1, precio: 60 },
-          { nombre: 'Jugo', cantidad: 2, precio: 20 }
-        ]
-      }
-    ];
+  constructor(
+    private ordenService: OrdenService
+  ) {}
 
-    this.ordenarVentas();
-    this.aplicarFiltros();
+  ngOnInit(): void {
+    this.cargarVentas();
+  }
+
+  cargarVentas() {
+    this.loading = true;
+    this.error = false;
+    this.ordenService.getOrdenes().subscribe({
+      next: (ordenes) => {
+        this.ventas = ordenes.map(orden => this.convertirOrdenAVenta(orden));
+        this.ordenarVentas();
+        this.aplicarFiltros();
+        this.loading = false;
+      },
+      error: (error) => {
+        console.error('Error cargando ventas:', error);
+        this.error = true;
+        this.loading = false;
+      }
+    });
+  }
+
+  convertirOrdenAVenta(orden: Orden): Venta {
+    return {
+      id: orden.id,
+      clienteNombre: 'Cliente', // Se puede obtener de la orden si está disponible
+      clienteApellido: '',
+      dni: '',
+      total: orden.total,
+      fecha: orden.createdAt ? new Date(orden.createdAt) : new Date(),
+      productos: orden.items.map(item => ({
+        nombre: item.productoNombre || 'Producto',
+        cantidad: item.cantidad,
+        precio: item.precioUnitario
+      })),
+      estado: orden.estado
+    };
   }
 
   ordenarVentas() {
@@ -146,6 +150,7 @@ export class VentasComponent implements OnInit {
 
   anular(venta: Venta) {
     if (!confirm(`¿Anular venta #${venta.id}?`)) return;
+    // TODO: Implementar anulación en el backend
     this.ventas = this.ventas.filter(v => v.id !== venta.id);
     this.aplicarFiltros();
   }

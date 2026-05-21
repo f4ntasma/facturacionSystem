@@ -41,9 +41,8 @@
       </div>
       
       <div *ngIf="error" class="error-state">
-        <div class="error-icon">⚠️</div>
-        <h3>Error al cargar empresas</h3>
-        <p>No se pudieron cargar las empresas. Por favor, intenta nuevamente.</p>
+        <h3 style="color: red;">Error al cargar empresas</h3>
+        <p style="color: red;">No se pudieron cargar las empresas. Por favor, intenta nuevamente.</p>
         <button class="btn btn-primary mt-4" (click)="loadEmpresas()">
           Reintentar
         </button>

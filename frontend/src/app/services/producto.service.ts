@@ -4,21 +4,20 @@ import { Observable } from 'rxjs';
 import { AuthService } from './auth.service';
 
 export interface Producto {
-  id?: number;
+  id?: string;
   nombre: string;
   descripcion?: string;
   precio: number;
   stock: number;
   categoria?: string;
-  empresaId: number;
+  empresaId: string;
 }
 
-// Se modificó el http://localhost:8080/api por la http://localhost:8080/api
 @Injectable({
   providedIn: 'root'
 })
 export class ProductoService {
-  private apiUrl = 'http://localhost:8081/api/productos';
+  private apiUrl = 'http://localhost:8081/api/v1/productos';
 
   constructor(
     private http: HttpClient,
@@ -37,7 +36,7 @@ export class ProductoService {
     return this.http.get<Producto[]>(this.apiUrl, { headers: this.getHeaders() });
   }
 
-  getProducto(id: number): Observable<Producto> {
+  getProducto(id: string): Observable<Producto> {
     return this.http.get<Producto>(`${this.apiUrl}/${id}`, { headers: this.getHeaders() });
   }
 
@@ -45,15 +44,15 @@ export class ProductoService {
     return this.http.post<Producto>(this.apiUrl, producto, { headers: this.getHeaders() });
   }
 
-  updateProducto(id: number, producto: Producto): Observable<Producto> {
+  updateProducto(id: string, producto: Producto): Observable<Producto> {
     return this.http.put<Producto>(`${this.apiUrl}/${id}`, producto, { headers: this.getHeaders() });
   }
 
-  deleteProducto(id: number): Observable<void> {
+  deleteProducto(id: string): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`, { headers: this.getHeaders() });
   }
 
-  getProductosByEmpresa(empresaId: number): Observable<Producto[]> {
+  getProductosByEmpresa(empresaId: string): Observable<Producto[]> {
     return this.http.get<Producto[]>(`${this.apiUrl}/empresa/${empresaId}`, { headers: this.getHeaders() });
   }
 }

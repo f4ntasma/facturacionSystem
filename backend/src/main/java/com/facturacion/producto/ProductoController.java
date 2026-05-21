@@ -20,8 +20,8 @@ public class ProductoController {
 
     @GetMapping("/productos")
     public List<ProductResponse> listar(@AuthenticationPrincipal User user,
-                                        @RequestParam(defaultValue = "0") int page,
-                                        @RequestParam(defaultValue = "20") int size) {
+                                        @RequestParam(name = "page", defaultValue = "0") int page,
+                                        @RequestParam(name = "size", defaultValue = "20") int size) {
         return productoService.listar(user, page, size);
     }
 
@@ -44,14 +44,14 @@ public class ProductoController {
 
     @GetMapping("/productos/autocomplete")
     public List<ProductResponse> autocomplete(@AuthenticationPrincipal User user,
-                                              @RequestParam(defaultValue = "") String q,
-                                              @RequestParam(defaultValue = "10") int limit) {
+                                              @RequestParam(name = "q", defaultValue = "") String q,
+                                              @RequestParam(name = "limit", defaultValue = "10") int limit) {
         return productoService.autocomplete(user, q, limit);
     }
 
     @GetMapping("/catalogo")
-    public List<ProductResponse> catalogoPublico(@RequestParam(defaultValue = "") String q,
-                                                 @RequestParam(defaultValue = "10") int limit) {
+    public List<ProductResponse> catalogoPublico(@RequestParam(name = "q", defaultValue = "") String q,
+                                                 @RequestParam(name = "limit", defaultValue = "10") int limit) {
         return productoService.catalogoPublico(q, limit);
     }
 }

@@ -87,12 +87,11 @@
         </div>
 
         <div class="d-flex justify-end gap-2 mt-4">
-          <button class="btn btn-secondary" (click)="volver()">
+          <button type="button" class="btn btn-secondary" (click)="volver()">
             Cancelar
           </button>
-          <button class="btn btn-success" 
-                  [disabled]="clienteForm.invalid || loading"
-                  (click)="onSubmit()">
+          <button type="submit" class="btn btn-success" 
+                  [disabled]="clienteForm.invalid || loading">
             {{ loading ? 'Guardando...' : (isEditing ? 'Actualizar' : 'Crear') }}
           </button>
         </div>

@@ -1,38 +1,28 @@
 package com.facturacion.auth.jwt;
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
-import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.Map;
 import java.util.function.Function;
 
-@Component
+@Service
 public class JwtService {
-
-    private static final Logger log = LoggerFactory.getLogger(JwtService.class);
-    private static final int MIN_SECRET_LENGTH = 32;
 
     private final SecretKey signingKey;
     private final long expirationMs;
 
     public JwtService(@Value("${security.jwt.secret}") String secret,
                       @Value("${security.jwt.expiration}") long expirationMs) {
-        String normalizedSecret = secret == null ? "" : secret.trim();
-        if (normalizedSecret.length() < MIN_SECRET_LENGTH) {
-            log.warn("security.jwt.secret is missing or too short; generating a random key for this run");
-            this.signingKey = Jwts.SIG.HS256.key().build();
-        } else {
-            this.signingKey = Keys.hmacShaKeyFor(normalizedSecret.getBytes(StandardCharsets.UTF_8));
-        }
+        this.signingKey = Keys.hmacShaKeyFor(secret.getBytes());
         this.expirationMs = expirationMs;
     }
 
@@ -45,11 +35,11 @@ public class JwtService {
         Date now = new Date();
         Date exp = new Date(now.getTime() + expiration);
         return Jwts.builder()
-                .claims(extraClaims)
-                .subject(userDetails.getUsername())
-                .issuedAt(now)
-                .expiration(exp)
-                .signWith(signingKey)
+                .setClaims(extraClaims)
+                .setSubject(userDetails.getUsername())
+                .setIssuedAt(now)
+                .setExpiration(exp)
+                .signWith(signingKey, SignatureAlgorithm.HS256)
                 .compact();
     }
 
@@ -68,11 +58,11 @@ public class JwtService {
     }
 
     private Claims extractAllClaims(String token) {
-        return Jwts.parser()
-                .verifyWith(signingKey)
+        Jws<Claims> jws = Jwts.parser()
+                .setSigningKey(signingKey)
                 .build()
-                .parseSignedClaims(token)
-                .getPayload();
+                .parseClaimsJws(token);
+        return jws.getBody();
     }
 
     private boolean isTokenExpired(String token) {

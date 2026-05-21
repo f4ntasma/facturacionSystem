@@ -1,10 +1,12 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 
 import { ProductoService, Producto } from '../../services/producto.service';
 import { NavbarService } from '../../layout/navbar.service';
+
+
 
 @Component({
   selector: 'app-productos-list',
@@ -21,29 +23,26 @@ export class ProductosListComponent implements OnInit, OnDestroy {
 
   constructor(
     private productoService: ProductoService,
-    private navbarService: NavbarService
+    private navbarService: NavbarService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
-    console.log('ProductosListComponent INIT → navbar = productos');
-    this.navbarService.cambiarNavbar('productos');
     this.loadProductos();
+    this.navbarService.cambiarNavbar('productos');
   }
 
   ngOnDestroy(): void {
-    console.log('ProductosListComponent DESTROY → navbar = main');
     this.navbarService.cambiarNavbar('main');
   }
 
   loadProductos(): void {
     this.loading = true;
-    console.log('Cargando productos...');
-
     this.productoService.getProductos().subscribe({
       next: (productos) => {
-        console.log('Productos cargados:', productos.length);
         this.productos = productos;
         this.loading = false;
+        this.cdr.detectChanges();
       },
       error: (error) => {
         console.error('Error cargando productos:', error);
@@ -70,11 +69,9 @@ export class ProductosListComponent implements OnInit, OnDestroy {
     }
   }
 
-  eliminarProducto(id: number): void {
-    console.log('Eliminando producto', id);
+  eliminarProducto(id: string): void {
     this.productoService.deleteProducto(id).subscribe({
       next: () => {
-        console.log('Producto eliminado');
         this.loadProductos();
       },
       error: (error) => {
@@ -85,7 +82,7 @@ export class ProductosListComponent implements OnInit, OnDestroy {
 
   get productosFiltrados(): Producto[] {
     if (!this.searchTerm) return this.productos;
-    return this.productos.filter(p => 
+    return this.productos.filter(p =>
       p.nombre.toLowerCase().includes(this.searchTerm.toLowerCase())
     );
   }

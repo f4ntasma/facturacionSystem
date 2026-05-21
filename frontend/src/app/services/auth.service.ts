@@ -4,7 +4,7 @@ import { Observable, BehaviorSubject } from 'rxjs';
 import { tap } from 'rxjs/operators';
 
 export interface LoginRequest {
-  username: string;
+  email: string;
   password: string;
 }
 
@@ -15,7 +15,7 @@ export interface LoginResponse {
     username: string;
     email?: string;
   };
-}
+} 
 
 // Se modificó el http://localhost:8080/api por la http://localhost:8080/api
 @Injectable({

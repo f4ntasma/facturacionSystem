@@ -7,16 +7,13 @@ import { ClienteService, Cliente } from '../../services/cliente.service';
 @Component({
   selector: 'app-cliente-form',
   standalone: true,
-  imports: [
-    CommonModule,
-    ReactiveFormsModule
-  ],
+  imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './cliente-form.component.html'
 })
 export class ClienteFormComponent implements OnInit {
   clienteForm: FormGroup;
   isEditing = false;
-  clienteId: number | null = null;
+  clienteId: string | null = null;
   loading = false;
 
   constructor(
@@ -26,19 +23,18 @@ export class ClienteFormComponent implements OnInit {
     private route: ActivatedRoute
   ) {
     this.clienteForm = this.fb.group({
-      nombre: ['', [Validators.required]],
-      apellido: ['', [Validators.required]],
-      dni: ['', [Validators.required]],
+      nombre:    ['', [Validators.required]],
+      apellido:  ['', [Validators.required]],
+      dni:       ['', [Validators.required]],
       direccion: [''],
-      telefono: [''],
-      email: ['', [Validators.email]]
+      telefono:  [''],
+      email:     ['', [Validators.email]]
     });
   }
 
   ngOnInit() {
     this.clienteId = this.route.snapshot.params['id'];
     this.isEditing = !!this.clienteId;
-
     if (this.isEditing) {
       this.loadCliente();
     }
@@ -47,12 +43,8 @@ export class ClienteFormComponent implements OnInit {
   loadCliente() {
     if (this.clienteId) {
       this.clienteService.getCliente(this.clienteId).subscribe({
-        next: (cliente) => {
-          this.clienteForm.patchValue(cliente);
-        },
-        error: (error) => {
-          console.error('Error cargando cliente:', error);
-        }
+        next: (cliente) => this.clienteForm.patchValue(cliente),
+        error: (error) => console.error('Error cargando cliente:', error)
       });
     }
   }
@@ -62,12 +54,12 @@ export class ClienteFormComponent implements OnInit {
       this.loading = true;
       const clienteData: Cliente = this.clienteForm.value;
 
-      const operation = this.isEditing 
+      const operation = this.isEditing
         ? this.clienteService.updateCliente(this.clienteId!, clienteData)
         : this.clienteService.createCliente(clienteData);
 
       operation.subscribe({
-        next: (cliente) => {
+        next: () => {
           this.loading = false;
           this.router.navigate(['/app/clientes']);
         },

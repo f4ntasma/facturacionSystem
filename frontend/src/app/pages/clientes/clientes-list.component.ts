@@ -7,21 +7,16 @@ import { ClienteService, Cliente } from '../../services/cliente.service';
 @Component({
   selector: 'app-clientes-list',
   standalone: true,
-  imports: [
-    CommonModule,
-    RouterModule,
-    FormsModule
-  ],
+  imports: [CommonModule, RouterModule, FormsModule],
   templateUrl: './clientes-list.component.html'
 })
 export class ClientesListComponent implements OnInit {
   clientes: Cliente[] = [];
+  clientesFiltrados: Cliente[] = [];
   loading = false;
   searchTerm = '';
 
-  constructor(
-    private clienteService: ClienteService
-  ) {}
+  constructor(private clienteService: ClienteService) {}
 
   ngOnInit() {
     this.loadClientes();
@@ -32,6 +27,7 @@ export class ClientesListComponent implements OnInit {
     this.clienteService.getClientes().subscribe({
       next: (clientes) => {
         this.clientes = clientes;
+        this.clientesFiltrados = clientes;
         this.loading = false;
       },
       error: (error) => {
@@ -42,19 +38,19 @@ export class ClientesListComponent implements OnInit {
   }
 
   onGlobalFilter(event: any) {
-    const value = (event.target as HTMLInputElement).value;
-    // Implementar filtro si es necesario
+    const value = (event.target as HTMLInputElement).value.toLowerCase();
+    this.clientesFiltrados = this.clientes.filter(c =>
+      c.nombre.toLowerCase().includes(value) ||
+      c.apellido.toLowerCase().includes(value) ||
+      c.dni.toLowerCase().includes(value)
+    );
   }
 
-  eliminarCliente(id: number) {
+  eliminarCliente(id: string) {
     if (confirm('¿Está seguro de eliminar este cliente?')) {
       this.clienteService.deleteCliente(id).subscribe({
-        next: () => {
-          this.loadClientes();
-        },
-        error: (error) => {
-          console.error('Error eliminando cliente:', error);
-        }
+        next: () => this.loadClientes(),
+        error: (error) => console.error('Error eliminando cliente:', error)
       });
     }
   }

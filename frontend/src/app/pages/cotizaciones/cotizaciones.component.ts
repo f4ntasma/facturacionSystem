@@ -1,20 +1,23 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { AuthService } from '../../services/auth.service';
 
-export interface ProductoCotizacion {
+export interface CotizacionItem {
   nombre: string;
   cantidad: number;
   precio: number;
 }
 
 export interface Cotizacion {
-  id: number;
+  id: string;
   cliente: string;
   total: number;
-  fecha: Date;
-  productos: ProductoCotizacion[];
-  menuAbierto?: boolean;
+  estado: string;
+  createdAt: string;
+  items: CotizacionItem[];
 }
 
 @Component({
@@ -27,65 +30,52 @@ export class CotizacionesComponent implements OnInit {
 
   cotizaciones: Cotizacion[] = [];
   cotizacionesFiltradas: Cotizacion[] = [];
-
   searchTerm = '';
   fechaDesde = '';
   fechaHasta = '';
-
-  // MODAL
   mostrarDetalle = false;
   cotizacionSeleccionada!: Cotizacion;
 
-  ngOnInit(): void {
-    this.cotizaciones = [
-      {
-        id: 1,
-        cliente: 'Juan Jose',
-        total: 100,
-        fecha: new Date('2025-12-14'),
-        productos: [
-          { nombre: 'Pizza', cantidad: 1, precio: 60 },
-          { nombre: 'Jugo', cantidad: 2, precio: 20 }
-        ]
-      }
-    ];
+  constructor(
+    private router: Router,
+    private http: HttpClient,
+    private authService: AuthService,
+    private cdr: ChangeDetectorRef
+  ) {}
 
-    this.ordenar();
-    this.aplicarFiltros();
+  ngOnInit() {
+    this.cargarCotizaciones();
   }
 
-  ordenar() {
-    this.cotizaciones.sort((a, b) => b.fecha.getTime() - a.fecha.getTime());
+  cargarCotizaciones() {
+    const token = this.authService.getToken();
+    const headers = new HttpHeaders({ 'Authorization': `Bearer ${token}` });
+
+    this.http.get<Cotizacion[]>('http://localhost:8081/api/v1/cotizaciones', { headers }).subscribe({
+      next: (data) => {
+        this.cotizaciones = data;
+        this.cotizacionesFiltradas = data;
+        this.cdr.detectChanges();
+      },
+      error: (err) => console.error('Error cargando cotizaciones:', err)
+    });
   }
 
   aplicarFiltros() {
     this.cotizacionesFiltradas = this.cotizaciones.filter(c => {
-      const coincideTexto =
-        c.cliente.toLowerCase().includes(this.searchTerm.toLowerCase());
-
+      const coincideTexto = c.cliente.toLowerCase().includes(this.searchTerm.toLowerCase());
       let coincideFecha = true;
-
-      if (this.fechaDesde) {
-        coincideFecha = c.fecha >= new Date(this.fechaDesde);
-      }
-
+      if (this.fechaDesde) coincideFecha = new Date(c.createdAt) >= new Date(this.fechaDesde);
       if (this.fechaHasta) {
         const hasta = new Date(this.fechaHasta);
         hasta.setHours(23, 59, 59);
-        coincideFecha = coincideFecha && c.fecha <= hasta;
+        coincideFecha = coincideFecha && new Date(c.createdAt) <= hasta;
       }
-
       return coincideTexto && coincideFecha;
     });
   }
 
-  toggleMenu(c: Cotizacion) {
-    this.cotizacionesFiltradas.forEach(x => x.menuAbierto = false);
-    c.menuAbierto = !c.menuAbierto;
-  }
-
   verDetalle(c: Cotizacion) {
-    this.cotizacionesFiltradas.forEach(x => x.menuAbierto = false);
     this.cotizacionSeleccionada = c;
     this.mostrarDetalle = true;
   }
@@ -95,33 +85,31 @@ export class CotizacionesComponent implements OnInit {
   }
 
   descargar(c: Cotizacion) {
-    let contenido = `COTIZACIÓN #${c.id}\n\n`;
-    contenido += `Cliente: ${c.cliente}\n\nPRODUCTOS:\n`;
-
-    c.productos.forEach(p => {
-      contenido += `- ${p.nombre} x${p.cantidad} = S/${p.cantidad * p.precio}\n`;
+    let contenido = `COTIZACIÓN #${c.id}\nCliente: ${c.cliente}\n\nPRODUCTOS:\n`;
+    c.items.forEach(i => {
+      contenido += `- ${i.nombre} x${i.cantidad} = S/${i.cantidad * i.precio}\n`;
     });
-
     contenido += `\nTOTAL: S/${c.total}`;
-
     const blob = new Blob([contenido], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
-
     const a = document.createElement('a');
     a.href = url;
     a.download = `cotizacion_${c.id}.txt`;
     a.click();
-
     URL.revokeObjectURL(url);
   }
 
   anular(c: Cotizacion) {
-    if (!confirm(`¿Anular cotización #${c.id}?`)) return;
-    this.cotizaciones = this.cotizaciones.filter(x => x.id !== c.id);
-    this.aplicarFiltros();
+    if (!confirm(`¿Anular cotización?`)) return;
+    const token = this.authService.getToken();
+    const headers = new HttpHeaders({ 'Authorization': `Bearer ${token}` });
+    this.http.delete(`http://localhost:8081/api/v1/cotizaciones/${c.id}`, { headers }).subscribe({
+      next: () => this.cargarCotizaciones(),
+      error: (err) => console.error('Error anulando:', err)
+    });
   }
 
   nuevaCotizacion() {
-    alert('Aquí luego puedes abrir el formulario de nueva cotización');
+    this.router.navigate(['/app/cotizaciones/nueva']);
   }
 }

@@ -1,0 +1,129 @@
+<div class="fade-in">
+  
+  <!-- Page Header -->
+  <div class="d-flex justify-between items-center mb-4 w-100">
+    <div>
+      <h1 class="font-bold" style="font-size: 28px; color: var(--primary-blue);">Nueva Venta</h1>
+      <p class="text-muted" style="font-size: 14px;">Crear una nueva venta</p>
+    </div>
+    <button class="btn btn-outline" (click)="cancelar()">Cancelar</button>
+  </div>
+
+  <!-- Datos del Cliente -->
+  <div class="card mb-4">
+    <div class="card-header">
+      <h4>Datos del Cliente</h4>
+    </div>
+    <div class="card-body">
+      <div class="grid grid-2">
+        <div class="form-group">
+          <label class="form-label">Nombre</label>
+          <input type="text" 
+                 class="form-control" 
+                 [(ngModel)]="ventaForm.clienteNombre"
+                 placeholder="Nombre del cliente">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Apellido</label>
+          <input type="text" 
+                 class="form-control" 
+                 [(ngModel)]="ventaForm.clienteApellido"
+                 placeholder="Apellido del cliente">
+        </div>
+      </div>
+      <div class="form-group" style="margin-top: 1rem;">
+        <label class="form-label">DNI</label>
+        <input type="text" 
+               class="form-control" 
+               [(ngModel)]="ventaForm.dni"
+               placeholder="DNI del cliente">
+      </div>
+    </div>
+  </div>
+
+  <!-- Productos -->
+  <div *ngFor="let producto of ventaForm.productos; let i = index" style="margin-bottom: 1rem; padding: 1rem; background: #f5f5f5; border-radius: 0.5rem;">
+  <div class="grid grid-3">
+    <div class="form-group">
+      <label class="form-label">Producto</label>
+      <select class="form-control"
+              [(ngModel)]="producto.productoId"
+              (change)="onProductoSeleccionado(producto)"
+              [name]="'producto_' + i">
+        <option value="">Seleccionar producto...</option>
+        <option *ngFor="let p of productos" [value]="p.id">{{ p.nombre }}</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Cantidad</label>
+      <input type="number" 
+             class="form-control" 
+             [(ngModel)]="producto.cantidad"
+             [name]="'cantidad_' + i"
+             min="1"
+             (change)="calcularTotal()">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Precio Unit.</label>
+      <input type="number" 
+             class="form-control" 
+             [(ngModel)]="producto.precio"
+             [name]="'precio_' + i"
+             min="0"
+             step="0.01"
+             readonly>
+    </div>
+  </div>
+  <button class="btn btn-sm btn-danger" (click)="eliminarProducto(i)" *ngIf="ventaForm.productos.length > 1" style="margin-top: 0.5rem;">
+    Eliminar Producto
+  </button>
+</div>
+
+  <!-- Tipo de Comprobante y Método de Pago -->
+  <div class="card mb-4">
+    <div class="card-header">
+      <h4>Detalles de Venta</h4>
+    </div>
+    <div class="card-body">
+      <div class="grid grid-2">
+        <div class="form-group">
+          <label class="form-label">Tipo de Comprobante</label>
+          <select class="form-control" [(ngModel)]="ventaForm.tipoComprobante">
+            <option value="BOLETA">Boleta</option>
+            <option value="FACTURA">Factura</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Método de Pago</label>
+          <select class="form-control" [(ngModel)]="ventaForm.metodoPago">
+            <option value="EFECTIVO">Efectivo</option>
+            <option value="TARJETA">Tarjeta</option>
+            <option value="YAPE">Yape</option>
+            <option value="PLIN">Plin</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Total -->
+  <div class="card mb-4">
+    <div class="card-body">
+      <div class="d-flex justify-between items-center" style="background: var(--neutral-light); padding: 20px; border-radius: var(--radius);">
+        <div>
+          <span class="text-totalsell" style="font-size: 14px; color: rgb(55, 54, 54);">Total de la venta:</span>
+        </div>
+        <div class="font-bold" style="font-size: 24px; color: var(--success);">S/ {{ calcularTotal() }}</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Botones -->
+  <div class="d-flex justify-end gap-2">
+    <button class="btn btn-outline" (click)="cancelar()">Cancelar</button>
+    <button class="btn btn-primary" (click)="guardarVenta()" [disabled]="loading">
+      {{ loading ? 'Guardando...' : 'Guardar Venta' }}
+    </button>
+  </div>
+
+</div>

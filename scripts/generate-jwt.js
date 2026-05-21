@@ -116,53 +116,53 @@ const args = process.argv.slice(2);
 const command = args[0];
 
 if (command === 'generate' || !command) {
-    const username = args[1] || 'admin';
+    const username = args[1] || 'admin@factullama.com';
     const role = args[2] || 'ADMIN';
     const hours = parseInt(args[3]) || 24;
 
-    console.log('🔐 Generador de JWT - FacturaApp');
+    console.log('Generador de JWT - FacturaApp');
     console.log('=====================================');
     
     const result = generateJWT(username, role, hours);
     
-    console.log(`👤 Usuario: ${username}`);
-    console.log(`🏷️  Rol: ${role}`);
-    console.log(`⏰ Expira: ${result.expiresAt}`);
-    console.log(`🕐 Duración: ${hours} horas`);
+    console.log(`Usuario: ${username}`);
+    console.log(`Rol: ${role}`);
+    console.log(`Expira: ${result.expiresAt}`);
+    console.log(`Duración: ${hours} horas`);
     console.log('');
-    console.log('🎫 JWT Token:');
+    console.log('JWT Token:');
     console.log(result.jwt);
     console.log('');
-    console.log('📋 Para usar en Postman/curl:');
+    console.log('Para usar en Postman/curl:');
     console.log(`Authorization: Bearer ${result.jwt}`);
     
 } else if (command === 'decode') {
     const token = args[1];
     if (!token) {
-        console.log('❌ Error: Proporciona un token para decodificar');
+        console.log('Error: Proporciona un token para decodificar');
         console.log('Uso: node generate-jwt.js decode <token>');
         process.exit(1);
     }
 
     try {
         const decoded = decodeJWT(token);
-        console.log('🔍 JWT Decodificado:');
+        console.log('JWT Decodificado:');
         console.log('Header:', JSON.stringify(decoded.header, null, 2));
         console.log('Payload:', JSON.stringify(decoded.payload, null, 2));
     } catch (error) {
-        console.log('❌ Error:', error.message);
+        console.log('Error:', error.message);
     }
 
 } else if (command === 'validate') {
     const token = args[1];
     if (!token) {
-        console.log('❌ Error: Proporciona un token para validar');
+        console.log('Error: Proporciona un token para validar');
         console.log('Uso: node generate-jwt.js validate <token>');
         process.exit(1);
     }
 
     const validation = validateJWT(token);
-    console.log('✅ Validación de JWT:');
+    console.log('Validación de JWT:');
     console.log(`Válido: ${validation.isValid ? '✅' : '❌'}`);
     console.log(`Expirado: ${validation.isExpired ? '❌' : '✅'}`);
     
@@ -173,19 +173,19 @@ if (command === 'generate' || !command) {
     }
 
 } else if (command === 'help') {
-    console.log('🔐 Generador de JWT - FacturaApp');
+    console.log('Generador de JWT - FacturaApp');
     console.log('=====================================');
     console.log('');
     console.log('Comandos disponibles:');
     console.log('');
-    console.log('📝 Generar JWT:');
+    console.log('Generar JWT:');
     console.log('  node generate-jwt.js generate [username] [role] [hours]');
     console.log('  node generate-jwt.js (usa valores por defecto)');
     console.log('');
-    console.log('🔍 Decodificar JWT:');
+    console.log('Decodificar JWT:');
     console.log('  node generate-jwt.js decode <token>');
     console.log('');
-    console.log('✅ Validar JWT:');
+    console.log('Validar JWT:');
     console.log('  node generate-jwt.js validate <token>');
     console.log('');
     console.log('Ejemplos:');
@@ -194,5 +194,5 @@ if (command === 'generate' || !command) {
     console.log('  node generate-jwt.js decode eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...');
 
 } else {
-    console.log('❌ Comando no reconocido. Usa "help" para ver los comandos disponibles.');
+    console.log('Comando no reconocido. Usa "help" para ver los comandos disponibles.');
 }

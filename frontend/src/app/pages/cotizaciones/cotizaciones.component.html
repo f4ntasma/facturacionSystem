@@ -79,7 +79,7 @@
             <td class="font-bold text-primary">#{{ c.id.toString().padStart(5,'0') }}</td>
             <td class="font-medium">{{ c.cliente }}</td>
             <td class="font-bold" style="font-size: 16px; color: var(--accent-purple);">S/ {{ c.total }}</td>
-            <td>{{ c.fecha | date:'dd/MM/yyyy' }}</td>
+            <td>{{ c.createdAt | date:'dd/MM/yyyy' }}</td>
             <td>
               <span class="badge badge-info">Pendiente</span>
             </td>
@@ -101,9 +101,8 @@
       </table>
       
       <div *ngIf="cotizacionesFiltradas.length === 0" class="empty-state">
-        <div class="empty-icon">📋</div>
-        <h3>No se encontraron cotizaciones</h3>
-        <p>Crea una nueva cotización para comenzar</p>
+        <h3 style="margin-left: 22rem;">No se encontraron cotizaciones</h3>
+        <p style="margin-left: 25rem;">Crea una nueva cotización para comenzar</p>
       </div>
     </div>
   </div>
@@ -147,7 +146,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let p of cotizacionSeleccionada.productos">
+            <tr *ngFor="let p of cotizacionSeleccionada.items">
               <td class="font-medium">{{ p.nombre }}</td>
               <td>{{ p.cantidad }}</td>
               <td>S/ {{ p.precio }}</td>

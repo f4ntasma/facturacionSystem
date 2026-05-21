@@ -83,4 +83,12 @@ public class CarritoService {
         carrito.getItems().removeIf(it -> it.getId().equals(itemId));
         return carritoRepository.save(carrito);
     }
+
+    @Transactional
+    public void limpiarCarrito(User user) {
+        Carrito carrito = getOrCreate(user);
+        carrito.getItems().clear();
+        carritoRepository.save(carrito);
+    }
+
 }

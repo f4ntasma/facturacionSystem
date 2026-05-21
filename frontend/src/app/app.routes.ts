@@ -119,6 +119,19 @@ export const routes: Routes = [
           import('./pages/ventas/ventas.component')
             .then(m => m.VentasComponent)
       },
+      {
+        path: 'ventas/nueva',
+        loadComponent: () =>
+          import('./pages/ventas/venta-form.component')
+            .then(m => m.VentaFormComponent)
+      },
+
+      {
+        path: 'cotizaciones/nueva',
+        loadComponent: () =>
+          import('./pages/cotizaciones/cotizacion-form.component')
+            .then(m => m.CotizacionFormComponent)
+      },
 
       {
         path: 'cotizaciones',
@@ -158,7 +171,8 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./pages/opciones/opciones.component')
             .then(m => m.OpcionesComponent)
-      }
+      },
+      
     ]
   },
 

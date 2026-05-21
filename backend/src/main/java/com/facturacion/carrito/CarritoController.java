@@ -40,4 +40,10 @@ public class CarritoController {
                                       @PathVariable UUID itemId) {
         return new CarritoResponse(carritoService.removeItem(user, itemId));
     }
+
+    @DeleteMapping
+    public void limpiarCarrito(@AuthenticationPrincipal User user) {
+        carritoService.limpiarCarrito(user);
+    }
+
 }

@@ -1,3 +1,5 @@
+<p-toast></p-toast>
+
 <div class="fade-in">
   
   <!-- Page Header -->
@@ -7,7 +9,7 @@
       <p class="text-muted" style="font-size: 14px;">{{ isEditing ? 'Actualiza la información del producto' : 'Registra un nuevo producto en el inventario' }}</p>
     </div>
     <div class="text-right">
-      <button class="btn btn-outline" style="background-color: rgb(210, 95, 210); margin-left: 56rem; color: #f8f8f8" (click)="volver()">
+      <button type="button" class="btn btn-outline" style="background-color: rgb(210, 95, 210); margin-left: 56rem; color: #f8f8f8" (click)="volver()">
         Volver
       </button>
     </div>
@@ -31,6 +33,14 @@
                    *ngIf="productoForm.get('nombre')?.invalid && productoForm.get('nombre')?.touched">
               El nombre es requerido
             </small>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">SKU</label>
+            <input type="text" 
+                   class="form-control" 
+                   formControlName="sku" 
+                   placeholder="Código SKU">
           </div>
 
           <div class="form-group">
@@ -77,25 +87,12 @@
                  placeholder="Descripción del producto">
         </div>
 
-        <div class="form-group">
-          <label class="form-label">Empresa ID *</label>
-          <input type="number" 
-                 class="form-control" 
-                 formControlName="empresaId" 
-                 placeholder="ID de la empresa">
-          <small class="text-error" 
-                 *ngIf="productoForm.get('empresaId')?.invalid && productoForm.get('empresaId')?.touched">
-            Debe ingresar el ID de la empresa
-          </small>
-        </div>
-
         <div class="d-flex justify-end gap-2 mt-4">
-          <button class="btn btn-secondary" style="background-color: #d65c5c;" (click)="volver()">
+          <button type="button" class="btn btn-secondary" style="background-color: #d65c5c;" (click)="volver()">
             Cancelar
           </button>
-          <button class="btn btn-success" 
-                  [disabled]="productoForm.invalid || loading"
-                  (click)="onSubmit()">
+          <button type="submit" class="btn btn-success" 
+                  [disabled]="productoForm.invalid || loading">
             {{ loading ? 'Guardando...' : (isEditing ? 'Actualizar' : 'Crear') }}
           </button>
         </div>

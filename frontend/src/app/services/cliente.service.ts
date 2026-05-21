@@ -4,7 +4,7 @@ import { Observable } from 'rxjs';
 import { AuthService } from './auth.service';
 
 export interface Cliente {
-  id?: number;
+  id?: string;
   nombre: string;
   apellido: string;
   dni: string;
@@ -17,7 +17,7 @@ export interface Cliente {
   providedIn: 'root'
 })
 export class ClienteService {
-  private apiUrl = 'http://localhost:8081/api/clientes';
+  private apiUrl = 'http://localhost:8081/api/v1/clientes';
 
   constructor(
     private http: HttpClient,
@@ -36,7 +36,7 @@ export class ClienteService {
     return this.http.get<Cliente[]>(this.apiUrl, { headers: this.getHeaders() });
   }
 
-  getCliente(id: number): Observable<Cliente> {
+  getCliente(id: string): Observable<Cliente> {
     return this.http.get<Cliente>(`${this.apiUrl}/${id}`, { headers: this.getHeaders() });
   }
 
@@ -44,11 +44,11 @@ export class ClienteService {
     return this.http.post<Cliente>(this.apiUrl, cliente, { headers: this.getHeaders() });
   }
 
-  updateCliente(id: number, cliente: Cliente): Observable<Cliente> {
+  updateCliente(id: string, cliente: Cliente): Observable<Cliente> {
     return this.http.put<Cliente>(`${this.apiUrl}/${id}`, cliente, { headers: this.getHeaders() });
   }
 
-  deleteCliente(id: number): Observable<void> {
+  deleteCliente(id: string): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`, { headers: this.getHeaders() });
   }
 }
