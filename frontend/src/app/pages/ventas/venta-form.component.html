@@ -1,6 +1,5 @@
 <div class="fade-in">
   
-  <!-- Page Header -->
   <div class="d-flex justify-between items-center mb-4 w-100">
     <div>
       <h1 class="font-bold" style="font-size: 28px; color: var(--primary-blue);">Nueva Venta</h1>
@@ -15,69 +14,87 @@
       <h4>Datos del Cliente</h4>
     </div>
     <div class="card-body">
-      <div class="grid grid-2">
-        <div class="form-group">
-          <label class="form-label">Nombre</label>
-          <input type="text" 
-                 class="form-control" 
-                 [(ngModel)]="ventaForm.clienteNombre"
-                 placeholder="Nombre del cliente">
+      <div class="form-group">
+        <label class="form-label">DNI del Cliente *</label>
+        <div style="display: flex; gap: 0.5rem;">
+          <input type="text"
+                 class="form-control"
+                 [(ngModel)]="ventaForm.dni"
+                 placeholder="Ingresa el DNI (8 dígitos)"
+                 maxlength="8">
+          <button type="button"
+                  class="btn btn-primary"
+                  (click)="buscarDni()"
+                  [disabled]="buscandoDni">
+            {{ buscandoDni ? 'Buscando...' : '🔍 Buscar' }}
+          </button>
         </div>
-        <div class="form-group">
-          <label class="form-label">Apellido</label>
-          <input type="text" 
-                 class="form-control" 
-                 [(ngModel)]="ventaForm.clienteApellido"
-                 placeholder="Apellido del cliente">
-        </div>
+        <small *ngIf="errorDni" style="color: red; margin-top: 4px; display: block;">{{ errorDni }}</small>
       </div>
-      <div class="form-group" style="margin-top: 1rem;">
-        <label class="form-label">DNI</label>
-        <input type="text" 
-               class="form-control" 
-               [(ngModel)]="ventaForm.dni"
-               placeholder="DNI del cliente">
+
+      <!-- Datos autocompletados -->
+      <div *ngIf="ventaForm.clienteNombre"
+           style="margin-top: 1rem; padding: 1rem; background: #f0fdf4;
+                  border-radius: 0.5rem; border: 1px solid #86efac;">
+        <div style="font-weight: 600; color: #166534; font-size: 16px;">
+          ✅ {{ ventaForm.clienteNombre }} {{ ventaForm.clienteApellido }}
+        </div>
+        <div style="font-size: 13px; color: #15803d; margin-top: 4px;">
+          DNI: {{ ventaForm.dni }}
+        </div>
       </div>
     </div>
   </div>
 
   <!-- Productos -->
-  <div *ngFor="let producto of ventaForm.productos; let i = index" style="margin-bottom: 1rem; padding: 1rem; background: #f5f5f5; border-radius: 0.5rem;">
-  <div class="grid grid-3">
-    <div class="form-group">
-      <label class="form-label">Producto</label>
-      <select class="form-control"
-              [(ngModel)]="producto.productoId"
-              (change)="onProductoSeleccionado(producto)"
-              [name]="'producto_' + i">
-        <option value="">Seleccionar producto...</option>
-        <option *ngFor="let p of productos" [value]="p.id">{{ p.nombre }}</option>
-      </select>
+  <div class="card mb-4">
+    <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+      <h4>Productos</h4>
+      <button class="btn btn-sm btn-primary" (click)="agregarProducto()">+ Agregar Producto</button>
     </div>
-    <div class="form-group">
-      <label class="form-label">Cantidad</label>
-      <input type="number" 
-             class="form-control" 
-             [(ngModel)]="producto.cantidad"
-             [name]="'cantidad_' + i"
-             min="1"
-             (change)="calcularTotal()">
-    </div>
-    <div class="form-group">
-      <label class="form-label">Precio Unit.</label>
-      <input type="number" 
-             class="form-control" 
-             [(ngModel)]="producto.precio"
-             [name]="'precio_' + i"
-             min="0"
-             step="0.01"
-             readonly>
+    <div class="card-body">
+      <div *ngFor="let producto of ventaForm.productos; let i = index"
+           style="margin-bottom: 1rem; padding: 1rem; background: #f5f5f5; border-radius: 0.5rem;">
+        <div class="grid grid-3">
+          <div class="form-group">
+            <label class="form-label">Producto</label>
+            <select class="form-control"
+                    [(ngModel)]="producto.productoId"
+                    (change)="onProductoSeleccionado(producto)"
+                    [name]="'producto_' + i">
+              <option value="">Seleccionar producto...</option>
+              <option *ngFor="let p of productos" [value]="p.id">{{ p.nombre }}</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Cantidad</label>
+            <input type="number"
+                   class="form-control"
+                   [(ngModel)]="producto.cantidad"
+                   [name]="'cantidad_' + i"
+                   min="1"
+                   (change)="calcularTotal()">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Precio Unit.</label>
+            <input type="number"
+                   class="form-control"
+                   [(ngModel)]="producto.precio"
+                   [name]="'precio_' + i"
+                   min="0"
+                   step="0.01"
+                   readonly>
+          </div>
+        </div>
+        <button class="btn btn-sm btn-danger"
+                (click)="eliminarProducto(i)"
+                *ngIf="ventaForm.productos.length > 1"
+                style="margin-top: 0.5rem;">
+          Eliminar Producto
+        </button>
+      </div>
     </div>
   </div>
-  <button class="btn btn-sm btn-danger" (click)="eliminarProducto(i)" *ngIf="ventaForm.productos.length > 1" style="margin-top: 0.5rem;">
-    Eliminar Producto
-  </button>
-</div>
 
   <!-- Tipo de Comprobante y Método de Pago -->
   <div class="card mb-4">
@@ -109,10 +126,9 @@
   <!-- Total -->
   <div class="card mb-4">
     <div class="card-body">
-      <div class="d-flex justify-between items-center" style="background: var(--neutral-light); padding: 20px; border-radius: var(--radius);">
-        <div>
-          <span class="text-totalsell" style="font-size: 14px; color: rgb(55, 54, 54);">Total de la venta:</span>
-        </div>
+      <div class="d-flex justify-between items-center"
+           style="background: var(--neutral-light); padding: 20px; border-radius: var(--radius);">
+        <span style="font-size: 14px; color: rgb(55, 54, 54);">Total de la venta:</span>
         <div class="font-bold" style="font-size: 24px; color: var(--success);">S/ {{ calcularTotal() }}</div>
       </div>
     </div>

@@ -16,6 +16,10 @@ export class LandingComponent {
     this.router.navigate(['/login']);
   }
 
+  irADemo() {
+    this.router.navigate(['/demo']);
+  }
+
   scrollToSection(sectionId: string) {
     const element = document.getElementById(sectionId);
     if (element) {

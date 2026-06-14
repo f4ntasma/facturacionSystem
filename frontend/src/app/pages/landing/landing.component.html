@@ -137,9 +137,9 @@
     content: '';
     position: absolute;
     bottom: -2px; left: 0; right: 0;
-    height: 180px;
+    height: 200px;
     background: var(--white);
-    clip-path: polygon(0 60%, 100% 0, 100% 100%, 0 100%);
+    clip-path: polygon(0 80%, 100% 0, 150% 150%, 0 150%);
   }
 
   .hero-circle {
@@ -170,7 +170,58 @@
     align-items: center;
     gap: 40px;
     position: relative;
+    z-index: 5;
+  }
+
+  .redDeDatos {
+    position: absolute;
+    top: -20rem;
+    padding: 0;
+    left: -200%;
+    width: 55rem;
+    max-width: 78rem;
+    height: 55rem;
+    pointer-events: none;
     z-index: 1;
+    opacity: 0.12;
+    mask-image: linear-gradient(
+      black 40%,
+      transparent
+    );
+    mask-image: linear-gradient(to right, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%);
+  }
+
+  .hero-image{
+    position: relative;
+    display: flex;
+    margin-left: -2 rem; 
+    margin-top: 8rem;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+  }
+
+  .fondoSvg2 {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-94%, -62%);
+    max-width: 650rem;
+    height: 35rem;
+    opacity: 1.75;
+    pointer-events: none;
+    z-index: 2;
+  }
+
+  .petWeb {
+    position: absolute;
+    max-width: 210%; /* Ajustado para que no se desborde del grid */
+    height: 260rem;
+    display: block;
+    padding-top: 6rem;
+    margin: 0 auto;  
+    z-index: 3; 
   }
 
   .hero-text h1 {
@@ -180,6 +231,7 @@
     line-height: 1.1;
     color: var(--white);
     margin-bottom: 20px;
+    z-index: 3;
   }
 
   .hero-text p {
@@ -188,12 +240,14 @@
     line-height: 1.7;
     max-width: 480px;
     margin-bottom: 36px;
+    z-index: 3;
   }
 
   .hero-btns {
     display: flex;
     gap: 16px;
     flex-wrap: wrap;
+    z-index: 3;
   }
 
   .btn-primary {
@@ -210,12 +264,14 @@
     cursor: pointer;
     transition: background .25s, transform .2s, box-shadow .2s;
     box-shadow: 0 4px 16px rgba(124,58,237,0.4);
+    z-index: 3;
   }
 
   .btn-primary:hover {
     background: #6d28d9;
     transform: translateY(-2px);
     box-shadow: 0 8px 24px rgba(124,58,237,0.5);
+    z-index: 3;
   }
 
   .btn-outline {
@@ -660,6 +716,8 @@
       </div>
     </div>
     <div class="hero-image">
+      <img src="/svg/pngwing.com.png" alt="Red de Datos" class="redDeDatos">
+      <img src="/svg/fondoSvg2.svg" alt="Fondo Svg 2" class="fondoSvg2">
       <img src="/svg/pet.png" alt="pet" class="petWeb">
     </div>
   </div>
@@ -672,32 +730,32 @@
     <p class="section-sub">Herramientas profesionales diseñadas para pequeñas y medianas empresas peruanas.</p>
     <div class="features-grid">
       <div class="feat-card">
-        <div class="feat-icon">📊</div>
+        <img src="/iconsLanding/chart-bar-big-columns.svg" alt="Icono de inventario" style="margin-bottom: 20px; background-color: #7d9ed7; padding: 8px; border-radius: 10px;">
         <h3>Gestión de Ventas</h3>
         <p>Control completo de tus ventas en tiempo real con reportes detallados y comparativos.</p>
       </div>
       <div class="feat-card">
-        <div class="feat-icon">📦</div>
+        <img src="/iconsLanding/container.svg" alt="Icono de inventario" style="margin-bottom: 20px; background-color: #7d9ed7; padding: 8px; border-radius: 10px;">
         <h3>Inventario</h3>
         <p>Gestiona tu stock con alertas automáticas de productos bajos y reabastecimiento.</p>
       </div>
       <div class="feat-card">
-        <div class="feat-icon">🧾</div>
+        <img src="/iconsLanding/file-report.svg" alt="Icono de inventario" style="margin-bottom: 20px; background-color: #7d9ed7; padding: 8px; border-radius: 10px;">
         <h3>Facturación Electrónica</h3>
         <p>Genera facturas electrónicas válidas ante SUNAT automáticamente con formato legal.</p>
       </div>
       <div class="feat-card">
-        <div class="feat-icon">👥</div>
+        <img src="/iconsLanding/people-diversity.svg" alt="Icono de inventario" style="margin-bottom: 20px; background-color: #7d9ed7; padding: 8px; border-radius: 10px;">
         <h3>Gestión de Clientes</h3>
         <p>Base de datos de clientes con historial de compras, preferencias y fidelización.</p>
       </div>
       <div class="feat-card">
-        <div class="feat-icon">💰</div>
+        <img src="/iconsLanding/dollar-circle.svg" alt="Icono de inventario" style="margin-bottom: 20px; background-color: #7d9ed7; padding: 8px; border-radius: 10px;">
         <h3>Control de Caja</h3>
         <p>Cuadre de caja diario automático con reportes de ingresos, egresos y flujo.</p>
       </div>
       <div class="feat-card">
-        <div class="feat-icon">📈</div>
+        <img src="/iconsLanding/chart-network.svg" alt="Icono de inventario" style="margin-bottom: 20px; background-color: #7d9ed7; padding: 8px; border-radius: 10px;">
         <h3>Reportes y Analítica</h3>
         <p>Dashboards y reportes avanzados para tomar decisiones estratégicas con datos reales.</p>
       </div>
@@ -721,13 +779,16 @@
           <h3>Factullama Básico</h3>
           <p>Ideal para pequeños negocios que inician</p>
           <li style="list-style: none; padding: 0; margin: 0;">
-            <ul style="padding: 0;">Gratis por 30 días</ul>
-            <ul style="padding: 0;">250 comprobantes por mes</ul>
-            <ul style="padding: 0;">250 comprobantes por mes</ul>
-            <ul style="padding: 0;">1 local 1 usuario</ul>
-            <ul style="padding: 0;">1 local 1 usuario</ul>
+            <ul style="padding: 0;">✓ Gratis por 7 días</ul>
+            <ul style="padding: 0;">✓ 250 comprobantes por mes</ul>
+            <ul style="padding: 0;">✓ Usuarios: 1 </ul>
+            <ul style="padding: 0;">✓ Sedes(Locales): 1</ul>
+            <ul style="padding: 0;">✓ Reporte SUNAT: Sí</ul>
+            <ul style="padding: 0;">✓ Acceso solo a un servicio</ul>
+            <ul style="padding: 0;">✓ Soporte 12h</ul>
           </li>
-          <div class="prod-price">S/ 99 <span>/ mes</span></div>
+          <div class="prod-price" style="margin-top: 30px; margin-bottom: 2rem;">S/ 29.99 <span>/ mes</span></div>
+          <a href="/registro" class="btn-primary" style="margin-top: 20rem; text-decoration: none;">Comprar Ahora</a>
         </div>
       </div>
       <div class="prod-card popular">
@@ -737,15 +798,16 @@
           <h3>Factullama Pro</h3>
           <p>Para empresas en crecimiento acelerado</p>
           <li style="list-style: none; padding: 0; margin: 0;">
-            <ul style="padding: 0;">Gratis por 30 días</ul>
-            <ul style="padding: 0;">250 comprobantes por mes</ul>
-            <ul style="padding: 0;">250 comprobantes por mes</ul>
-            <ul style="padding: 0;">250 comprobantes por mes</ul>
-            <ul style="padding: 0;">1 local 1 usuario</ul>
-            <ul style="padding: 0;">1 local 1 usuario</ul>
-            <ul style="padding: 0;">1 local 1 usuario</ul>
+            <ul style="padding: 0;">✓ Gratis por 15 días</ul>
+            <ul style="padding: 0;">✓ 1000 comprobantes por mes</ul>
+            <ul style="padding: 0;">✓ Usuarios: 3</ul>
+            <ul style="padding: 0;">✓ Sedes(Locales): 1</ul>
+            <ul style="padding: 0;">✓ Reporte SUNAT: Sí</ul>
+            <ul style="padding: 0;">✓ Acceso solo a un servicio</ul>
+            <ul style="padding: 0;">✓ Soporte 24h</ul>
           </li>
-          <div class="prod-price purple-price">S/ 199 <span>/ mes</span></div>
+          <div class="prod-price purple-price" style="margin-top: 30px; margin-bottom: 2rem;">S/ 44.99 <span>/ mes</span></div>
+          <a href="/registro" class="btn-primary" style="margin-top: 20rem; text-decoration: none;">Comprar Ahora</a>
         </div>
       </div>
       <div class="prod-card">
@@ -755,41 +817,14 @@
           <h3>Factullama Enterprise</h3>
           <p>Solución completa para grandes empresas</p>
           <li style="list-style: none; padding: 0; margin: 0;">
-            <ul style="padding: 0;"> Gratis por 30 días</ul>
-            <ul style="padding: 0;">250 comprobantes por mes</ul>
-            <ul style="padding: 0;">250 comprobantes por mes</ul>
-            <ul style="padding: 0;">1 local 1 usuario</ul>
-            <ul style="padding: 0;">1 local 1 usuario</ul>
-            <ul style="padding: 0;">1 local 1 usuario</ul>
-            <ul style="padding: 0;">1 local 1 usuario</ul>
-            <ul style="padding: 0;">1 local 1 usuario</ul>
-            <ul style="padding: 0;">1 local 1 usuario</ul>
-            <ul style="padding: 0;">1 local 1 usuario</ul>
+            <ul style="padding: 0;">✓ Ilimitados</ul>
+            <ul style="padding: 0;">✓ Ilimitados</ul>
+            <ul style="padding: 0;">✓ Multiples</ul>
+            <ul style="padding: 0;">✓ Reporte SUNAT: Sí</ul>
+            <ul style="padding: 0;">✓ Soporte 24h + Support Whatsapp </ul>
           </li>
-          <div class="prod-price">S/ 399 <span>/ mes</span></div>
-        </div>
-      </div>
-      <div class="prod-card">
-        <div class="prod-thumb teal-thumb"></div>
-        <div class="prod-body">
-          <div class="prod-badge green-badge">Restaurantes</div>
-          <h3>Factullama Restó</h3>
-          <p>Especializado para el sector gastronómico</p>
-          <li style="list-style: none; padding: 0; margin: 0;">
-            <ul style="padding: 0;">Gratis por 30 días</ul>
-            <ul style="padding: 0;">250 comprobantes por mes</ul>
-            <ul style="padding: 0;">1 local 1 usuario</ul>
-            <ul style="padding: 0;">1 local 1 usuario</ul>
-            <ul style="padding: 0;">1 local 1 usuario</ul>
-            <ul style="padding: 0;">1 local 1 usuario</ul>
-            <ul style="padding: 0;">1 local 1 usuario</ul>
-            <ul style="padding: 0;">1 local 1 usuario</ul>
-            <ul style="padding: 0;">1 local 1 usuario</ul>
-            <ul style="padding: 0;">1 local 1 usuario</ul>
-            <ul style="padding: 0;">1 local 1 usuario</ul>
-            <ul style="padding: 0;">1 local 1 usuario</ul>
-          </li>
-          <div class="prod-price">S/ 149 <span>/ mes</span></div>
+          <div class="prod-price" style="margin-top: 30px; margin-bottom: 2rem;">S/ 79.99 <span>/ mes</span></div>
+          <a href="/registro" class="btn-primary" style="margin-top: 20rem; text-decoration: none;">Comprar Ahora</a>
         </div>
       </div>
     </div>

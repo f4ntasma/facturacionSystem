@@ -2,9 +2,11 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { OrdenService, CheckoutRequest } from '../../services/orden.service';
 import { CarritoService, CarritoItemRequest } from '../../services/carrito.service';
 import { ProductoService, Producto } from '../../services/producto.service';
+import { AuthService } from '../../services/auth.service';
 
 export interface ProductoForm {
   productoId?: string;
@@ -22,6 +24,8 @@ export interface ProductoForm {
 export class VentaFormComponent implements OnInit {
   productos: Producto[] = [];
   loading = false;
+  buscandoDni = false;
+  errorDni = '';
 
   ventaForm = {
     clienteNombre: '',
@@ -36,7 +40,9 @@ export class VentaFormComponent implements OnInit {
     private ordenService: OrdenService,
     private carritoService: CarritoService,
     private productoService: ProductoService,
-    private router: Router
+    private router: Router,
+    private http: HttpClient,
+    private authService: AuthService
   ) {}
 
   ngOnInit() {
@@ -50,6 +56,36 @@ export class VentaFormComponent implements OnInit {
       },
       error: (error) => {
         console.error('Error cargando productos:', error);
+      }
+    });
+  }
+
+  buscarDni() {
+    const dni = this.ventaForm.dni;
+    if (!dni || dni.length !== 8) {
+      this.errorDni = 'El DNI debe tener 8 dígitos';
+      return;
+    }
+
+    this.buscandoDni = true;
+    this.errorDni = '';
+
+    const token = this.authService.getToken();
+    const headers = new HttpHeaders({ 'Authorization': `Bearer ${token}` });
+
+    this.http.get<any>(`http://localhost:8081/api/v1/consulta/dni/${dni}`, { headers }).subscribe({
+      next: (res) => {
+        if (res.success && res.data) {
+          this.ventaForm.clienteNombre = res.data.nombres;
+          this.ventaForm.clienteApellido = `${res.data.apellido_paterno} ${res.data.apellido_materno}`.trim();
+        } else {
+          this.errorDni = 'No se encontró el DNI';
+        }
+        this.buscandoDni = false;
+      },
+      error: () => {
+        this.errorDni = 'Error al consultar el DNI';
+        this.buscandoDni = false;
       }
     });
   }
@@ -78,7 +114,7 @@ export class VentaFormComponent implements OnInit {
 
   async guardarVenta() {
     if (!this.ventaForm.clienteNombre || !this.ventaForm.dni) {
-      alert('Por favor complete los datos del cliente');
+      alert('Por favor busca el DNI del cliente primero');
       return;
     }
 

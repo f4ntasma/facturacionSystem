@@ -1,6 +1,5 @@
 <div class="fade-in">
   
-  <!-- Page Header -->
   <div class="d-flex justify-between items-center mb-4 w-100">
     <div>
       <h1 class="font-bold" style="font-size: 28px; color: var(--primary-blue);">{{ isEditing ? 'Editar Cliente' : 'Nuevo Cliente' }}</h1>
@@ -13,90 +12,95 @@
     </div>
   </div>
 
-  <!-- Formulario -->
   <div class="card">
     <div class="card-header">
       <h3>Información del Cliente</h3>
     </div>
     <div class="card-body">
       <form [formGroup]="clienteForm" (ngSubmit)="onSubmit()">
+
+        <!-- DNI con búsqueda -->
+        <div class="form-group" style="margin-bottom: 1.5rem;">
+          <label class="form-label">DNI *</label>
+          <div style="display: flex; gap: 0.5rem;">
+            <input type="text"
+                   class="form-control"
+                   formControlName="dni"
+                   placeholder="Ingresa el DNI (8 dígitos)"
+                   maxlength="8">
+            <button type="button"
+                    class="btn btn-primary"
+                    (click)="buscarDni()"
+                    [disabled]="buscandoDni">
+              {{ buscandoDni ? 'Buscando...' : '🔍 Buscar' }}
+            </button>
+          </div>
+          <small *ngIf="errorDni" style="color: red; margin-top: 4px; display: block;">{{ errorDni }}</small>
+          <small style="color: red;"
+                 *ngIf="clienteForm.get('dni')?.invalid && clienteForm.get('dni')?.touched">
+            El DNI es requerido
+          </small>
+        </div>
+
         <div class="grid grid-2">
+          <!-- Nombre readonly -->
           <div class="form-group">
-            <label class="form-label">Nombre *</label>
-            <input type="text" 
-                   class="form-control" 
-                   formControlName="nombre" 
-                   placeholder="Nombre del cliente">
-            <small class="text-error" style="color: red;"
-                   *ngIf="clienteForm.get('nombre')?.invalid && clienteForm.get('nombre')?.touched">
-              El nombre es requerido
-            </small>
+            <label class="form-label">Nombre</label>
+            <input type="text"
+                   class="form-control"
+                   formControlName="nombre"
+                   placeholder="Se autocompleta con el DNI"
+                   readonly
+                   style="background: #f5f5f5; cursor: not-allowed;">
           </div>
 
+          <!-- Apellido readonly -->
           <div class="form-group">
-            <label class="form-label">Apellido *</label>
-            <input type="text" 
-                   class="form-control" 
-                   formControlName="apellido" 
-                   placeholder="Apellido del cliente">
-            <small class="text-error" style="color: red;"
-                   *ngIf="clienteForm.get('apellido')?.invalid && clienteForm.get('apellido')?.touched">
-              El apellido es requerido
-            </small>
-          </div>
-
-          <div class="form-group">
-            <label class="form-label">DNI *</label>
-            <input type="text" 
-                   class="form-control" 
-                   formControlName="dni" 
-                   placeholder="DNI del cliente">
-            <small class="text-error" style="color: red;" 
-                   *ngIf="clienteForm.get('dni')?.invalid && clienteForm.get('dni')?.touched">
-              El DNI es requerido
-            </small>
+            <label class="form-label">Apellido</label>
+            <input type="text"
+                   class="form-control"
+                   formControlName="apellido"
+                   placeholder="Se autocompleta con el DNI"
+                   readonly
+                   style="background: #f5f5f5; cursor: not-allowed;">
           </div>
 
           <div class="form-group">
             <label class="form-label">Teléfono</label>
-            <input type="text" 
-                   class="form-control" 
-                   formControlName="telefono" 
+            <input type="text"
+                   class="form-control"
+                   formControlName="telefono"
                    placeholder="Teléfono de contacto">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Email</label>
+            <input type="email"
+                   class="form-control"
+                   formControlName="email"
+                   placeholder="Email de contacto">
+            <small style="color: red;"
+                   *ngIf="clienteForm.get('email')?.invalid && clienteForm.get('email')?.touched">
+              Ingrese un email válido
+            </small>
           </div>
         </div>
 
         <div class="form-group">
           <label class="form-label">Dirección</label>
-          <input type="text" 
-                 class="form-control" 
-                 formControlName="direccion" 
+          <input type="text"
+                 class="form-control"
+                 formControlName="direccion"
                  placeholder="Dirección del cliente">
         </div>
 
-        <div class="form-group">
-          <label class="form-label">Email</label>
-          <input type="email" 
-                 class="form-control" 
-                 formControlName="email" 
-                 placeholder="Email de contacto">
-          <small class="text-error" 
-                 *ngIf="clienteForm.get('email')?.invalid && clienteForm.get('email')?.touched">
-            Ingrese un email válido
-          </small>
-        </div>
-
         <div class="d-flex justify-end gap-2 mt-4">
-          <button type="button" class="btn btn-secondary" (click)="volver()">
-            Cancelar
-          </button>
-          <button type="submit" class="btn btn-success" 
-                  [disabled]="clienteForm.invalid || loading">
+          <button type="button" class="btn btn-secondary" (click)="volver()">Cancelar</button>
+          <button type="submit" class="btn btn-success" [disabled]="clienteForm.invalid || loading">
             {{ loading ? 'Guardando...' : (isEditing ? 'Actualizar' : 'Crear') }}
           </button>
         </div>
       </form>
     </div>
   </div>
-
 </div>

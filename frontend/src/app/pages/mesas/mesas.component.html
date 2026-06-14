@@ -1,55 +1,60 @@
 <div class="container mt-4">
-<!-- Header -->
+  <!-- Header -->
   <div>
-      <h1 class="font-bold" style="font-size: 28px; color: var(--primary-blue);">Gestión de Mesas</h1>
-      <p class="text-muted" style="font-size: 14px; margin-top: 1rem;">Gestión de mesas para tu restaurante</p>
-    </div>
-      
+    <h1 class="font-bold" style="font-size: 28px; color: var(--primary-blue);">Gestión de Mesas</h1>
+    <p class="text-muted" style="font-size: 14px; margin-top: 1rem;">Gestión de mesas para tu restaurante</p>
+  </div>
+
   <!-- SELECTOR DE PISO -->
   <div class="mb-4">
     <h4>Piso {{ pisoActual }}</h4>
-
-    <button
-      *ngFor="let piso of pisos"
-      class="btn btn-outline-primary me-2"
-      [class.active]="piso === pisoActual"
-      (click)="irAPiso(piso)"
-    >
+    <button *ngFor="let piso of pisos"
+            class="btn btn-outline-primary me-2"
+            [class.active]="piso === pisoActual"
+            (click)="irAPiso(piso)">
       Piso {{ piso }}
     </button>
   </div>
 
   <div class="row g-4">
-
     <!-- MESAS -->
     <div class="col-md-3" *ngFor="let mesa of mesasFiltradas">
-      <div class="mesa-card" (click)="abrirMesa(mesa)">
+      <div class="mesa-card"
+           (click)="abrirMesa(mesa)"
+           [style.background]="getEstadoColor(mesa.estado)">
 
         <!-- OPCIONES -->
         <div class="dropdown mesa-options" (click)="$event.stopPropagation()">
-          <button
-            class="btn btn-light btn-sm rounded-circle"
-            (click)="toggleDropdown(mesa.id)"
-          >
+          <button class="btn btn-light btn-sm rounded-circle"
+                  (click)="toggleDropdown(mesa.id)">
             <i class="bi bi-three-dots-vertical"></i>
           </button>
 
-          <ul class="dropdown-menu show" *ngIf="openDropdownId === mesa.id">
+          <ul class="dropdown-menu" [class.show]="openDropdownId === mesa.id">
             <li>
-              <a
-                class="dropdown-item"
-                data-bs-toggle="modal"
-                data-bs-target="#modalEditarMesa"
-                (click)="abrirEditarMesa(mesa)"
-              >
+              <a class="dropdown-item" (click)="abrirEditarMesa(mesa)">
                 <i class="bi bi-pencil"></i> Editar
               </a>
             </li>
+            <li><hr class="dropdown-divider"></li>
             <li>
-              <a
-                class="dropdown-item text-danger"
-                (click)="eliminarMesa(mesa.id)"
-              >
+              <a class="dropdown-item" (click)="cambiarEstado(mesa.id, 'LIBRE')">
+                🟢 Libre
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item" (click)="cambiarEstado(mesa.id, 'OCUPADA')">
+                🔴 Ocupada
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item" (click)="cambiarEstado(mesa.id, 'RESERVADA')">
+                🟡 Reservada
+              </a>
+            </li>
+            <li><hr class="dropdown-divider"></li>
+            <li>
+              <a class="dropdown-item text-danger" (click)="eliminarMesa(mesa.id)">
                 <i class="bi bi-trash"></i> Eliminar
               </a>
             </li>
@@ -58,6 +63,9 @@
 
         <h5>{{ mesa.nombre }}</h5>
         <small>Piso {{ mesa.piso }}</small>
+        <div style="margin-top: 8px; font-size: 12px; font-weight: 600;">
+          {{ mesa.estado }}
+        </div>
       </div>
     </div>
 
@@ -68,61 +76,31 @@
         <span>Agregar mesa</span>
       </div>
     </div>
-
   </div>
 </div>
 
 <!-- MODAL EDITAR -->
-<div class="modal fade" id="modalEditarMesa" tabindex="-1">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
+<div *ngIf="mostrarModalEditar"
+     style="position: fixed; inset: 0; background: rgba(0,0,0,0.5);
+            display: flex; align-items: center; justify-content: center; z-index: 1000;">
+  <div style="background: #fff; padding: 32px; width: 400px; border-radius: 1rem;">
+    <h5 class="mb-4">Editar Mesa</h5>
 
-      <div class="modal-header">
-        <h5 class="modal-title">Editar mesa</h5>
-        <button class="btn-close" data-bs-dismiss="modal"></button>
-      </div>
+    <div class="mb-3">
+      <label class="form-label">Nombre</label>
+      <input class="form-control" [(ngModel)]="formMesa.nombre">
+    </div>
 
-      <div class="modal-body">
+    <div class="mb-3">
+      <label class="form-label">Piso</label>
+      <select class="form-select" [(ngModel)]="formMesa.piso">
+        <option *ngFor="let p of pisos" [ngValue]="p">Piso {{ p }}</option>
+      </select>
+    </div>
 
-        <div class="mb-3">
-          <label class="form-label">Nombre</label>
-          <input
-            class="form-control"
-            [(ngModel)]="formMesa.nombre"
-          />
-        </div>
-
-        <div class="mb-3">
-          <label class="form-label">Piso</label>
-          <select
-            class="form-select"
-            [(ngModel)]="formMesa.piso"
-          >
-            <option *ngFor="let p of pisos" [ngValue]="p">
-              Piso {{ p }}
-            </option>
-          </select>
-        </div>
-
-      </div>
-
-      <div class="modal-footer">
-        <button
-          class="btn btn-light"
-          data-bs-dismiss="modal"
-        >
-          Cancelar
-        </button>
-
-        <button
-          class="btn btn-danger"
-          data-bs-dismiss="modal"
-          (click)="guardarCambiosMesa()"
-        >
-          Guardar
-        </button>
-      </div>
-
+    <div class="d-flex justify-content-end gap-2">
+      <button type="button" class="btn btn-light" (click)="cerrarModal()">Cancelar</button>
+      <button type="button" class="btn btn-danger" (click)="guardarCambiosMesa()">Guardar</button>
     </div>
   </div>
-  </div>
+</div>

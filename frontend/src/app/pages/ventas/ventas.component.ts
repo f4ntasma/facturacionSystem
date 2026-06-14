@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
@@ -39,12 +39,12 @@ export class VentasComponent implements OnInit {
   fechaDesde = '';
   fechaHasta = '';
 
-  // 🔹 MODAL DETALLE
   mostrarDetalle = false;
   ventaSeleccionada!: Venta;
 
   constructor(
-    private ordenService: OrdenService
+    private ordenService: OrdenService,
+    private cdr: ChangeDetectorRef  // ← agregado
   ) {}
 
   ngOnInit(): void {
@@ -60,11 +60,13 @@ export class VentasComponent implements OnInit {
         this.ordenarVentas();
         this.aplicarFiltros();
         this.loading = false;
+        this.cdr.detectChanges(); // ← agregado
       },
       error: (error) => {
         console.error('Error cargando ventas:', error);
         this.error = true;
         this.loading = false;
+        this.cdr.detectChanges(); // ← agregado
       }
     });
   }
@@ -72,7 +74,7 @@ export class VentasComponent implements OnInit {
   convertirOrdenAVenta(orden: Orden): Venta {
     return {
       id: orden.id,
-      clienteNombre: 'Cliente', // Se puede obtener de la orden si está disponible
+      clienteNombre: 'Cliente',
       clienteApellido: '',
       dni: '',
       total: orden.total,
@@ -130,27 +132,22 @@ export class VentasComponent implements OnInit {
     let contenido = `VENTA #${venta.id}\n\n`;
     contenido += `Cliente: ${venta.clienteNombre} ${venta.clienteApellido}\n`;
     contenido += `DNI: ${venta.dni}\n\nPRODUCTOS:\n`;
-
     venta.productos.forEach(p => {
       contenido += `- ${p.nombre} x${p.cantidad} = S/${p.cantidad * p.precio}\n`;
     });
-
     contenido += `\nTOTAL: S/${venta.total}`;
 
     const blob = new Blob([contenido], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
-
     const a = document.createElement('a');
     a.href = url;
     a.download = `venta_${venta.id}.txt`;
     a.click();
-
     URL.revokeObjectURL(url);
   }
 
   anular(venta: Venta) {
     if (!confirm(`¿Anular venta #${venta.id}?`)) return;
-    // TODO: Implementar anulación en el backend
     this.ventas = this.ventas.filter(v => v.id !== venta.id);
     this.aplicarFiltros();
   }

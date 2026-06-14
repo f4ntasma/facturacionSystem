@@ -43,6 +43,16 @@
             </div>
           </div>
         </div>
+
+        <!-- Botón cobrar DENTRO del card-body, al final -->
+        <div *ngIf="pedido.length > 0" style="margin-top: 1rem;">
+          <button class="btn btn-primary w-100" 
+                  (click)="abrirModalCobro()"
+                  [disabled]="loading">
+            💳 Cobrar S/ {{ total() }}
+          </button>
+        </div>
+
       </div>
     </div>
 
@@ -72,16 +82,13 @@
      class="modal-overlay"
      style="position: fixed; inset: 0; background: rgba(2, 2, 2, 0.6); 
             display: flex; align-items: center; justify-content: center; z-index: 1000;">
-  
   <div class="modal-content" 
        style="background: #fff; padding: 32px; width: 500px; 
               border-radius: 1rem; box-shadow: var(--shadow-xl);
               animation: slideUp 0.3s ease-out;">
-    
     <div class="d-flex justify-between items-center mb-4">
       <h2 style="color: var(--primary-blue); margin: 0;">Agregar al Pedido</h2>
     </div>
-    
     <div class="card mb-4">
       <div class="card-body">
         <div class="text-muted mb-1" style="font-size: 12px; font-weight: 600; text-transform: uppercase;">Producto</div>
@@ -89,57 +96,72 @@
         <div class="font-bold" style="font-size: 24px; color: var(--success); margin-top: 8px;">S/ {{ platoSeleccionado.precio }}</div>
       </div>
     </div>
-    
     <div class="form-group">
       <label class="form-label">Cantidad</label>
       <input type="number" class="form-control" min="1" [(ngModel)]="cantidad">
     </div>
-    
     <div class="form-group">
       <label class="form-label">Comentario (opcional)</label>
       <textarea class="form-control" [(ngModel)]="comentario" rows="3" placeholder="Ej: sin cebolla, picante..."></textarea>
     </div>
-    
     <div class="d-flex justify-end gap-2 mt-4">
-      <button class="btn btn-secondary" (click)="mostrarModal = false">
-        Cancelar
-      </button>
-      <button class="btn btn-success" (click)="agregarPlato()">
-        Agregar al Pedido
+      <button class="btn btn-secondary" (click)="mostrarModal = false">Cancelar</button>
+      <button class="btn btn-success" (click)="agregarPlato()">Agregar al Pedido</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Cobrar -->
+<div *ngIf="mostrarModalCobro"
+     style="position: fixed; inset: 0; background: rgba(0,0,0,0.6);
+            display: flex; align-items: center; justify-content: center; z-index: 1000;">
+  <div style="background: #fff; padding: 32px; width: 450px; border-radius: 1rem;">
+    <h2 style="color: var(--primary-blue); margin-bottom: 1.5rem;">Cobrar Pedido</h2>
+    <div style="background: var(--neutral-light); padding: 16px; border-radius: var(--radius); margin-bottom: 1.5rem;">
+      <div style="font-size: 14px; color: #666;">Total a cobrar:</div>
+      <div style="font-size: 32px; font-weight: bold; color: var(--success);">S/ {{ total() }}</div>
+    </div>
+    <div class="form-group mb-3">
+      <label class="form-label">Tipo de Comprobante</label>
+      <select class="form-control" [(ngModel)]="tipoComprobante">
+        <option value="BOLETA">Boleta</option>
+        <option value="FACTURA">Factura</option>
+      </select>
+    </div>
+    <div class="form-group mb-4">
+      <label class="form-label">Método de Pago</label>
+      <select class="form-control" [(ngModel)]="metodoPago">
+        <option value="EFECTIVO">Efectivo</option>
+        <option value="TARJETA">Tarjeta</option>
+        <option value="YAPE">Yape</option>
+        <option value="PLIN">Plin</option>
+      </select>
+    </div>
+    <div class="d-flex justify-end gap-2">
+      <button class="btn btn-outline" (click)="mostrarModalCobro = false" [disabled]="loading">Cancelar</button>
+      <button class="btn btn-success" (click)="cobrar()" [disabled]="loading">
+        {{ loading ? 'Procesando...' : 'Confirmar Cobro' }}
       </button>
     </div>
-    
   </div>
 </div>
 
 <style>
 @keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
 }
-
-.modal-overlay {
-  animation: fadeIn 0.3s ease-out;
-}
-
+.modal-overlay { animation: fadeIn 0.3s ease-out; }
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
 }
-
 .pedido-item-card {
   padding: 16px;
   background: var(--neutral-light);
   border-radius: var(--radius);
   border: 1px solid var(--border-color);
 }
-
 .product-card:hover {
   transform: translateY(-2px);
   box-shadow: var(--shadow-md);
