@@ -84,6 +84,12 @@
             <artifactId>mariadb-java-client</artifactId>
             <scope>runtime</scope>
         </dependency>
+
+        <dependency>
+            <groupId>com.mercadopago</groupId>
+            <artifactId>sdk-java</artifactId>
+            <version>3.2.1</version>
+        </dependency>
         
         <!-- ========================================= -->
         <!-- FACTURACIÓN ELECTRÓNICA SUNAT -->

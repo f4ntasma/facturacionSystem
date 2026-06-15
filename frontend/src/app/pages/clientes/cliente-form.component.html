@@ -32,7 +32,7 @@
                     class="btn btn-primary"
                     (click)="buscarDni()"
                     [disabled]="buscandoDni">
-              {{ buscandoDni ? 'Buscando...' : '🔍 Buscar' }}
+              {{ buscandoDni ? 'Buscando...' : ' Buscar' }}
             </button>
           </div>
           <small *ngIf="errorDni" style="color: red; margin-top: 4px; display: block;">{{ errorDni }}</small>

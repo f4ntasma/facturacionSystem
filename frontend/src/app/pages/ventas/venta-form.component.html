@@ -5,7 +5,8 @@
       <h1 class="font-bold" style="font-size: 28px; color: var(--primary-blue);">Nueva Venta</h1>
       <p class="text-muted" style="font-size: 14px;">Crear una nueva venta</p>
     </div>
-    <button class="btn btn-outline" (click)="cancelar()">Cancelar</button>
+    <button class="btn btn-outline" style="background-color: red; margin-left: 62rem; color: #f8f8f8;" 
+    (click)="cancelar()">Cancelar</button>
   </div>
 
   <!-- Datos del Cliente -->
@@ -26,7 +27,7 @@
                   class="btn btn-primary"
                   (click)="buscarDni()"
                   [disabled]="buscandoDni">
-            {{ buscandoDni ? 'Buscando...' : '🔍 Buscar' }}
+            {{ buscandoDni ? 'Buscando...' : 'Buscar' }}
           </button>
         </div>
         <small *ngIf="errorDni" style="color: red; margin-top: 4px; display: block;">{{ errorDni }}</small>
@@ -128,8 +129,8 @@
     <div class="card-body">
       <div class="d-flex justify-between items-center"
            style="background: var(--neutral-light); padding: 20px; border-radius: var(--radius);">
-        <span style="font-size: 14px; color: rgb(55, 54, 54);">Total de la venta:</span>
-        <div class="font-bold" style="font-size: 24px; color: var(--success);">S/ {{ calcularTotal() }}</div>
+        <span style="font-size: 14px; color: rgb(55, 54, 54);">TOTAL:</span>
+        <div class="font-bold" style="font-size: 24px; color: var(--success); margin-left: 2rem;">S/ {{ calcularTotal() }}</div>
       </div>
     </div>
   </div>

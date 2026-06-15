@@ -43,6 +43,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/api/auth/**", "/api/test/**").permitAll()
                         .requestMatchers("/api/v1/consulta/**").permitAll()
+                        .requestMatchers("/api/v1/pagos/**").permitAll()
+                        .requestMatchers("/api/auth/**", "/api/test/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session

@@ -20,6 +20,14 @@ export class LandingComponent {
     this.router.navigate(['/demo']);
   }
 
+  comprar(plan: string, precio: string) {
+  this.router.navigate(['/registro'], { queryParams: { plan, precio } });
+  }
+
+  /*irARegistro() {
+    this.router.navigate(['/registro']);
+  } */
+
   scrollToSection(sectionId: string) {
     const element = document.getElementById(sectionId);
     if (element) {

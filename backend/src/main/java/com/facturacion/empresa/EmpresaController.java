@@ -5,6 +5,8 @@ import com.facturacion.user.User;
 import jakarta.validation.Valid;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/empresas")
@@ -14,6 +16,19 @@ public class EmpresaController {
 
     public EmpresaController(EmpresaRepository empresaRepository) {
         this.empresaRepository = empresaRepository;
+    }
+
+    @GetMapping
+    public List<EmpresaResponse> listar(@AuthenticationPrincipal User user) {
+        if (user.getEmpresa() == null) return List.of();
+        return List.of(new EmpresaResponse(user.getEmpresa()));
+    }
+
+    @DeleteMapping("/{id}")
+    public void eliminar(@AuthenticationPrincipal User user, @PathVariable UUID id) {
+        Empresa empresa = empresaRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Empresa no encontrada"));
+        empresaRepository.delete(empresa);
     }
 
     @GetMapping("/{ruc}")
@@ -36,4 +51,5 @@ public class EmpresaController {
         user.setEmpresa(guardada);
         return new EmpresaResponse(guardada);
     }
+
 }
