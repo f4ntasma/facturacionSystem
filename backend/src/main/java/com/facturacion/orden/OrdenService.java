@@ -130,4 +130,12 @@ public class OrdenService {
                 .filter(o -> o.getUser().getId().equals(user.getId()))
                 .orElseThrow(() -> new NotFoundException("Orden no encontrada"));
     }
+
+    @Transactional
+    public void eliminar(User user, UUID id) {
+        Orden orden = ordenRepository.findById(id)
+                .filter(o -> o.getUser().getId().equals(user.getId()))
+                .orElseThrow(() -> new NotFoundException("Orden no encontrada"));
+        ordenRepository.delete(orden);
+    }
 }

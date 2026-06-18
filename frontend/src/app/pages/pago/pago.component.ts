@@ -86,7 +86,7 @@ export class PagoComponent implements OnInit {
 
     this.http.post<string>('http://localhost:8081/api/v1/pagos/crear-preferencia', {
       planNombre: `Factullama ${this.planNombre}`,
-      precio: this.planPrecio
+      precio: parseFloat(this.planPrecio)
     }, { headers, responseType: 'text' as 'json' }).subscribe({
       next: (url) => {
         window.location.href = url;

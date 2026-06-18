@@ -7,11 +7,9 @@
       <p class="text-muted" style="font-size: 14px;">Control de ingresos, egresos y cuadre diario</p>
     </div>
     <div class="d-flex gap-2 text-right">
-      <button class="btn btn-danger" (click)="cerrarCaja()">
+      <button class="btn btn-danger" style="margin-left: 54rem; background-color: #c84242;"
+      (click)="cerrarCaja()">
         Cerrar Caja
-      </button>
-      <button class="btn btn-purple">
-        Imprimir Reporte
       </button>
     </div>
   </div>
@@ -20,28 +18,28 @@
   <div class="grid grid-4 mb-4">
     <div class="card">
       <div class="card-body">
-        <div class="text-muted mb-1" style="font-size: 12px; font-weight: 600; text-transform: uppercase;">Ventas del Día</div>
+        <div class="text-muted mb-2" style="font-size: 12px; font-weight: 600; text-transform: uppercase;">Ventas del Día</div>
         <div class="font-bold" style="font-size: 24px; color: var(--primary-blue);">S/ {{ ventas }}</div>
       </div>
     </div>
     
     <div class="card">
       <div class="card-body">
-        <div class="text-muted mb-1" style="font-size: 12px; font-weight: 600; text-transform: uppercase;">Ingresos/Egresos</div>
+        <div class="text-muted mb-2" style="font-size: 12px; font-weight: 600; text-transform: uppercase; margin-top: 0.5px;">Ingresos/Egresos</div>
         <div class="font-bold" style="font-size: 24px; color: var(--accent-purple);">S/ {{ ingresosEgresos }}</div>
       </div>
     </div>
     
     <div class="card">
       <div class="card-body">
-        <div class="text-muted mb-1" style="font-size: 12px; font-weight: 600; text-transform: uppercase;">Total Esperado</div>
+        <div class="text-muted mb-2" style="font-size: 12px; font-weight: 600; text-transform: uppercase;">Total Esperado</div>
         <div class="font-bold" style="font-size: 24px; color: var(--success);">S/ {{ total }}</div>
       </div>
     </div>
     
     <div class="card">
       <div class="card-body">
-        <div class="text-muted mb-1" style="font-size: 12px; font-weight: 600; text-transform: uppercase;">Inicio de Turno</div>
+        <div class="text-muted mb-2" style="font-size: 12px; font-weight: 600; text-transform: uppercase;">Inicio de Turno</div>
         <div class="font-semibold" style="font-size: 16px; color: var(--neutral-black);">{{ inicioCaja }}</div>
       </div>
     </div>
@@ -52,7 +50,7 @@
     <div class="card-header">
       <div class="d-flex justify-between items-center w-100">
         <h3>Movimientos de Caja</h3>
-        <button class="btn btn-success btn-sm" (click)="agregarMovimiento()">
+        <button class="btn btn-success btn-sm" style="margin-left: 50rem;" (click)="agregarMovimiento()">
           Agregar Movimiento
         </button>
       </div>
@@ -121,9 +119,9 @@
       <div class="d-flex justify-between items-center mt-3">
         <div class="text-muted">
           <span class="font-medium">Diferencia:</span> 
-          <span class="font-bold text-purple">S/ {{ total - totalContado }}</span>
+          <span class="font-bold text-purple"><br/>S/ {{ total - totalContado }}</span>
         </div>
-        <button class="btn btn-primary" (click)="cuadrarCaja()">
+        <button class="btn btn-primary" style="margin-left: 58rem" (click)="cuadrarCaja()">
           Guardar Cuadre
         </button>
       </div>

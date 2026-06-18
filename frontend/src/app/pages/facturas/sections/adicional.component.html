@@ -7,7 +7,7 @@
       <p class="text-muted" style="font-size: 14px;">Leyendas, guías y documentos relacionados</p>
     </div>
     <div class="text-right">
-      <button class="btn btn-outline" (click)="volver()">
+      <button class="btn btn-outline" style="background-color: #375dbc; color: #f8f8f8; margin-left: 55rem;" (click)="volver()">
         Volver
       </button>
     </div>
@@ -18,7 +18,7 @@
     <div class="card-header">
       <div class="d-flex justify-between items-center w-100">
         <h3>Leyendas</h3>
-        <button class="btn btn-success btn-sm" (click)="agregarLeyenda()">
+        <button class="btn btn-success btn-sm" style="margin-left: 60rem" (click)="agregarLeyenda()">
           + Agregar Leyenda
         </button>
       </div>
@@ -45,7 +45,7 @@
                        placeholder="Ej: SON CIEN CON 00/100 SOLES">
               </div>
             </div>
-            <button class="btn btn-sm btn-danger" (click)="eliminarLeyenda(i)">
+            <button class="btn btn-sm btn-danger" style="margin-top: 2rem" (click)="eliminarLeyenda(i)">
               Eliminar
             </button>
           </div>
@@ -59,7 +59,7 @@
     <div class="card-header">
       <div class="d-flex justify-between items-center w-100">
         <h3>Guías de Remisión</h3>
-        <button class="btn btn-success btn-sm" (click)="agregarGuia()">
+        <button class="btn btn-success btn-sm" style="margin-left: 54rem;" (click)="agregarGuia()">
           + Agregar Guía
         </button>
       </div>
@@ -84,7 +84,7 @@
                        placeholder="Ej: T001-000001">
               </div>
             </div>
-            <button class="btn btn-sm btn-danger" (click)="eliminarGuia(i)">
+            <button class="btn btn-sm btn-danger" style="margin-top: 2rem;" (click)="eliminarGuia(i)">
               Eliminar
             </button>
           </div>
@@ -98,7 +98,7 @@
     <div class="card-header">
       <div class="d-flex justify-between items-center w-100">
         <h3>Documentos Relacionados</h3>
-        <button class="btn btn-success btn-sm" (click)="agregarRelDoc()">
+        <button class="btn btn-success btn-sm" style="margin-left: 45rem" (click)="agregarRelDoc()">
           + Agregar Documento
         </button>
       </div>
@@ -124,7 +124,7 @@
                        placeholder="Ej: F001-000001">
               </div>
             </div>
-            <button class="btn btn-sm btn-danger" (click)="eliminarRelDoc(i)">
+            <button class="btn btn-sm btn-danger" style="margin-top: 2rem" (click)="eliminarRelDoc(i)">
               Eliminar
             </button>
           </div>

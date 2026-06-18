@@ -30,7 +30,7 @@ public class CotizacionController {
     }
 
     @DeleteMapping("/{id}")
-    public void eliminar(@AuthenticationPrincipal User user, @PathVariable UUID id) {
+    public void eliminar(@AuthenticationPrincipal User user, @PathVariable("id") UUID id) {
         cotizacionService.eliminar(user, id);
     }
 }

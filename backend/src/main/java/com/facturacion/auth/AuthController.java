@@ -1,5 +1,6 @@
 package com.facturacion.auth;
 
+import com.facturacion.auth.dto.RegisterRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -27,5 +28,14 @@ public class AuthController {
     public ResponseEntity<?> logout() {
         MessageResponse messageResponse = new MessageResponse("Logout exitoso");
         return ResponseEntity.ok(messageResponse);
+    }
+
+    @PostMapping("/register")
+    public ResponseEntity<?> register(@RequestBody RegisterRequest request) {
+        try {
+            return ResponseEntity.ok(authService.register(request));
+        } catch (Exception e) {
+            return ResponseEntity.status(400).body(new ErrorResponse(e.getMessage()));
+        }
     }
 }

@@ -22,7 +22,8 @@ interface ItemForm {
           <h1 class="font-bold" style="font-size: 28px; color: var(--primary-blue);">Nueva Cotización</h1>
           <p class="text-muted" style="font-size: 14px;">Crear un presupuesto para un cliente</p>
         </div>
-        <button class="btn btn-outline" (click)="cancelar()">Cancelar</button>
+        <button class="btn btn-outline" style="margin-left: 58rem; background-color: #c62e2e; color: #f8f8f8"
+        (click)="cancelar()">Cancelar</button>
       </div>
 
       <div class="card mb-4">
@@ -78,7 +79,7 @@ interface ItemForm {
           <div class="d-flex justify-between items-center"
                style="background: var(--neutral-light); padding: 20px; border-radius: var(--radius);">
             <span style="font-size: 14px; color: rgb(55, 54, 54);">Total de la cotización:</span>
-            <div class="font-bold" style="font-size: 24px; color: var(--success);">
+            <div class="font-bold" style="font-size: 24px; color: var(--success); margin-left: 1rem">
               S/ {{ calcularTotal() | number:'1.2-2' }}
             </div>
           </div>

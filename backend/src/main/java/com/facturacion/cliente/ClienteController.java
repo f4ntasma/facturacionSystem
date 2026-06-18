@@ -18,9 +18,10 @@ public class ClienteController {
         this.clienteService = clienteService;
     }
 
-    @GetMapping
-    public List<ClienteResponse> listar(@AuthenticationPrincipal User user) {
-        return clienteService.listar(user);
+    @GetMapping("/{id}")
+    public ClienteResponse obtener(@AuthenticationPrincipal User user,
+                                   @PathVariable("id") UUID id) {
+        return clienteService.obtener(user, id);
     }
 
     @PostMapping
@@ -31,13 +32,13 @@ public class ClienteController {
 
     @PutMapping("/{id}")
     public ClienteResponse actualizar(@AuthenticationPrincipal User user,
-                                      @PathVariable UUID id,
+                                      @PathVariable("id") UUID id,
                                       @Valid @RequestBody ClienteRequest request) {
         return clienteService.actualizar(user, id, request);
     }
 
     @DeleteMapping("/{id}")
-    public void eliminar(@AuthenticationPrincipal User user, @PathVariable UUID id) {
+    public void eliminar(@AuthenticationPrincipal User user, @PathVariable("id") UUID id) {
         clienteService.eliminar(user, id);
     }
 }

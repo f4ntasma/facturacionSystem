@@ -40,4 +40,9 @@ public class OrdenController {
                                    @RequestParam(required = false) String referencia) {
         return ordenService.confirmarPago(user, id, referencia);
     }
+
+    @DeleteMapping("/ordenes/{id}")
+    public void eliminar(@AuthenticationPrincipal User user, @PathVariable("id") UUID id) {
+        ordenService.eliminar(user, id);
+    }
 }

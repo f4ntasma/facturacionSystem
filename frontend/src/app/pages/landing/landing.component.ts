@@ -13,7 +13,7 @@ export class LandingComponent {
   constructor(private router: Router) {}
 
   irARegistro() {
-    this.router.navigate(['/login']);
+    this.router.navigate(['/registro']);
   }
 
   irADemo() {
@@ -21,12 +21,8 @@ export class LandingComponent {
   }
 
   comprar(plan: string, precio: string) {
-  this.router.navigate(['/registro'], { queryParams: { plan, precio } });
+    this.router.navigate(['/registro'], { queryParams: { plan, precio } });
   }
-
-  /*irARegistro() {
-    this.router.navigate(['/registro']);
-  } */
 
   scrollToSection(sectionId: string) {
     const element = document.getElementById(sectionId);

@@ -31,21 +31,21 @@ public class MesaController {
 
     @PutMapping("/{id}")
     public MesaResponse actualizar(@AuthenticationPrincipal User user,
-                                   @PathVariable UUID id,
+                                   @PathVariable("id") UUID id,
                                    @Valid @RequestBody MesaRequest request) {
         return mesaService.actualizar(user, id, request);
     }
 
     @PatchMapping("/{id}/estado")
     public MesaResponse cambiarEstado(@AuthenticationPrincipal User user,
-                                      @PathVariable UUID id,
+                                      @PathVariable("id") UUID id,
                                       @RequestParam(name = "estado") EstadoMesa estado) {
         return mesaService.cambiarEstado(user, id, estado);
     }
 
     @DeleteMapping("/{id}")
     public void eliminar(@AuthenticationPrincipal User user,
-                         @PathVariable UUID id) {
+                         @PathVariable("id") UUID id) {
         mesaService.eliminar(user, id);
     }
 }

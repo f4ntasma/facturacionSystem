@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -16,7 +16,10 @@ export class ClientesListComponent implements OnInit {
   loading = false;
   searchTerm = '';
 
-  constructor(private clienteService: ClienteService) {}
+  constructor(
+    private clienteService: ClienteService, 
+    private cdr: ChangeDetectorRef
+  ) {}
 
   ngOnInit() {
     this.loadClientes();

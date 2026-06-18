@@ -25,14 +25,14 @@ public class EmpresaController {
     }
 
     @DeleteMapping("/{id}")
-    public void eliminar(@AuthenticationPrincipal User user, @PathVariable UUID id) {
+    public void eliminar(@AuthenticationPrincipal User user, @PathVariable("id") UUID id) {
         Empresa empresa = empresaRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Empresa no encontrada"));
         empresaRepository.delete(empresa);
     }
 
     @GetMapping("/{ruc}")
-    public EmpresaResponse obtenerPorRuc(@PathVariable String ruc) {
+    public EmpresaResponse obtenerPorRuc(@PathVariable("ruc") String ruc) {
         Empresa empresa = empresaRepository.findByRuc(ruc)
                 .orElseThrow(() -> new NotFoundException("Empresa no encontrada"));
         return new EmpresaResponse(empresa);

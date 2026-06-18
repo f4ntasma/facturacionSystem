@@ -32,7 +32,7 @@ export interface Factura {
   providedIn: 'root'
 })
 export class FacturaService {
-  private apiUrl = 'http://localhost:8081/api/facturas';
+  private apiUrl = 'http://localhost:8081/api/v1/facturas';
 
   constructor(
     private http: HttpClient,

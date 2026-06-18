@@ -66,7 +66,6 @@ export class FacturasListComponent implements OnInit {
 
   onGlobalFilter(event: any) {
     const value = (event.target as HTMLInputElement).value;
-    // Implementar filtro global si es necesario
   }
 
   getEstadoSeverity(estado: string | undefined): "success" | "warn" | "danger" | "info" {

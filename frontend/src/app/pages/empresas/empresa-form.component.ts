@@ -89,7 +89,7 @@ export class EmpresaFormComponent implements OnInit {
             detail: `Empresa ${this.isEditing ? 'actualizada' : 'creada'} correctamente`
           });
           setTimeout(() => {
-            this.router.navigate(['/app/empresas']);
+            this.router.navigate(['/app/v1/empresas']);
           }, 1500);
         },
         error: (error) => {
@@ -106,6 +106,6 @@ export class EmpresaFormComponent implements OnInit {
   }
 
   volver() {
-    this.router.navigate(['/app/empresas']);
+    this.router.navigate(['/app/v1/empresas']);
   }
 }

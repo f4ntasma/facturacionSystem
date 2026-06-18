@@ -19,10 +19,12 @@ public class ClienteService {
         this.clienteRepository = clienteRepository;
     }
 
-    public List<ClienteResponse> listar(User user) {
+    public ClienteResponse obtener(User user, UUID id) {
         Empresa empresa = requireEmpresa(user);
-        return clienteRepository.findByEmpresa(empresa)
-                .stream().map(ClienteResponse::new).toList();
+        Cliente c = clienteRepository.findById(id)
+                .filter(cl -> cl.getEmpresa().getId().equals(empresa.getId()))
+                .orElseThrow(() -> new NotFoundException("Cliente no encontrado"));
+        return new ClienteResponse(c);
     }
 
     @Transactional

@@ -32,13 +32,13 @@ public class ProductoController {
 
     @PutMapping("/productos/{id}")
     public ProductResponse actualizar(@AuthenticationPrincipal User user,
-                                      @PathVariable UUID id,
+                                      @PathVariable("id") UUID id,
                                       @Valid @RequestBody ProductRequest request) {
         return productoService.actualizar(user, id, request);
     }
 
     @DeleteMapping("/productos/{id}")
-    public void eliminar(@AuthenticationPrincipal User user, @PathVariable UUID id) {
+    public void eliminar(@AuthenticationPrincipal User user, @PathVariable("id") UUID id) {
         productoService.eliminar(user, id);
     }
 
