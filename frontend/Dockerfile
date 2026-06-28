@@ -18,10 +18,10 @@ RUN npm run build
 # Etapa 2: Servir con nginx
 FROM nginx:alpine
 
-# Copiar archivos construidos
-COPY --from=build /app/dist/factullama-frontend /usr/share/nginx/html
+# FIX 1: Añadir /browser a la ruta de Angular (Angular 17+)
+COPY --from=build /app/dist/factullama-frontend/browser /usr/share/nginx/html
 
-# Copiar configuración personalizada de nginx
+# FIX 2: Como tu archivo tiene el bloque 'http', debe reemplazar el global
 COPY nginx.conf /etc/nginx/nginx.conf
 
 # Exponer puerto 4200
