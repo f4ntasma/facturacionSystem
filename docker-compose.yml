@@ -2,8 +2,6 @@ services:
 
   backend:
     build: ./backend
-    ports:
-      - "8080:8080"
     environment:
       SPRING_PROFILES_ACTIVE: docker
       DB_HOST: ${DB_HOST}
@@ -29,8 +27,6 @@ services:
 
   frontend:
     build: ./frontend
-    ports:
-      - "4200:4200"
     depends_on:
       - backend
     networks:
