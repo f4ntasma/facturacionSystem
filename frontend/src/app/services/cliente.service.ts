@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { AuthService } from './auth.service';
+import { environment } from '../../enviroment/enviroment';
 
 export interface Cliente {
   id?: string;
@@ -17,7 +18,8 @@ export interface Cliente {
   providedIn: 'root'
 })
 export class ClienteService {
-  private apiUrl = 'http://localhost:8081/api/v1/clientes';
+  // Modificiacion de URL para manejar rutas alternas
+  private apiUrl = `${environment.apiUrl}/clientes`;
 
   constructor(
     private http: HttpClient,

@@ -64,6 +64,6 @@ export const routes: Routes = [
 
   {
     path: '**',
-    redirectTo: ''
+    loadComponent: () => import('./pages/error/error.component').then(m => m.ErrorComponent)
   }
 ];

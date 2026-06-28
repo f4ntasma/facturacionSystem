@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { AuthService } from './auth.service';
+import { environment } from '../../enviroment/enviroment';
 
 export interface OrdenItem {
   id?: string;
@@ -41,7 +42,7 @@ export interface CheckoutRequest {
   providedIn: 'root'
 })
 export class OrdenService {
-  private apiUrl = 'http://localhost:8081/api/v1';
+  private apiUrl = `${environment.apiUrl}/ordenes`;
 
   constructor(
     private http: HttpClient,

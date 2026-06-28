@@ -2,6 +2,8 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { AuthService } from './auth.service';
+import { environment } from '../../enviroment/enviroment';
+
 
 export interface FacturaItem {
   id?: number;
@@ -32,7 +34,7 @@ export interface Factura {
   providedIn: 'root'
 })
 export class FacturaService {
-  private apiUrl = 'http://localhost:8081/api/v1/facturas';
+  private apiUrl = `${environment.apiUrl}/facturas`;
 
   constructor(
     private http: HttpClient,

@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { AuthService } from './auth.service';
+import { environment } from '../../enviroment/enviroment';
 
 export interface CarritoItem {
   id?: number;
@@ -28,7 +29,8 @@ export interface CarritoItemRequest {
   providedIn: 'root'
 })
 export class CarritoService {
-  private apiUrl = 'http://localhost:8081/api/v1/carrito';
+  // Modificiacion de URL para manejar rutas alternas
+  private apiUrl = `${environment.apiUrl}/carrito`;
 
   constructor(
     private http: HttpClient,
