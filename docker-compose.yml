@@ -36,3 +36,5 @@ services:
 networks:
   facturacion-network:
     driver: bridge
+    external: true
+    name: dokploy-network
