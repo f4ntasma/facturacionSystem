@@ -1,6 +1,7 @@
 version: '3.8'
 
 services:
+
   backend:
     build: ./backend
     ports:
@@ -12,6 +13,18 @@ services:
       - DB_NAME=${DB_NAME}
       - DB_USER=${DB_USER}
       - DB_PASSWORD=${DB_PASSWORD}
+    networks:
+      - facturacion-network
+
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - frontend
+      - backend
     networks:
       - facturacion-network
 
@@ -27,15 +40,3 @@ services:
 networks:
   facturacion-network:
     driver: bridge
-
-nginx:
-    image: nginx:alpine
-    ports:
-      - "80:80"
-    volumes:
-      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
-    depends_on:
-      - frontend
-      - backend
-    networks:
-      - facturacion-network
