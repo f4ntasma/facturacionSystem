@@ -17,6 +17,9 @@ public class PagoController {
     @Value("${mercadopago.access-token}")
     private String accessToken;
 
+    @Value("${app.frontend-url}")
+    private String frontendUrl;
+
     @PostConstruct
     public void init() {
         MercadoPagoConfig.setAccessToken(accessToken);
@@ -35,11 +38,11 @@ public class PagoController {
             PreferenceRequest preferenceRequest = PreferenceRequest.builder()
                     .items(List.of(item))
                     .backUrls(PreferenceBackUrlsRequest.builder()
-                            .success("http://localhost:4200/pago-exitoso")
-                            .failure("http://localhost:4200/pago-fallido")
-                            .pending("http://localhost:4200/pago-pendiente")
+                            .success(frontendUrl + "/pago-exitoso")
+                            .failure(frontendUrl + "/pago-fallido")
+                            .pending(frontendUrl + "/pago-pendiente")
                             .build())
-                    //.autoReturn("approved")
+                    .autoReturn("approved")
                     .build();
 
             PreferenceClient client = new PreferenceClient();

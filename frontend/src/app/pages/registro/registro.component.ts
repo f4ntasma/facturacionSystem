@@ -142,31 +142,22 @@ export class RegistroComponent {
     if (this.form.password !== this.form.confirmPassword) {
       this.error = 'Las contraseñas no coinciden';
       return;
-    }
+  }
 
     this.loading = true;
     this.error = '';
 
-    this.http.post<any>('http://localhost:8081/api/auth/register', {
-      nombre: this.form.nombre,
-      email: this.form.email,
-      password: this.form.password
-    }).subscribe({
-      next: (res) => {
-        // Guardar token
-        localStorage.setItem('auth_token', res.token);
-        // Ir a pagar
-        this.router.navigate(['/pago'], {
-          queryParams: {
-            plan: this.planNombre,
-            precio: this.planPrecio
-          }
-        });
-      },
-      error: (err) => {
-        this.error = err.error?.message || 'Error al crear la cuenta';
-        this.loading = false;
-      }
-    });
-  }
+    sessionStorage.setItem('registro_pendiente', JSON.stringify({
+    nombre: this.form.nombre,
+    email: this.form.email,
+    password: this.form.password
+  }));
+
+  this.router.navigate(['/pago'], {
+    queryParams: {
+      plan: this.planNombre,
+      precio: this.planPrecio
+    }
+  });
+}
 }

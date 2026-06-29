@@ -24,6 +24,7 @@ export interface LoginResponse {
 })
 export class AuthService {
   private apiUrl = `${environment.apiUrl}`; 
+  private authUrl = `${environment.authUrl}`;
   private tokenKey = 'auth_token';
   private currentUserSubject = new BehaviorSubject<any>(null);
   public currentUser$ = this.currentUserSubject.asObservable();
@@ -41,11 +42,10 @@ export class AuthService {
     console.log('AuthService: Enviando petición de login a:', `${this.apiUrl}/auth/login`);
     console.log('AuthService: Credenciales:', credentials);
     
-    return this.http.post<LoginResponse>(`${this.apiUrl}/auth/login`, credentials)
+    return this.http.post<LoginResponse>(`${this.authUrl}/login`, credentials)
       .pipe(
         tap(response => {
           console.log('AuthService: Respuesta recibida:', response);
-          // Guardar token en localStorage
           localStorage.setItem(this.tokenKey, response.token);
           this.currentUserSubject.next(response.user);
         })
