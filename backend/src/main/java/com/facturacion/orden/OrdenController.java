@@ -24,7 +24,7 @@ public class OrdenController {
     }
 
     @GetMapping("/ordenes/{id}")
-    public OrdenResponse obtener(@AuthenticationPrincipal User user, @PathVariable UUID id) {
+    public OrdenResponse obtener(@AuthenticationPrincipal User user, @PathVariable("id") UUID id) {
         return ordenService.obtener(user, id);
     }
 
@@ -36,7 +36,7 @@ public class OrdenController {
 
     @PostMapping("/ordenes/{id}/confirmar")
     public OrdenResponse confirmar(@AuthenticationPrincipal User user,
-                                   @PathVariable UUID id,
+                                   @PathVariable("id") UUID id,
                                    @RequestParam(required = false) String referencia) {
         return ordenService.confirmarPago(user, id, referencia);
     }
