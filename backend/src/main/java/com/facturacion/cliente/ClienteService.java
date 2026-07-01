@@ -19,6 +19,13 @@ public class ClienteService {
         this.clienteRepository = clienteRepository;
     }
 
+    public List<ClienteResponse> listar(User user) {
+        Empresa empresa = requireEmpresa(user);
+        return clienteRepository.findByEmpresa(empresa).stream()
+                .map(ClienteResponse::new)
+                .toList();
+    }
+
     public ClienteResponse obtener(User user, UUID id) {
         Empresa empresa = requireEmpresa(user);
         Cliente c = clienteRepository.findById(id)

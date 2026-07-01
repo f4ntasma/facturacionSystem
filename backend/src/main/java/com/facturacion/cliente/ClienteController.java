@@ -18,6 +18,11 @@ public class ClienteController {
         this.clienteService = clienteService;
     }
 
+    @GetMapping
+    public List<ClienteResponse> listar(@AuthenticationPrincipal User user) {
+        return clienteService.listar(user);
+    }
+
     @GetMapping("/{id}")
     public ClienteResponse obtener(@AuthenticationPrincipal User user,
                                    @PathVariable("id") UUID id) {

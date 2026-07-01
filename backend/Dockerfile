@@ -11,8 +11,8 @@ COPY src ./src
 # Instalar Maven
 RUN apk add --no-cache maven
 
-# Compilar la aplicación
-RUN mvn clean package -DskipTests
+# Compilar la aplicación (--no-transfer-progress reduce ruido en logs)
+RUN mvn clean package -DskipTests --no-transfer-progress
 
 # Exponer el puerto 8080
 EXPOSE 8080

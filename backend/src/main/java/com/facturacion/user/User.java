@@ -38,7 +38,7 @@ public class User implements UserDetails {
 
     private boolean activo = true;
 
-    @OneToOne(mappedBy = "owner", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToOne(mappedBy = "owner", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private Empresa empresa;
 
     @CreatedDate
