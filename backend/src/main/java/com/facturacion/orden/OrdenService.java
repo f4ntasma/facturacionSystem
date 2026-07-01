@@ -97,7 +97,9 @@ public class OrdenService {
         pago.setOrden(guardada);
         pago.setMetodo(request.getMetodoPago());
         pago.setMonto(total);
-        pago.setEstado(request.getMetodoPago() == MetodoPago.EFECTIVO ? EstadoPago.PENDIENTE : EstadoPago.PENDIENTE);
+        // EFECTIVO queda PENDIENTE hasta confirmar entrega del dinero;
+        // otros métodos (Yape, tarjeta) también PENDIENTE hasta webhook/confirmación externa
+        pago.setEstado(EstadoPago.PENDIENTE);
         Pago pagoGuardado = pagoRepository.save(pago);
         guardada.setPago(pagoGuardado);
 

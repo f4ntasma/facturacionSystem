@@ -3,6 +3,7 @@ package com.facturacion.orden;
 import com.facturacion.pago.PagoResponse;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -15,6 +16,7 @@ public class OrdenResponse {
     private BigDecimal total;
     private List<OrdenItemResponse> items;
     private String comprobanteUrl;
+    private Instant createdAt;   // FIX: faltaba — frontend lo necesita para mostrar la fecha
     private PagoResponse pago;
 
     public OrdenResponse(Orden orden) {
@@ -26,6 +28,7 @@ public class OrdenResponse {
         this.total = orden.getTotal();
         this.items = orden.getItems().stream().map(OrdenItemResponse::new).toList();
         this.comprobanteUrl = orden.getComprobanteUrl();
+        this.createdAt = orden.getCreatedAt();
     }
 
     public UUID getId() {
@@ -62,6 +65,10 @@ public class OrdenResponse {
 
     public PagoResponse getPago() {
         return pago;
+    }
+
+    public Instant getCreatedAt() {
+        return createdAt;
     }
 
     public void setPago(PagoResponse pago) {

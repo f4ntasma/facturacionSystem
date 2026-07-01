@@ -3,8 +3,6 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { OrdenService, Orden } from '../../services/orden.service';
-import { HttpClient ,HttpHeaders } from '@angular/common/http';
-import { AuthService } from '../../services/auth.service';
 
 export interface ProductoVenta {
   nombre: string;
@@ -46,9 +44,7 @@ export class VentasComponent implements OnInit {
 
   constructor(
     private ordenService: OrdenService,
-    private cdr: ChangeDetectorRef,
-    private http: HttpClient,
-    private authService: AuthService
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -84,7 +80,7 @@ export class VentasComponent implements OnInit {
       total: orden.total,
       fecha: orden.createdAt ? new Date(orden.createdAt) : new Date(),
       productos: orden.items.map(item => ({
-        nombre: item.productoNombre || 'Producto',
+        nombre: item.producto?.nombre || 'Producto',
         cantidad: item.cantidad,
         precio: item.precioUnitario
       })),
@@ -153,10 +149,8 @@ export class VentasComponent implements OnInit {
   anular(venta: Venta) {
     if (!confirm(`¿Anular venta #${venta.id}?`)) return;
 
-    const token = this.authService.getToken(); 
-    const headers = new HttpHeaders({ 'Authorization': `Bearer ${token}` });
-
-    this.http.delete(`http://localhost:8081/api/v1/ordenes/${venta.id}`, { headers }).subscribe({
+    // FIX: usaba URL hardcodeada localhost — ahora usa OrdenService correcto
+    this.ordenService.eliminar(venta.id).subscribe({
       next: () => this.cargarVentas(),
       error: (err) => console.error('Error anulando:', err)
     });

@@ -2,8 +2,10 @@ package com.facturacion.orden;
 
 import com.facturacion.user.User;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.ResponseStatus;
 
 import java.util.List;
 import java.util.UUID;
@@ -42,6 +44,7 @@ public class OrdenController {
     }
 
     @DeleteMapping("/ordenes/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     public void eliminar(@AuthenticationPrincipal User user, @PathVariable("id") UUID id) {
         ordenService.eliminar(user, id);
     }

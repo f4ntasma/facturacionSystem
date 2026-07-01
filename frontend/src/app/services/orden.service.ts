@@ -4,9 +4,17 @@ import { Observable } from 'rxjs';
 import { AuthService } from './auth.service';
 import { environment } from '../../enviroment/enviroment';
 
+export interface OrdenItemProducto {
+  id: string;
+  nombre: string;
+  sku?: string;
+  precio: number;
+  stock?: number;
+}
+
 export interface OrdenItem {
   id?: string;
-  productoNombre?: string;
+  producto?: OrdenItemProducto;  // FIX: backend devuelve objeto, no productoNombre
   cantidad: number;
   precioUnitario: number;
   subtotal?: number;
@@ -21,7 +29,7 @@ export interface Orden {
   total: number;
   items: OrdenItem[];
   comprobanteUrl?: string;
-  createdAt?: string;
+  createdAt?: string;  // viene del backend solo si OrdenResponse lo expone
   pago?: PagoInfo;
 }
 
@@ -58,15 +66,17 @@ export class OrdenService {
   }
 
   getOrdenes(): Observable<Orden[]> {
-    return this.http.get<Orden[]>(`${this.apiUrl}/ordenes`, { headers: this.getHeaders() });
+    // FIX: apiUrl ya incluye /ordenes — no repetir
+    return this.http.get<Orden[]>(this.apiUrl, { headers: this.getHeaders() });
   }
 
   getOrden(id: string): Observable<Orden> {
-    return this.http.get<Orden>(`${this.apiUrl}/ordenes/${id}`, { headers: this.getHeaders() });
+    return this.http.get<Orden>(`${this.apiUrl}/${id}`, { headers: this.getHeaders() });
   }
 
   checkout(request: CheckoutRequest): Observable<Orden> {
-    return this.http.post<Orden>(`${this.apiUrl}/checkout`, request, { headers: this.getHeaders() });
+    // FIX: /checkout está en /api/v1, no bajo /ordenes
+    return this.http.post<Orden>(`${environment.apiUrl}/checkout`, request, { headers: this.getHeaders() });
   }
 
   confirmarPago(id: string, referencia?: string): Observable<Orden> {
@@ -74,9 +84,13 @@ export class OrdenService {
     if (referencia) {
       params = { referencia };
     }
-    return this.http.post<Orden>(`${this.apiUrl}/ordenes/${id}/confirmar`, null, { 
+    return this.http.post<Orden>(`${this.apiUrl}/${id}/confirmar`, null, {
       headers: this.getHeaders(),
-      params 
+      params
     });
+  }
+
+  eliminar(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${id}`, { headers: this.getHeaders() });
   }
 }

@@ -1,5 +1,6 @@
 package com.facturacion.producto;
 
+import jakarta.persistence.Version;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.facturacion.empresa.Empresa;
 import jakarta.persistence.*;
@@ -15,6 +16,9 @@ import java.util.UUID;
 @Table(name = "productos")
 @EntityListeners(AuditingEntityListener.class)
 public class Producto {
+
+    @Version
+    private Long version;
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -122,5 +126,9 @@ public class Producto {
 
     public Instant getUpdatedAt() {
         return updatedAt;
+    }
+
+    public Long getVersion() {
+        return version;
     }
 }
