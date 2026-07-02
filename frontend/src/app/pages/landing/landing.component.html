@@ -871,6 +871,34 @@
   </div>
 </section>
 
+<!-- ====== FAQ ====== -->
+<section class="section" style="background: #f8f9ff;">
+  <div class="section-inner">
+    <h2 class="section-title" style="text-align: center;">Preguntas frecuentes</h2>
+    <p class="section-sub" style="text-align: center; margin: 0 auto 48px;">Todo lo que necesitas saber antes de empezar</p>
+
+    <div style="max-width: 720px; margin: 0 auto;">
+
+      <div *ngFor="let faq of faqs; let i = index"
+           style="border-bottom: 1px solid #e5e7eb; overflow: hidden;">
+        <button (click)="toggleFaq(i)"
+          style="width: 100%; background: none; border: none; text-align: left; cursor: pointer;
+                 display: flex; justify-content: space-between; align-items: center;
+                 padding: 1.25rem 0; gap: 1rem;">
+          <span style="font-weight: 700; color: #1f2937; font-size: 16px;">{{ faq.pregunta }}</span>
+          <span style="font-size: 22px; color: #1e3a8a; flex-shrink: 0; transition: transform 0.25s;"
+                [style.transform]="faq.abierto ? 'rotate(45deg)' : 'rotate(0)'">+</span>
+        </button>
+        <div *ngIf="faq.abierto"
+             style="padding: 0 0 1.25rem; color: #4b5563; font-size: 15px; line-height: 1.75;">
+          {{ faq.respuesta }}
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
 <!-- ====== CTA BANNER ====== -->
 <div class="cta-banner">
   <h2>¿Listo para transformar tu negocio?</h2>
