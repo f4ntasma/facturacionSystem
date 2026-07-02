@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { AuthService } from '../../services/auth.service';
 
 interface Movimiento {
   descripcion: string;
@@ -24,9 +25,6 @@ interface CuadreHistorial {
   movimientos: Movimiento[];
 }
 
-const STORAGE_KEY   = 'factullama_caja';
-const HISTORIAL_KEY = 'factullama_caja_historial';
-
 @Component({
   selector: 'app-caja',
   standalone: true,
@@ -35,6 +33,9 @@ const HISTORIAL_KEY = 'factullama_caja_historial';
   styleUrls: ['./caja.component.css']
 })
 export class CajaComponent implements OnInit {
+
+  private storageKey = 'factullama_caja';
+  private historialKey = 'factullama_caja_historial';
 
   // Vista activa: 'lista' | 'caja'
   vista: 'lista' | 'caja' = 'lista';
@@ -64,7 +65,12 @@ export class CajaComponent implements OnInit {
   // Filtros lista
   searchFecha: string = '';
 
+  constructor(private authService: AuthService) {}
+
   ngOnInit() {
+    const userId = this.authService.getUserId();
+    this.storageKey = `factullama_caja_${userId}`;
+    this.historialKey = `factullama_caja_historial_${userId}`;
     this.cargarEstado();
     this.cargarHistorial();
   }
@@ -72,7 +78,7 @@ export class CajaComponent implements OnInit {
   // ── Persistencia ─────────────────────────────────────
 
   guardarEstado() {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({
+    localStorage.setItem(this.storageKey, JSON.stringify({
       montoInicial: this.montoInicial,
       horaEntrada: this.horaEntrada,
       horaSalida: this.horaSalida,
@@ -83,7 +89,7 @@ export class CajaComponent implements OnInit {
   }
 
   cargarEstado() {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = localStorage.getItem(this.storageKey);
     if (!raw) return;
     try {
       const e = JSON.parse(raw);
@@ -97,14 +103,14 @@ export class CajaComponent implements OnInit {
   }
 
   cargarHistorial() {
-    const raw = localStorage.getItem(HISTORIAL_KEY);
+    const raw = localStorage.getItem(this.historialKey);
     try { this.historial = raw ? JSON.parse(raw) : []; }
     catch { this.historial = []; }
   }
 
   guardarEnHistorial(cuadre: CuadreHistorial) {
     this.historial.unshift(cuadre);
-    localStorage.setItem(HISTORIAL_KEY, JSON.stringify(this.historial));
+    localStorage.setItem(this.historialKey, JSON.stringify(this.historial));
   }
 
   // ── Totales ──────────────────────────────────────────
@@ -210,7 +216,7 @@ export class CajaComponent implements OnInit {
       movimientos: [...this.movimientos]
     };
     this.guardarEnHistorial(cuadre);
-    localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem(this.storageKey);
     this.montoInicial = 0; this.horaEntrada = ''; this.horaSalida = '';
     this.movimientos = []; this.totalContado = 0; this.descripcionCuadre = '';
     this.vista = 'lista';
@@ -220,7 +226,7 @@ export class CajaComponent implements OnInit {
   cancelarCierre()  { this.mostrarConfirmCierre = false; }
 
   cerrarCaja() {
-    localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem(this.storageKey);
     this.montoInicial = 0; this.horaEntrada = ''; this.horaSalida = '';
     this.movimientos = []; this.totalContado = 0; this.descripcionCuadre = '';
     this.mostrarConfirmCierre = false;
@@ -241,6 +247,6 @@ export class CajaComponent implements OnInit {
 
   eliminarCuadre(index: number) {
     this.historial.splice(index, 1);
-    localStorage.setItem(HISTORIAL_KEY, JSON.stringify(this.historial));
+    localStorage.setItem(this.historialKey, JSON.stringify(this.historial));
   }
 }

@@ -66,6 +66,18 @@ export class AuthService {
     return token !== null;
   }
 
+  // Decodifica el JWT y devuelve el campo 'sub' (email/username del usuario)
+  getUserId(): string {
+    const token = this.getToken();
+    if (!token) return 'anonimo';
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      return payload.sub || payload.email || payload.username || 'anonimo';
+    } catch {
+      return 'anonimo';
+    }
+  }
+
   // Método para agregar el token a las peticiones HTTP
   getAuthHeaders() {
     const token = this.getToken();

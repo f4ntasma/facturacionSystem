@@ -35,6 +35,7 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./layout/main-layout.component').then(m => m.MainLayoutComponent),
     children: [
+      { path: '', loadComponent: () => import('./pages/dashboard/dashboard.component').then(m => m.DashboardComponent) },
       { path: 'pisos/:piso', loadComponent: () => import('./pages/mesas/mesas.component').then(m => m.MesasComponent) },
       { path: 'mesa/:id', loadComponent: () => import('./pages/mesa-detalle/mesa-detalle.component').then(m => m.MesaDetalleComponent) },
       { path: 'empresas/nueva', loadComponent: () => import('./pages/empresas/empresa-form.component').then(m => m.EmpresaFormComponent) },
