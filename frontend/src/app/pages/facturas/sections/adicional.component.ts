@@ -107,8 +107,6 @@ export class FacturaAdicionalComponent implements OnInit {
         ...JSON.parse(localStorage.getItem('factura_adicional') || '{}')
       };
       
-      console.log('Factura completa:', facturaCompleta);
-      
       // Aquí se enviaría al backend
       alert('Factura preparada para enviar a SUNAT. (Implementar llamada al backend)');
       

@@ -39,6 +39,5 @@ export class App implements OnInit {
     const isLandingOrLogin = url === '/' || url.includes('/login');
     const isAppRoute = url.startsWith('/app');
     this.showLayout = isAppRoute && !isLandingOrLogin;
-    console.log('Current URL:', url, 'Show Layout:', this.showLayout);
   }
 }

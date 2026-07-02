@@ -9,12 +9,7 @@ export class NavbarService {
   private navbarSource = new BehaviorSubject<NavbarMode>('main');
   navbar$ = this.navbarSource.asObservable();
 
-  constructor() {
-    console.log('NavbarService Inst...');
-  }
-
   cambiarNavbar(mode: NavbarMode) {
-    console.log('NvSc → changerNv:', mode);
     this.navbarSource.next(mode);
   }
 }

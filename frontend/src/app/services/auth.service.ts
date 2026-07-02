@@ -39,13 +39,9 @@ export class AuthService {
   }
 
   login(credentials: LoginRequest): Observable<LoginResponse> {
-    console.log('AuthService: Enviando petición de login a:', `${this.apiUrl}/auth/login`);
-    console.log('AuthService: Credenciales:', credentials);
-    
     return this.http.post<LoginResponse>(`${this.authUrl}/login`, credentials)
       .pipe(
         tap(response => {
-          console.log('AuthService: Respuesta recibida:', response);
           localStorage.setItem(this.tokenKey, response.token);
           this.currentUserSubject.next(response.user);
         })
@@ -63,7 +59,19 @@ export class AuthService {
 
   isLoggedIn(): boolean {
     const token = this.getToken();
-    return token !== null;
+    if (!token) return false;
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      const now = Math.floor(Date.now() / 1000);
+      if (payload.exp && payload.exp < now) {
+        this.logout();
+        return false;
+      }
+      return true;
+    } catch {
+      this.logout();
+      return false;
+    }
   }
 
   // Decodifica el JWT y devuelve el campo 'sub' (email/username del usuario)
