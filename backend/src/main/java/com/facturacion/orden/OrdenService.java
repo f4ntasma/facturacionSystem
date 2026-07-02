@@ -10,6 +10,7 @@ import com.facturacion.pago.MetodoPago;
 import com.facturacion.pago.Pago;
 import com.facturacion.pago.PagoRepository;
 import com.facturacion.user.User;
+import com.facturacion.user.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,11 +27,14 @@ public class OrdenService {
     private final OrdenRepository ordenRepository;
     private final PagoRepository pagoRepository;
     private final CarritoService carritoService;
+    private final UserRepository userRepository;
 
-    public OrdenService(OrdenRepository ordenRepository, PagoRepository pagoRepository, CarritoService carritoService) {
+    public OrdenService(OrdenRepository ordenRepository, PagoRepository pagoRepository,
+                        CarritoService carritoService, UserRepository userRepository) {
         this.ordenRepository = ordenRepository;
         this.pagoRepository = pagoRepository;
         this.carritoService = carritoService;
+        this.userRepository = userRepository;
     }
 
     public List<OrdenResponse> listar(User user) {
@@ -48,19 +52,28 @@ public class OrdenService {
 
     @Transactional
     public OrdenResponse checkout(User user, CheckoutRequest request) {
-        Carrito carrito = carritoService.getOrCreate(user);
+        // Recargar el usuario desde BD para que Empresa sea una entidad gestionada.
+        // El User inyectado por @AuthenticationPrincipal llega DETACHED (fuera de sesión JPA)
+        // y causaría "detached entity passed to persist" al asignarlo a Orden.
+        User managedUser = userRepository.findById(user.getId())
+                .orElseThrow(() -> new NotFoundException("Usuario no encontrado"));
+
+        Carrito carrito = carritoService.getOrCreate(managedUser);
         if (carrito.getItems().isEmpty()) {
             throw new BadRequestException("El carrito está vacío");
         }
-        Empresa empresa = user.getEmpresa();
+        Empresa empresa = managedUser.getEmpresa();
         if (empresa == null) {
             throw new BadRequestException("El usuario no tiene empresa asociada");
         }
 
         Orden orden = new Orden();
         orden.setEmpresa(empresa);
-        orden.setUser(user);
+        orden.setUser(managedUser);
         orden.setTipoComprobante(request.getTipoComprobante());
+        orden.setClienteNombre(request.getClienteNombre());
+        orden.setClienteApellido(request.getClienteApellido());
+        orden.setClienteDni(request.getClienteDni());
 
         BigDecimal subtotal = BigDecimal.ZERO;
         for (var item : carrito.getItems()) {

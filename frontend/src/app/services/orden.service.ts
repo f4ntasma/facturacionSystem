@@ -29,8 +29,11 @@ export interface Orden {
   total: number;
   items: OrdenItem[];
   comprobanteUrl?: string;
-  createdAt?: string;  // viene del backend solo si OrdenResponse lo expone
+  createdAt?: string;  // ISO-8601 string desde el backend
   pago?: PagoInfo;
+  clienteNombre?: string;
+  clienteApellido?: string;
+  clienteDni?: string;
 }
 
 export interface PagoInfo {
@@ -44,6 +47,9 @@ export interface PagoInfo {
 export interface CheckoutRequest {
   tipoComprobante: 'BOLETA' | 'FACTURA';
   metodoPago: 'EFECTIVO' | 'TARJETA' | 'YAPE' | 'PLIN';
+  clienteNombre?: string;
+  clienteApellido?: string;
+  clienteDni?: string;
 }
 
 @Injectable({

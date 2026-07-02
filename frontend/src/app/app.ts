@@ -18,7 +18,7 @@ import { SidebarComponent } from './layout/sidebar.component';
   styleUrl: './app.css'
 })
 export class App implements OnInit {
-  showLayout = true;
+  showLayout = window.location.pathname.startsWith('/app');
 
   constructor(private router: Router) {}
 

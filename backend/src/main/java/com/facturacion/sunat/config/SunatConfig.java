@@ -22,6 +22,7 @@ public class SunatConfig {
     // Configuración de certificado digital
     private String certificadoPath;
     private String certificadoPassword;
+    private String certificadoBase64; // Variable de entorno CERT_PFX (base64)
     
     // Configuración de ambiente (BETA o PRODUCCION)
     private boolean produccion = false;

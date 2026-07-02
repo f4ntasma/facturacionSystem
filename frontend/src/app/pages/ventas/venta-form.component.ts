@@ -138,7 +138,10 @@ export class VentaFormComponent implements OnInit {
 
       const checkoutRequest: CheckoutRequest = {
         tipoComprobante: this.ventaForm.tipoComprobante,
-        metodoPago: this.ventaForm.metodoPago
+        metodoPago: this.ventaForm.metodoPago,
+        clienteNombre: this.ventaForm.clienteNombre,
+        clienteApellido: this.ventaForm.clienteApellido,
+        clienteDni: this.ventaForm.dni
       };
 
       this.ordenService.checkout(checkoutRequest).subscribe({

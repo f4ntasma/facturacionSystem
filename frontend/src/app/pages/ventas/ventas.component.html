@@ -87,10 +87,12 @@
         </thead>
         <tbody>
           <tr *ngFor="let venta of ventasFiltradas">
-            <td class="font-bold text-primary">{{ venta.id.toString().padStart(5,'0') }}</td>
+            <td class="font-bold text-primary" style="font-family: monospace; font-size: 12px;">
+              #{{ venta.id.slice(-8).toUpperCase() }}
+            </td>
             <td class="font-medium">{{ venta.clienteNombre }} {{ venta.clienteApellido }}</td>
-            <td class="text-muted">{{ venta.dni }}</td>
-            <td class="font-bold" style="font-size: 16px; color: var(--success);">S/ {{ venta.total }}</td>
+            <td class="text-muted" style="font-family: monospace;">{{ venta.dni }}</td>
+            <td class="font-bold" style="font-size: 16px; color: var(--success);">S/ {{ venta.total | number:'1.2-2' }}</td>
             <td>{{ venta.fecha | date:'dd/MM/yyyy HH:mm' }}</td>
             <td>
               <span class="badge badge-success" style="background-color: rgb(166, 102, 219);">Completada</span>
@@ -146,8 +148,8 @@
       
       <div class="card" style="margin-top: 1rem;">
         <div class="card-body">
-          <div class="text-muted mb-1" style="font-size: 12px; background-color: rgba(168, 236, 234, 0.312); border-radius: 1rem; margin-right: 28.5rem; padding-left:0.8rem;">DNI</div>
-          <div class="font-semibold" style="margin-left: 0.5rem ;">{{ ventaSeleccionada.dni }}</div>
+          <div class="text-muted mb-1" style="font-size: 12px; background-color: rgba(168, 236, 234, 0.312); border-radius: 1rem; padding-left:0.8rem; display: inline-block; min-width: 40px;">DNI</div>
+          <div class="font-semibold" style="margin-left: 0.5rem; font-family: monospace;">{{ ventaSeleccionada.dni }}</div>
         </div>
       </div>
     </div>

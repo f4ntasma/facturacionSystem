@@ -16,8 +16,11 @@ public class OrdenResponse {
     private BigDecimal total;
     private List<OrdenItemResponse> items;
     private String comprobanteUrl;
-    private Instant createdAt;   // FIX: faltaba — frontend lo necesita para mostrar la fecha
+    private String createdAt;   // ISO-8601 string para que el frontend lo parsee con new Date()
     private PagoResponse pago;
+    private String clienteNombre;
+    private String clienteApellido;
+    private String clienteDni;
 
     public OrdenResponse(Orden orden) {
         this.id = orden.getId();
@@ -28,7 +31,11 @@ public class OrdenResponse {
         this.total = orden.getTotal();
         this.items = orden.getItems().stream().map(OrdenItemResponse::new).toList();
         this.comprobanteUrl = orden.getComprobanteUrl();
-        this.createdAt = orden.getCreatedAt();
+        // Serializar Instant como ISO string (evita ambigüedad segundos vs ms en el frontend)
+        this.createdAt = orden.getCreatedAt() != null ? orden.getCreatedAt().toString() : null;
+        this.clienteNombre   = orden.getClienteNombre();
+        this.clienteApellido = orden.getClienteApellido();
+        this.clienteDni      = orden.getClienteDni();
     }
 
     public UUID getId() {
@@ -67,11 +74,11 @@ public class OrdenResponse {
         return pago;
     }
 
-    public Instant getCreatedAt() {
-        return createdAt;
-    }
+    public String getCreatedAt() { return createdAt; }
 
-    public void setPago(PagoResponse pago) {
-        this.pago = pago;
-    }
+    public String getClienteNombre()   { return clienteNombre; }
+    public String getClienteApellido() { return clienteApellido; }
+    public String getClienteDni()      { return clienteDni; }
+
+    public void setPago(PagoResponse pago) { this.pago = pago; }
 }

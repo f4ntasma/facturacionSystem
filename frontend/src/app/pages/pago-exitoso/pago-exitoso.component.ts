@@ -64,7 +64,7 @@ export class PagoExitosoComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    const datosGuardados = sessionStorage.getItem('registro_pendiente');
+    const datosGuardados = localStorage.getItem('registro_pendiente');
 
     if (!datosGuardados) {
       this.error = 'No se encontraron datos de registro. Por favor, regístrate de nuevo.';
@@ -79,7 +79,7 @@ export class PagoExitosoComponent implements OnInit {
         next: (res) => {
           // Guardar token y limpiar datos temporales
           localStorage.setItem('auth_token', res.token);
-          sessionStorage.removeItem('registro_pendiente');
+          localStorage.removeItem('registro_pendiente');
           this.loading = false;
 
           // Pequeña pausa para que el usuario vea el mensaje de éxito

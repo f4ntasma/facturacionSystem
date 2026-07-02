@@ -56,6 +56,16 @@ public class Orden {
 
     private String comprobanteUrl;
 
+    // Datos del cliente (opcionales, informativo)
+    @Column
+    private String clienteNombre;
+
+    @Column
+    private String clienteApellido;
+
+    @Column
+    private String clienteDni;
+
     @CreatedDate
     @Column(updatable = false)
     private Instant createdAt;
@@ -146,6 +156,15 @@ public class Orden {
     public void setComprobanteUrl(String comprobanteUrl) {
         this.comprobanteUrl = comprobanteUrl;
     }
+
+    public String getClienteNombre() { return clienteNombre; }
+    public void setClienteNombre(String clienteNombre) { this.clienteNombre = clienteNombre; }
+
+    public String getClienteApellido() { return clienteApellido; }
+    public void setClienteApellido(String clienteApellido) { this.clienteApellido = clienteApellido; }
+
+    public String getClienteDni() { return clienteDni; }
+    public void setClienteDni(String clienteDni) { this.clienteDni = clienteDni; }
 
     public Instant getCreatedAt() {
         return createdAt;

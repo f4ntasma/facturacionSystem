@@ -1,131 +1,413 @@
 <div class="fade-in">
-  
-  <!-- Page Header -->
-  <div class="d-flex justify-between items-center mb-4 w-100">
-    <div>
-      <h1 class="font-bold" style="font-size: 28px; color: var(--primary-blue);">Gestión de Caja</h1>
-      <p class="text-muted" style="font-size: 14px;">Control de ingresos, egresos y cuadre diario</p>
+
+  <!-- ══════════ VISTA: LISTA DE CUADRES ══════════ -->
+  <ng-container *ngIf="vista === 'lista'">
+
+    <!-- Header -->
+    <div class="d-flex justify-between items-center mb-4 w-100"
+         style="display: flex; flex-direction: row; justify-content: space-between; align-items: center; width: 100%;">
+      <div>
+        <h1 class="font-bold" style="font-size: 28px; color: var(--primary-blue);">Gestión de Caja</h1>
+        <p class="text-muted" style="font-size: 14px; margin-top: 4px;">Cuadres diarios de caja</p>
+      </div>
+      <button class="btn btn-success" (click)="nuevoCuadre()">
+        Nuevo Cuadre
+      </button>
     </div>
-    <div class="d-flex gap-2 text-right">
-      <button class="btn btn-danger" style="margin-left: 54rem; background-color: #c84242;"
-      (click)="cerrarCaja()">
+
+    <!-- Filtro -->
+    <div class="card mb-4">
+      <div class="card-header">
+        <h3>Filtros de Búsqueda</h3>
+      </div>
+      <div class="card-body">
+        <div class="grid grid-4">
+          <div class="form-group" style="margin-bottom: 0;">
+            <label class="form-label">Buscar por Fecha</label>
+            <input type="text" class="form-control"
+                   placeholder="Ej: 01/07/2026"
+                   [(ngModel)]="searchFecha">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabla de cuadres -->
+    <div class="card">
+      <div class="card-header">
+        <div class="d-flex justify-between items-center w-100">
+          <h3>Cuadres Realizados</h3>
+          <span class="badge badge-purple" style="margin-left: 56rem;">{{ historialFiltrado.length }} Cuadres</span>
+        </div>
+      </div>
+      <div class="card-body">
+        <table class="table" *ngIf="historialFiltrado.length > 0">
+          <thead>
+            <tr>
+              <th>Fecha</th>
+              <th>Entrada</th>
+              <th>Salida</th>
+              <th>Total Esperado</th>
+              <th>Total Contado</th>
+              <th>Resultado</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let c of historialFiltrado; let i = index">
+              <td class="font-bold text-primary">{{ c.fecha }}</td>
+              <td class="text-muted">{{ c.horaEntrada || '--:--' }}</td>
+              <td class="text-muted">{{ c.horaSalida || '--:--' }}</td>
+              <td class="font-semibold">S/ {{ c.totalEsperado | number:'1.2-2' }}</td>
+              <td class="font-semibold">S/ {{ c.totalContado | number:'1.2-2' }}</td>
+              <td>
+                <span class="badge"
+                      [class.badge-success]="c.diferencia === 0"
+                      [class.badge-warning]="c.diferencia > 0"
+                      [class.badge-error]="c.diferencia < 0">
+                  {{ getDiferenciaLabel(c.diferencia) }} S/ {{ c.diferencia | number:'1.2-2' }}
+                </span>
+              </td>
+              <td>
+                <div class="d-flex gap-2">
+                  <button class="btn btn-sm btn-ghost" (click)="verDetalle(c)" style="background-color: beige;">
+                    Ver
+                  </button>
+                  <button class="btn btn-sm btn-danger" (click)="eliminarCuadre(i)">
+                    Eliminar
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div *ngIf="historialFiltrado.length === 0" class="empty-state">
+          <h3>No hay cuadres registrados</h3>
+          <p>Crea un nuevo cuadre para comenzar</p>
+        </div>
+      </div>
+    </div>
+
+  </ng-container>
+
+  <!-- ══════════ VISTA: GESTIÓN DE CAJA ══════════ -->
+  <ng-container *ngIf="vista === 'caja'">
+
+    <!-- Header -->
+    <div class="d-flex justify-between items-center mb-4 w-100">
+      <div>
+        <h1 class="font-bold" style="font-size: 28px; color: var(--primary-blue);">Gestión de Caja</h1>
+        <p class="text-muted" style="font-size: 14px;">Control de ingresos, egresos y cuadre diario</p>
+      </div>
+      <button class="btn btn-danger" style="margin-left: 54rem;" (click)="confirmarCierre()">
         Cerrar Caja
       </button>
     </div>
-  </div>
 
-  <!-- Resumen Cards -->
-  <div class="grid grid-4 mb-4">
-    <div class="card">
+    <!-- Datos del Turno -->
+    <div class="card mb-4">
+      <div class="card-header">
+        <h3>Datos del Turno</h3>
+      </div>
       <div class="card-body">
-        <div class="text-muted mb-2" style="font-size: 12px; font-weight: 600; text-transform: uppercase;">Ventas del Día</div>
-        <div class="font-bold" style="font-size: 24px; color: var(--primary-blue);">S/ {{ ventas }}</div>
+        <div class="grid grid-3">
+          <div class="form-group" style="margin-bottom: 0;">
+            <label class="form-label">Monto Inicial (S/)</label>
+            <input type="number" class="form-control" [(ngModel)]="montoInicial"
+                   (ngModelChange)="onDatosChange()" placeholder="0.00" min="0" step="0.01">
+          </div>
+          <div class="form-group" style="margin-bottom: 0.5rem; width: 20%;">
+            <label class="form-label">Hora de Entrada</label>
+            <input type="time" class="form-control" [(ngModel)]="horaEntrada"
+                   (ngModelChange)="onDatosChange()">
+          </div>
+          <div class="form-group" style="margin-bottom: 0; width: 20%;">
+            <label class="form-label">Hora de Salida</label>
+            <input type="time" class="form-control" [(ngModel)]="horaSalida"
+                   (ngModelChange)="onDatosChange()">
+          </div>
+        </div>
       </div>
     </div>
-    
-    <div class="card">
-      <div class="card-body">
-        <div class="text-muted mb-2" style="font-size: 12px; font-weight: 600; text-transform: uppercase; margin-top: 0.5px;">Ingresos/Egresos</div>
-        <div class="font-bold" style="font-size: 24px; color: var(--accent-purple);">S/ {{ ingresosEgresos }}</div>
-      </div>
-    </div>
-    
-    <div class="card">
-      <div class="card-body">
-        <div class="text-muted mb-2" style="font-size: 12px; font-weight: 600; text-transform: uppercase;">Total Esperado</div>
-        <div class="font-bold" style="font-size: 24px; color: var(--success);">S/ {{ total }}</div>
-      </div>
-    </div>
-    
-    <div class="card">
-      <div class="card-body">
-        <div class="text-muted mb-2" style="font-size: 12px; font-weight: 600; text-transform: uppercase;">Inicio de Turno</div>
-        <div class="font-semibold" style="font-size: 16px; color: var(--neutral-black);">{{ inicioCaja }}</div>
-      </div>
-    </div>
-  </div>
 
-  <!-- Movimientos -->
-  <div class="card mb-4">
-    <div class="card-header">
-      <div class="d-flex justify-between items-center w-100">
-        <h3>Movimientos de Caja</h3>
-        <button class="btn btn-success btn-sm" style="margin-left: 50rem;" (click)="agregarMovimiento()">
-          Agregar Movimiento
-        </button>
+    <!-- Resumen Cards -->
+    <div class="grid grid-4 mb-4">
+      <div class="card">
+        <div class="card-body">
+          <div class="text-muted mb-2" style="font-size: 12px; font-weight: 600; text-transform: uppercase;">Ventas del Día</div>
+          <div class="font-bold" style="font-size: 24px; color: var(--primary-blue);">S/ {{ ventas | number:'1.2-2' }}</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-body">
+          <div class="text-muted mb-2" style="font-size: 12px; font-weight: 600; text-transform: uppercase;">Ingresos / Egresos</div>
+          <div class="font-bold" style="font-size: 24px; color: var(--accent-purple);">S/ {{ ingresosEgresos | number:'1.2-2' }}</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-body">
+          <div class="text-muted mb-2" style="font-size: 12px; font-weight: 600; text-transform: uppercase;">Total Esperado</div>
+          <div class="font-bold" style="font-size: 24px; color: var(--success);">S/ {{ total | number:'1.2-2' }}</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-body">
+          <div class="text-muted mb-2" style="font-size: 12px; font-weight: 600; text-transform: uppercase;">Turno</div>
+          <div class="font-semibold" style="font-size: 15px; color: var(--neutral-black);">Entrada: {{ horaEntrada || '--:--' }}</div>
+          <div class="font-semibold" style="font-size: 15px; color: var(--neutral-gray);">Salida: {{ horaSalida || '--:--' }}</div>
+        </div>
       </div>
     </div>
-    <div class="card-body">
-      <table class="table">
-        <thead>
-          <tr>
-            <th>Descripción</th>
-            <th>Tipo</th>
-            <th>Monto</th>
-            <th>Estado</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let mov of movimientos">
-            <td class="font-medium">{{ mov.descripcion }}</td>
-            <td>
-              <span class="badge" 
-                [class.badge-success]="mov.tipo === 'Ingreso'" 
-                [class.badge-error]="mov.tipo === 'Egreso'">
-                {{ mov.tipo }}
-              </span>
-            </td>
-            <td class="font-bold" 
-              [class.text-success]="mov.tipo === 'Ingreso'" 
-              [class.text-error]="mov.tipo === 'Egreso'">
-              S/ {{ mov.monto }}
-            </td>
-            <td>
-              <span class="badge badge-info">Completado</span>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
 
-  <!-- Cuadre de Caja -->
-  <div class="card">
-    <div class="card-header">
-      <h3>Cuadre de Caja</h3>
+    <!-- Movimientos -->
+    <div class="card mb-4">
+      <div class="card-header">
+        <div class="d-flex justify-between items-center w-100">
+          <h3>Movimientos de Caja</h3>
+          <button class="btn btn-success btn-sm" style="margin-left: 52rem;" (click)="toggleFormMovimiento()">
+            {{ mostrarFormMovimiento ? 'Cancelar' : 'Agregar Movimiento' }}
+          </button>
+        </div>
+      </div>
+
+      <div *ngIf="mostrarFormMovimiento"
+           style="padding: 16px 24px; background: var(--neutral-light); border-bottom: 1px solid var(--border-color);">
+        <div class="grid grid-3" style="align-items: end; gap: 16px;">
+          <div class="form-group" style="margin-bottom: 0;">
+            <label class="form-label">Descripción</label>
+            <input type="text" class="form-control" [(ngModel)]="nuevoMovimiento.descripcion"
+                   placeholder="Descripción del movimiento">
+          </div>
+          <div class="form-group" style="margin-bottom: 0;">
+            <label class="form-label">Tipo</label>
+            <select class="form-control" [(ngModel)]="nuevoMovimiento.tipo">
+              <option value="Ingreso">Ingreso</option>
+              <option value="Egreso">Egreso</option>
+            </select>
+          </div>
+          <div class="form-group" style="margin-bottom: 0;">
+            <label class="form-label">Monto (S/)</label>
+            <div class="d-flex gap-2">
+              <input type="number" class="form-control" [(ngModel)]="nuevoMovimiento.monto"
+                     placeholder="0.00" min="0" step="0.01">
+              <button class="btn btn-primary btn-sm"
+                      [disabled]="!nuevoMovimiento.descripcion || !nuevoMovimiento.monto"
+                      (click)="agregarMovimiento()">
+                Guardar
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card-body">
+        <table class="table" *ngIf="movimientos.length > 0">
+          <thead>
+            <tr>
+              <th>Hora</th>
+              <th>Descripción</th>
+              <th>Tipo</th>
+              <th>Monto</th>
+              <th>Estado</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let mov of movimientos">
+              <td class="text-muted" style="font-size: 13px;">{{ mov.hora }}</td>
+              <td class="font-medium">{{ mov.descripcion }}</td>
+              <td>
+                <span class="badge"
+                  [class.badge-success]="mov.tipo === 'Ingreso'"
+                  [class.badge-error]="mov.tipo === 'Egreso'">
+                  {{ mov.tipo }}
+                </span>
+              </td>
+              <td class="font-bold"
+                [class.text-success]="mov.tipo === 'Ingreso'"
+                [class.text-error]="mov.tipo === 'Egreso'">
+                S/ {{ mov.monto | number:'1.2-2' }}
+              </td>
+              <td><span class="badge badge-info">Completado</span></td>
+            </tr>
+          </tbody>
+        </table>
+        <div *ngIf="movimientos.length === 0" class="empty-state">
+          <h3>Sin movimientos</h3>
+          <p>Agrega el primer movimiento del turno</p>
+        </div>
+      </div>
     </div>
-    <div class="card-body">
-      <div class="grid grid-2">
-        <div>
+
+    <!-- Cuadre de Caja -->
+    <div class="card">
+      <div class="card-header">
+        <h3>Cuadre de Caja</h3>
+      </div>
+      <div class="card-body">
+        <div class="grid grid-2">
           <div class="form-group">
             <label class="form-label">Total Esperado</label>
-            <input type="text" class="form-control" [value]="'S/ ' + total" disabled>
+            <input type="text" class="form-control" [value]="'S/ ' + (total | number:'1.2-2')" disabled>
           </div>
-        </div>
-        
-        <div>
           <div class="form-group">
             <label class="form-label">Total Contado</label>
-            <input type="number" class="form-control" [(ngModel)]="totalContado" placeholder="0.00">
+            <input type="number" class="form-control" [(ngModel)]="totalContado"
+                   (ngModelChange)="onDatosChange()" placeholder="0.00" step="0.01">
           </div>
         </div>
-      </div>
-      
-      <div class="form-group">
-        <label class="form-label">Observaciones del Cuadre</label>
-        <input type="text" class="form-control" [(ngModel)]="descripcionCuadre" placeholder="Ingrese observaciones...">
-      </div>
-      
-      <div class="d-flex justify-between items-center mt-3">
-        <div class="text-muted">
-          <span class="font-medium">Diferencia:</span> 
-          <span class="font-bold text-purple"><br/>S/ {{ total - totalContado }}</span>
+        <div class="form-group">
+          <label class="form-label">Observaciones del Cuadre</label>
+          <input type="text" class="form-control" [(ngModel)]="descripcionCuadre"
+                 (ngModelChange)="onDatosChange()" placeholder="Ingrese observaciones...">
         </div>
-        <button class="btn btn-primary" style="margin-left: 58rem" (click)="cuadrarCaja()">
-          Guardar Cuadre
-        </button>
+        <div class="d-flex justify-between items-center">
+          <div>
+            <span class="font-medium text-muted">Diferencia: </span>
+            <span class="font-bold" [ngClass]="diferenciaClass">
+              S/ {{ diferencia | number:'1.2-2' }} — {{ diferenciaLabel }}
+            </span>
+          </div>
+          <button class="btn btn-primary" style="margin-left: 54rem; margin-top: 2rem;"
+                  [disabled]="totalContado <= 0" (click)="cuadrarCaja()">
+            Guardar Cuadre
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </ng-container>
+
+</div>
+
+<!-- ══════════ MODAL DETALLE CUADRE ══════════ -->
+<div *ngIf="mostrarDetalle && cuadreSeleccionado"
+     class="modal-overlay"
+     style="position: fixed; inset: 0; background: rgba(2,2,2,0.6);
+            display: flex; align-items: center; justify-content: center; z-index: 1000;">
+
+  <div class="modal-content"
+       style="background: #fff; padding: 32px; width: 620px; max-height: 80vh; overflow-y: auto;
+              border-radius: 1rem; box-shadow: var(--shadow-xl); animation: slideUp 0.3s ease-out;">
+
+    <div class="d-flex justify-between items-center mb-4">
+      <h2 style="color: var(--neutral-black); margin: 0;">Cuadre del {{ cuadreSeleccionado.fecha }}</h2>
+    </div>
+
+    <!-- Resumen -->
+    <div class="card mb-4">
+      <div class="card-body">
+        <div class="grid grid-3">
+          <div>
+            <div class="text-muted" style="font-size: 11px; text-transform: uppercase; letter-spacing: 1px;">Turno</div>
+            <div class="font-semibold">{{ cuadreSeleccionado.horaEntrada || '--:--' }} — {{ cuadreSeleccionado.horaSalida || '--:--' }}</div>
+          </div>
+          <div>
+            <div class="text-muted" style="font-size: 11px; text-transform: uppercase; letter-spacing: 1px;">Monto Inicial</div>
+            <div class="font-semibold">S/ {{ cuadreSeleccionado.montoInicial | number:'1.2-2' }}</div>
+          </div>
+          <div>
+            <div class="text-muted" style="font-size: 11px; text-transform: uppercase; letter-spacing: 1px;">Resultado</div>
+            <div class="font-bold" [ngClass]="getDiferenciaClass(cuadreSeleccionado.diferencia)">
+              {{ cuadreSeleccionado.diferenciaLabel }} — S/ {{ cuadreSeleccionado.diferencia | number:'1.2-2' }}
+            </div>
+          </div>
+        </div>
+        <div *ngIf="cuadreSeleccionado.observaciones"
+             style="margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border-color);">
+          <span class="text-muted">Observaciones: </span>
+          <span class="font-medium">{{ cuadreSeleccionado.observaciones }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Movimientos -->
+    <div class="card mb-4">
+      <div class="card-header">
+        <h4>Movimientos del día</h4>
+      </div>
+      <div class="card-body" style="padding: 0;">
+        <table class="table" style="box-shadow: none; border-radius: 0;">
+          <thead>
+            <tr>
+              <th>Hora</th>
+              <th>Descripción</th>
+              <th>Tipo</th>
+              <th>Monto</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let m of cuadreSeleccionado.movimientos">
+              <td class="text-muted" style="font-size: 13px;">{{ m.hora }}</td>
+              <td class="font-medium">{{ m.descripcion }}</td>
+              <td>
+                <span class="badge"
+                      [class.badge-success]="m.tipo === 'Ingreso'"
+                      [class.badge-error]="m.tipo === 'Egreso'">
+                  {{ m.tipo }}
+                </span>
+              </td>
+              <td class="font-bold"
+                  [class.text-success]="m.tipo === 'Ingreso'"
+                  [class.text-error]="m.tipo === 'Egreso'">
+                S/ {{ m.monto | number:'1.2-2' }}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Totales -->
+    <div style="background: var(--neutral-light); padding: 20px; border-radius: var(--radius); margin-bottom: 24px;">
+      <div class="d-flex justify-between" style="margin-bottom: 8px;">
+        <span class="text-muted">Total Ingresos:</span>
+        <span class="font-semibold text-success" style="margin-left: 0.5rem;">S/ {{ cuadreSeleccionado.totalIngresos | number:'1.2-2' }}</span>
+      </div>
+      <div class="d-flex justify-between" style="margin-bottom: 8px;">
+        <span class="text-muted">Total Egresos:</span>
+        <span class="font-semibold text-error" style="margin-left: 0.5rem;">S/ {{ cuadreSeleccionado.totalEgresos | number:'1.2-2' }}</span>
+      </div>
+      <div class="d-flex justify-between" style="border-top: 1px solid var(--border-color); padding-top: 8px; margin-top: 4px;">
+        <span class="font-semibold">Total Esperado:</span>
+        <span class="font-bold" style="font-size: 18px; color: var(--success); margin-left: 0.5rem;">S/ {{ cuadreSeleccionado.totalEsperado | number:'1.2-2' }}</span>
+      </div>
+      <div class="d-flex justify-between" style="margin-top: 4px;">
+        <span class="font-semibold">Total Contado:</span>
+        <span class="font-bold" style="font-size: 18px; color: var(--primary-blue); margin-left: 0.5rem;">S/ {{ cuadreSeleccionado.totalContado | number:'1.2-2' }}</span>
+      </div>
+    </div>
+
+    <div class="d-flex justify-end gap-2">
+      <button class="btn btn-primary" (click)="cerrarDetalle()">Cerrar</button>
+    </div>
+
+  </div>
+</div>
+
+<!-- Confirmación cierre de caja -->
+<div *ngIf="mostrarConfirmCierre"
+     style="position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; display: flex; align-items: center; justify-content: center;">
+  <div class="card" style="max-width: 400px; width: 90%; border-radius: 12px;">
+    <div class="card-header">
+      <h3>Confirmar Cierre de Caja</h3>
+    </div>
+    <div class="card-body">
+      <p class="text-muted" style="margin-bottom: 16px;">
+        Se descartarán <strong>{{ movimientos.length }} movimientos</strong> sin guardar cuadre.
+        ¿Deseas continuar?
+      </p>
+      <div class="d-flex gap-2 justify-between">
+        <button class="btn btn-outline w-100" (click)="cancelarCierre()">Cancelar</button>
+        <button class="btn btn-danger w-100" (click)="cerrarCaja()">Cerrar sin guardar</button>
       </div>
     </div>
   </div>
-
 </div>
+
+<style>
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+</style>

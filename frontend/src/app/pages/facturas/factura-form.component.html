@@ -1,238 +1,392 @@
+<p-toast></p-toast>
+
 <div class="fade-in">
-  
-  <!-- Page Header -->
-  <div class="d-flex justify-between items-center mb-4 w-100">
+
+  <!-- Page header -->
+  <div class="d-flex justify-between items-center mb-4">
     <div>
-      <h1 class="font-bold" style="font-size: 28px; color: var(--primary-blue);">{{ isEditing ? 'Editar Factura' : 'Nueva Factura' }}</h1>
-      <p class="text-muted" style="font-size: 14px;">{{ isEditing ? 'Actualiza la información de la factura' : 'Emite una nueva factura electrónica' }}</p>
+      <h1 class="font-bold" style="font-size: 24px; color: var(--primary-blue);">
+        {{ isEditing ? 'Editar Comprobante' : 'Nuevo Comprobante' }}
+      </h1>
+      <p class="text-muted" style="font-size: 13px;">Facturación Electrónica · SUNAT UBL 2.1</p>
     </div>
-    <div class="text-right">
-      <button class="btn btn-outline" style="background-color: #4d6ed0; color: #f8f8f8; margin-left: 50rem" (click)="volver()">
-        Volver
-      </button>
-    </div>
+    <button class="btn btn-ghost" (click)="volver()">← Volver</button>
   </div>
 
-  <!-- Información del Documento -->
-  <div class="card mb-4">
-    <div class="card-header">
-      <h3>Información del Documento</h3>
-    </div>
-    <div class="card-body">
-      <form [formGroup]="facturaForm">
-        <div class="grid grid-3">
-          <div class="form-group">
-            <label class="form-label">Tipo de Documento *</label>
-            <select class="form-control" formControlName="tipoDoc">
-              <option value="01">01 - Factura</option>
-              <option value="03">03 - Boleta</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Serie *</label>
-            <input type="text" 
-                   class="form-control" 
-                   formControlName="serie" 
-                   placeholder="Ej: F001">
-          </div>
-          <div class="form-group">
-            <label class="form-label">Correlativo *</label>
-            <input type="text" 
-                   class="form-control" 
-                   formControlName="correlativo" 
-                   placeholder="Ej: 000001">
-          </div>
-        </div>
-        <div class="grid grid-3">
-          <div class="form-group">
-            <label class="form-label">Fecha de Emisión *</label>
-            <input type="date" 
-                   class="form-control" 
-                   formControlName="fechaEmision">
-          </div>
-          <div class="form-group">
-            <label class="form-label">Fecha de Vencimiento</label>
-            <input type="date" 
-                   class="form-control" 
-                   formControlName="fecVencimiento">
-          </div>
-          <div class="form-group">
-            <label class="form-label">Moneda *</label>
-            <select class="form-control" formControlName="tipoMoneda">
-              <option value="PEN">PEN - Soles</option>
-              <option value="USD">USD - Dólares</option>
-            </select>
-          </div>
-        </div>
-      </form>
-    </div>
-  </div>
+  <form [formGroup]="facturaForm">
+  <div style="background: var(--white); border-radius: var(--radius-md); box-shadow: var(--shadow-md); border: 1px solid var(--border-color); overflow: hidden;">
 
-  <!-- Información del Cliente -->
-  <div class="card mb-4">
-    <div class="card-header">
-      <h3>Información del Cliente</h3>
+    <!-- ══════ BANDA TIPO COMPROBANTE ══════ -->
+    <div style="background: linear-gradient(135deg, var(--primary-blue) 0%, var(--accent-purple) 100%); padding: 20px 32px;">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+
+        <!-- Toggle -->
+        <div style="display: flex; flex-direction: column; gap: 6px;">
+          <div style="font-size: 10px; color: rgba(255,255,255,0.7); text-transform: uppercase; letter-spacing: 2px;">Tipo de Comprobante</div>
+          <div style="display: flex; gap: 6px; background: rgba(255,255,255,0.12); padding: 4px; border-radius: 8px;">
+            <button type="button" (click)="cambiarTipoDoc('01')"
+                    style="padding: 9px 20px; border: none; border-radius: 6px; font-weight: 700; font-size: 13px; cursor: pointer; transition: all 0.2s; letter-spacing: 0.5px;"
+                    [style.background]="tipoDocActivo === '01' ? 'white' : 'transparent'"
+                    [style.color]="tipoDocActivo === '01' ? 'var(--primary-blue)' : 'rgba(255,255,255,0.85)'">
+              FACTURA
+            </button>
+            <button type="button" (click)="cambiarTipoDoc('03')"
+                    style="padding: 9px 20px; border: none; border-radius: 6px; font-weight: 700; font-size: 13px; cursor: pointer; transition: all 0.2s; letter-spacing: 0.5px;"
+                    [style.background]="tipoDocActivo === '03' ? 'white' : 'transparent'"
+                    [style.color]="tipoDocActivo === '03' ? 'var(--primary-blue)' : 'rgba(255,255,255,0.85)'">
+              BOLETA
+            </button>
+          </div>
+        </div>
+
+        <!-- Nombre del comprobante -->
+        <div style="text-align: center;">
+          <div style="color: white; font-size: 18px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase;">
+            {{ tipoDocActivo === '01' ? 'Factura Electrónica' : 'Boleta de Venta Electrónica' }}
+          </div>
+          <div style="color: rgba(255,255,255,0.75); font-size: 12px; margin-top: 2px;">
+            {{ tipoDocActivo === '01' ? 'Tipo de Comprobante: 01' : 'Tipo de Comprobante: 03' }}
+          </div>
+        </div>
+
+        <!-- Número de comprobante -->
+        <div style="text-align: right; color: white;">
+          <div style="font-size: 10px; color: rgba(255,255,255,0.7); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 6px;">Número</div>
+          <div style="font-size: 26px; font-weight: 800; letter-spacing: 4px; font-family: 'Courier New', monospace;">
+            {{ numeroDocumento }}
+          </div>
+        </div>
+
+      </div>
     </div>
-    <div class="card-body">
-      <form [formGroup]="facturaForm">
-        <div class="grid grid-3">
-          <div class="form-group">
-            <label class="form-label">Tipo Doc. Cliente *</label>
-            <select class="form-control" formControlName="clienteTipoDoc">
-              <option value="1">1 - DNI</option>
-              <option value="6">6 - RUC</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Número Doc. *</label>
-            <input type="text" 
-                   class="form-control" 
-                   formControlName="clienteRuc" 
-                   placeholder="DNI o RUC">
-          </div>
-          <div class="form-group">
-            <label class="form-label">Nombre/Razón Social *</label>
-            <input type="text" 
-                   class="form-control" 
-                   formControlName="clienteNombre" 
-                   placeholder="Nombre completo o Razón Social">
-          </div>
+
+    <!-- ══════ DATOS DEL DOCUMENTO ══════ -->
+    <div style="padding: 16px 32px; background: var(--neutral-light); border-bottom: 1px solid var(--border-color);">
+      <div style="display: grid; grid-template-columns: 130px 160px 1fr 160px 1fr 1fr; gap: 16px; align-items: end;">
+
+        <div class="form-group" style="margin-bottom: 0;">
+          <label class="form-label" style="font-size: 10px;">Serie *</label>
+          <input type="text" class="form-control" formControlName="serie"
+                 style="font-size: 14px; font-weight: 700; font-family: monospace; min-height: 38px; padding: 6px 10px; letter-spacing: 1px;">
         </div>
-        <div class="form-group">
-          <label class="form-label">Dirección</label>
-          <input type="text" 
-                 class="form-control" 
-                 formControlName="clienteDireccion" 
-                 placeholder="Dirección fiscal">
+
+        <div class="form-group" style="margin-bottom: 0;">
+          <label class="form-label" style="font-size: 10px;">Correlativo *</label>
+          <input type="text" class="form-control" formControlName="correlativo"
+                 placeholder="Ej: 1"
+                 style="font-size: 14px; font-weight: 700; font-family: monospace; min-height: 38px; padding: 6px 10px; letter-spacing: 1px;">
         </div>
-        <div class="form-group">
-          <label class="form-label">Empresa Emisora *</label>
-          <select class="form-control" formControlName="empresaId">
-            <option value="">Seleccione una empresa</option>
-            <option *ngFor="let empresa of empresas" [value]="empresa.id">
-              {{ empresa.nombre }} - {{ empresa.ruc }}
-            </option>
+
+        <div class="form-group" style="margin-bottom: 0;">
+          <label class="form-label" style="font-size: 10px;">Fecha de Emisión *</label>
+          <input type="date" class="form-control" formControlName="fechaEmision"
+                 style="font-size: 13px; min-height: 38px; padding: 6px 10px;">
+        </div>
+
+        <div class="form-group" style="margin-bottom: 0;">
+          <label class="form-label" style="font-size: 10px;">Fecha Vencimiento</label>
+          <input type="date" class="form-control" formControlName="fecVencimiento"
+                 style="font-size: 13px; min-height: 38px; padding: 6px 10px;">
+        </div>
+
+        <div class="form-group" style="margin-bottom: 0;">
+          <label class="form-label" style="font-size: 10px;">Moneda *</label>
+          <select class="form-control" formControlName="tipoMoneda"
+                  style="font-size: 13px; min-height: 38px; padding: 6px 10px;">
+            <option value="PEN">PEN — Soles</option>
+            <option value="USD">USD — Dólares</option>
           </select>
         </div>
-      </form>
-    </div>
-  </div>
 
-  <!-- Items de la Factura -->
-  <div class="card mb-4">
-    <div class="card-header">
-      <div class="d-flex justify-between items-center w-100">
-        <h3>Items de la Factura</h3>
-        <button class="btn btn-success btn-sm" (click)="agregarItem()">
-          Agregar Item
+        <div class="form-group" style="margin-bottom: 0;">
+          <label class="form-label" style="font-size: 10px;">Tipo Operación</label>
+          <select class="form-control" formControlName="tipoOperacion"
+                  style="font-size: 13px; min-height: 38px; padding: 6px 10px;">
+            <option value="0101">0101 — Venta Interna</option>
+            <option value="0112">0112 — Venta Interna — Itinerante</option>
+            <option value="0200">0200 — Exportación</option>
+          </select>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ══════ EMISOR / RECEPTOR ══════ -->
+    <div style="display: grid; grid-template-columns: 1fr 1fr; border-bottom: 2px dashed var(--border-color);">
+
+      <!-- EMISOR -->
+      <div style="padding: 24px 32px; border-right: 2px dashed var(--border-color);">
+        <div style="font-size: 10px; text-transform: uppercase; letter-spacing: 2px; color: var(--neutral-gray); margin-bottom: 14px; font-weight: 700;">
+          Datos del Emisor
+        </div>
+
+        <div *ngIf="empresaSeleccionada; else selectEmpresa">
+          <div style="font-size: 17px; font-weight: 800; color: var(--primary-blue); margin-bottom: 4px;">
+            {{ empresaSeleccionada.nombre }}
+          </div>
+          <div style="font-size: 13px; color: var(--neutral-gray); margin-bottom: 2px;">
+            RUC: <span class="font-bold" style="color: var(--neutral-black); font-family: monospace; letter-spacing: 1px;">{{ empresaSeleccionada.ruc }}</span>
+          </div>
+          <div style="font-size: 13px; color: var(--neutral-gray);">
+            Dir: {{ empresaSeleccionada.direccion }}
+          </div>
+          <div *ngIf="empresas.length > 1" style="margin-top: 10px;">
+            <select class="form-control" formControlName="empresaId"
+                    style="font-size: 12px; min-height: 34px; padding: 4px 10px;">
+              <option *ngFor="let e of empresas" [value]="e.id">{{ e.nombre }}</option>
+            </select>
+          </div>
+        </div>
+
+        <ng-template #selectEmpresa>
+          <div class="form-group" style="margin-bottom: 0;">
+            <label class="form-label" style="font-size: 11px;">Empresa emisora *</label>
+            <select class="form-control" formControlName="empresaId">
+              <option value="">Seleccione empresa</option>
+              <option *ngFor="let e of empresas" [value]="e.id">{{ e.nombre }} — {{ e.ruc }}</option>
+            </select>
+          </div>
+        </ng-template>
+      </div>
+
+      <!-- RECEPTOR -->
+      <div style="padding: 24px 32px;">
+        <div style="font-size: 10px; text-transform: uppercase; letter-spacing: 2px; color: var(--neutral-gray); margin-bottom: 14px; font-weight: 700;">
+          {{ tipoDocActivo === '01' ? 'Datos del Adquiriente / Cliente' : 'Datos del Cliente' }}
+        </div>
+
+        <div style="display: grid; grid-template-columns: 130px 1fr; gap: 12px; margin-bottom: 12px;">
+          <div class="form-group" style="margin-bottom: 0;">
+            <label class="form-label" style="font-size: 10px;">Tipo Doc. *</label>
+            <select class="form-control" formControlName="clienteTipoDoc"
+                    style="font-size: 13px; min-height: 38px; padding: 6px 8px;">
+              <option value="6">6 — RUC</option>
+              <option value="1">1 — DNI</option>
+              <option value="4">4 — Carnet Ext.</option>
+              <option value="7">7 — Pasaporte</option>
+              <option value="0">0 — Doc. Trib. No Dom.</option>
+            </select>
+          </div>
+          <div class="form-group" style="margin-bottom: 0;">
+            <label class="form-label" style="font-size: 10px;">
+              Número {{ tipoDocActivo === '01' ? 'RUC *' : 'Doc.' }}
+            </label>
+            <input type="text" class="form-control" formControlName="clienteRuc"
+                   [placeholder]="tipoDocActivo === '01' ? '20XXXXXXXXX' : ''"
+                   style="font-size: 14px; font-family: monospace; letter-spacing: 1px; min-height: 38px; padding: 6px 10px;">
+          </div>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 12px;">
+          <label class="form-label" style="font-size: 10px;">Razón Social / Nombre *</label>
+          <input type="text" class="form-control" formControlName="clienteNombre"
+                 placeholder="Nombre completo o razón social"
+                 style="font-size: 13px; min-height: 38px; padding: 6px 10px;">
+        </div>
+
+        <div class="form-group" style="margin-bottom: 0;">
+          <label class="form-label" style="font-size: 10px;">Dirección</label>
+          <input type="text" class="form-control" formControlName="clienteDireccion"
+                 placeholder="Dirección fiscal del cliente"
+                 style="font-size: 13px; min-height: 38px; padding: 6px 10px;">
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ══════ DETALLE DE ÍTEMS ══════ -->
+    <div>
+
+      <!-- Barra -->
+      <div style="padding: 10px 32px; background: linear-gradient(135deg, var(--primary-blue), var(--accent-purple)); display: flex; justify-content: space-between; align-items: center;">
+        <span style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; color: white;">
+          Detalle de Bienes y/o Servicios
+        </span>
+        <button type="button" class="btn btn-sm"
+                (click)="agregarItem()"
+                style="background: white; color: var(--primary-blue); font-weight: 700; padding: 6px 16px; min-height: 30px; font-size: 12px;">
+          + Agregar ítem
+        </button>
+      </div>
+
+      <div formArrayName="items">
+        <table style="width: 100%; border-collapse: collapse;">
+          <thead>
+            <tr style="background: var(--neutral-light);">
+              <th style="padding: 10px 12px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--neutral-gray); text-align: left; border-bottom: 1px solid var(--border-color); width: 32%;">
+                Descripción
+              </th>
+              <th style="padding: 10px 8px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--neutral-gray); text-align: left; border-bottom: 1px solid var(--border-color); width: 8%;">
+                U.M.
+              </th>
+              <th style="padding: 10px 8px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--neutral-gray); text-align: center; border-bottom: 1px solid var(--border-color); width: 7%;">
+                Cant.
+              </th>
+              <th style="padding: 10px 12px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--neutral-gray); text-align: right; border-bottom: 1px solid var(--border-color); width: 12%;">
+                V.Unit. s/IGV
+              </th>
+              <th style="padding: 10px 12px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--neutral-gray); text-align: center; border-bottom: 1px solid var(--border-color); width: 10%;">
+                Afect. IGV
+              </th>
+              <th style="padding: 10px 12px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--neutral-gray); text-align: right; border-bottom: 1px solid var(--border-color); width: 11%;">
+                Op. Gravada
+              </th>
+              <th style="padding: 10px 12px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--neutral-gray); text-align: right; border-bottom: 1px solid var(--border-color); width: 9%;">
+                IGV
+              </th>
+              <th style="padding: 10px 12px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--neutral-gray); text-align: right; border-bottom: 1px solid var(--border-color); width: 10%;">
+                Importe
+              </th>
+              <th style="border-bottom: 1px solid var(--border-color); width: 3%;"></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let item of items.controls; let i = index"
+                [formGroupName]="i"
+                style="border-bottom: 1px solid var(--border-color);">
+
+              <!-- Descripción -->
+              <td style="padding: 10px 12px;">
+                <select *ngIf="productos.length > 0"
+                        class="form-control"
+                        formControlName="productoId"
+                        (change)="onProductoSeleccionado(i)"
+                        style="font-size: 12px; min-height: 30px; padding: 3px 8px; margin-bottom: 5px; color: var(--neutral-gray);">
+                  <option value="">— seleccionar del catálogo —</option>
+                  <option *ngFor="let p of productos" [value]="p.id">{{ p['nombre'] }}</option>
+                </select>
+                <input type="text" class="form-control" formControlName="descripcion"
+                       placeholder="Descripción del bien o servicio"
+                       style="font-size: 13px; min-height: 34px; padding: 5px 10px;">
+              </td>
+
+              <!-- Unidad de medida -->
+              <td style="padding: 10px 8px;">
+                <select class="form-control" formControlName="unidadMedida"
+                        style="font-size: 12px; min-height: 34px; padding: 4px 5px;">
+                  <option value="NIU">NIU</option>
+                  <option value="ZZ">ZZ</option>
+                  <option value="KGM">KGM</option>
+                  <option value="LTR">LTR</option>
+                  <option value="HUR">HUR</option>
+                  <option value="MTR">MTR</option>
+                  <option value="BX">BX</option>
+                </select>
+              </td>
+
+              <!-- Cantidad -->
+              <td style="padding: 10px 8px;">
+                <input type="number" class="form-control" formControlName="cantidad"
+                       min="1" (input)="calcularItem(i)"
+                       style="text-align: center; font-size: 14px; font-weight: 600; min-height: 34px; padding: 5px 4px;">
+              </td>
+
+              <!-- Valor unitario sin IGV -->
+              <td style="padding: 10px 12px;">
+                <input type="number" class="form-control" formControlName="mtoValorUnitario"
+                       step="0.01" min="0" (input)="calcularItem(i)"
+                       style="text-align: right; font-size: 13px; min-height: 34px; padding: 5px 8px;">
+              </td>
+
+              <!-- Afectación IGV -->
+              <td style="padding: 10px 8px;">
+                <select class="form-control" formControlName="tipAfeIgv"
+                        style="font-size: 11px; min-height: 34px; padding: 4px 5px;">
+                  <option value="10">10 — Gravado</option>
+                  <option value="20">20 — Exonerado</option>
+                  <option value="30">30 — Inafecto</option>
+                </select>
+              </td>
+
+              <!-- Op. Gravada (base) -->
+              <td style="padding: 10px 12px; text-align: right; font-size: 13px; color: var(--neutral-gray); font-weight: 500; white-space: nowrap;">
+                {{ (item.get('mtoValorVenta')?.value || 0) | number:'1.2-2' }}
+              </td>
+
+              <!-- IGV -->
+              <td style="padding: 10px 12px; text-align: right; font-size: 13px; color: var(--neutral-gray); white-space: nowrap;">
+                {{ (item.get('igv')?.value || 0) | number:'1.2-2' }}
+              </td>
+
+              <!-- Importe total c/IGV -->
+              <td style="padding: 10px 12px; text-align: right; font-size: 14px; font-weight: 700; color: var(--neutral-black); white-space: nowrap;">
+                {{ getSubtotalItem(i) | number:'1.2-2' }}
+              </td>
+
+              <!-- Eliminar -->
+              <td style="padding: 10px 8px; text-align: center;">
+                <button type="button" (click)="eliminarItem(i)"
+                        style="background: none; border: none; color: var(--error); cursor: pointer; font-size: 20px; line-height: 1; padding: 2px 6px; border-radius: 4px;"
+                        title="Eliminar ítem"
+                        onmouseover="this.style.background='var(--error-light)'"
+                        onmouseout="this.style.background='none'">×</button>
+              </td>
+
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div *ngIf="items.length === 0"
+           style="padding: 32px; text-align: center; color: var(--neutral-gray); border-top: 1px solid var(--border-color);">
+        <p style="margin: 0;">Agrega al menos un ítem para continuar</p>
+      </div>
+
+    </div>
+
+    <!-- ══════ TOTALES ══════ -->
+    <div style="border-top: 2px solid var(--border-color); padding: 24px 32px; display: flex; justify-content: flex-end; background: var(--neutral-light);">
+      <div style="min-width: 340px;">
+
+        <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border-color);">
+          <span style="font-size: 13px; color: var(--neutral-gray);">Op. Gravadas (base IGV):</span>
+          <span style="font-size: 13px; font-weight: 600; font-family: monospace;">S/ {{ mtoOperGravadas | number:'1.2-2' }}</span>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border-color);">
+          <span style="font-size: 13px; color: var(--neutral-gray);">IGV 18%:</span>
+          <span style="font-size: 13px; font-weight: 600; font-family: monospace;">S/ {{ mtoIGV | number:'1.2-2' }}</span>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 14px 20px; margin-top: 10px;
+                    background: linear-gradient(135deg, var(--primary-blue), var(--accent-purple));
+                    border-radius: var(--radius); color: white;">
+          <span style="font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">
+            Importe Total:
+          </span>
+          <span style="font-size: 26px; font-weight: 800; font-family: 'Courier New', monospace; letter-spacing: 1px;">
+            S/ {{ mtoImpVenta | number:'1.2-2' }}
+          </span>
+        </div>
+
+        <div style="margin-top: 8px; padding: 10px 12px; background: white; border: 1px solid var(--border-color); border-radius: var(--radius);">
+          <span style="font-size: 11px; color: var(--neutral-gray); text-transform: uppercase; letter-spacing: 0.5px;">Son: </span>
+          <span style="font-size: 12px; font-weight: 600; color: var(--neutral-black); font-style: italic;">
+            {{ facturaForm.get('tipoMoneda')?.value === 'PEN' ? 'SOLES' : 'DÓLARES AMERICANOS' }}
+            {{ mtoImpVenta | number:'1.2-2' }}
+          </span>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ══════ FOOTER / ACCIONES ══════ -->
+    <div style="border-top: 1px solid var(--border-color); padding: 18px 32px; display: flex; justify-content: space-between; align-items: center; background: white;">
+      <button type="button" class="btn btn-ghost" (click)="volver()">← Cancelar</button>
+      <div style="display: flex; align-items: center; gap: 16px;">
+        <div *ngIf="facturaForm.invalid || items.length === 0" class="text-muted" style="font-size: 12px;">
+          <span *ngIf="items.length === 0">Agrega al menos un ítem</span>
+          <span *ngIf="items.length > 0 && facturaForm.invalid">Completa los campos requeridos (*)</span>
+        </div>
+        <button type="button" class="btn btn-success"
+                [disabled]="facturaForm.invalid || items.length === 0 || loading"
+                (click)="onSubmit()">
+          {{ loading ? 'Emitiendo...' : (isEditing ? 'Actualizar Comprobante' : ('Emitir ' + (tipoDocActivo === '01' ? 'Factura' : 'Boleta'))) }}
         </button>
       </div>
     </div>
-    <div class="card-body">
-      <form [formGroup]="facturaForm">
-        <div formArrayName="items">
-          <table class="table">
-            <thead>
-              <tr>
-                <th>Código</th>
-                <th>Descripción</th>
-                <th>Unidad</th>
-                <th>Cantidad</th>
-                <th>Precio Unit.</th>
-                <th>Valor Venta</th>
-                <th>IGV</th>
-                <th>Subtotal</th>
-                <th>Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let item of items.controls; let i = index" [formGroupName]="i">
-                <td>
-                  <input type="text" 
-                         class="form-control" 
-                         formControlName="codProducto" 
-                         placeholder="Código">
-                </td>
-                <td>
-                  <input type="text" 
-                         class="form-control" 
-                         formControlName="descripcion" 
-                         placeholder="Descripción">
-                </td>
-                <td>
-                  <select class="form-control" formControlName="unidadMedida">
-                    <option value="NIU">NIU - Unidad</option>
-                    <option value="KG">KG - Kilogramo</option>
-                    <option value="LTR">LTR - Litro</option>
-                  </select>
-                </td>
-                <td>
-                  <input type="number" 
-                         class="form-control" 
-                         formControlName="cantidad" 
-                         [min]="1"
-                         (input)="calcularItem(i)">
-                </td>
-                <td>
-                  <input type="number" 
-                         class="form-control" 
-                         formControlName="mtoValorUnitario" 
-                         (input)="calcularItem(i)">
-                </td>
-                <td class="font-bold">{{ getValorVenta(i) | number:'1.2-2' }}</td>
-                <td class="font-bold">{{ getIGV(i) | number:'1.2-2' }}</td>
-                <td class="font-bold">{{ getSubtotalItem(i) | number:'1.2-2' }}</td>
-                <td>
-                  <button class="btn btn-sm btn-danger" (click)="eliminarItem(i)">
-                    Eliminar
-                  </button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </form>
-      
-      <div *ngIf="items.length === 0" class="empty-state">
-        <p style="text-align: center; color: var(--neutral-gray);">No hay items agregados</p>
-      </div>
-    </div>
-  </div>
 
-  <!-- Totales -->
-  <div class="card mb-4">
-    <div class="card-body">
-      <div class="d-flex justify-between items-center" style="background: var(--neutral-light); padding: 20px; border-radius: var(--radius);">
-        <div>
-          <div class="text-muted" style="font-size: 14px;">Op. Gravadas:</div>
-          <div class="font-semibold" style="font-size: 18px;">S/ {{ mtoOperGravadas | number:'1.2-2' }}</div>
-        </div>
-        <div>
-          <div class="text-muted" style="font-size: 14px;">IGV (18%):</div>
-          <div class="font-semibold" style="font-size: 18px;">S/ {{ mtoIGV | number:'1.2-2' }}</div>
-        </div>
-        <div>
-          <div class="text-muted" style="font-size: 14px;">Valor Venta:</div>
-          <div class="font-semibold" style="font-size: 18px;">S/ {{ valorVenta | number:'1.2-2' }}</div>
-        </div>
-        <div>
-          <div class="text-muted" style="font-size: 14px;">Total:</div>
-          <div class="font-bold" style="font-size: 24px; color: var(--success);">S/ {{ mtoImpVenta | number:'1.2-2' }}</div>
-        </div>
-      </div>
-    </div>
   </div>
-
-  <!-- Botones -->
-  <div class="d-flex justify-end gap-2">
-    <button class="btn btn-secondary" (click)="volver()">
-      Cancelar
-    </button>
-    <button class="btn btn-success" 
-            [disabled]="facturaForm.invalid || items.length === 0 || loading"
-            (click)="onSubmit()">
-      {{ loading ? 'Guardando...' : (isEditing ? 'Actualizar' : 'Crear') }}
-    </button>
-  </div>
+  </form>
 
 </div>

@@ -33,7 +33,8 @@
 .badge {
   font-size: 11px;
   padding: 4px 8px;
-  border-radius: var(--radius-sm);
+  background-color: #527c58;
+  border-radius: 2rem;
 }
 
 /* Input de formulario con focus */

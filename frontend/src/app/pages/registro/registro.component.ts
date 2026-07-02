@@ -147,7 +147,7 @@ export class RegistroComponent {
     this.loading = true;
     this.error = '';
 
-    sessionStorage.setItem('registro_pendiente', JSON.stringify({
+    localStorage.setItem('registro_pendiente', JSON.stringify({
     nombre: this.form.nombre,
     email: this.form.email,
     password: this.form.password

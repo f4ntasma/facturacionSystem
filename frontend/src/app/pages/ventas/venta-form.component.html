@@ -21,6 +21,7 @@
           <input type="text"
                  class="form-control"
                  [(ngModel)]="ventaForm.dni"
+                 name="dni"
                  placeholder="Ingresa el DNI (8 dígitos)"
                  maxlength="8">
           <button type="button"
@@ -38,7 +39,7 @@
            style="margin-top: 1rem; padding: 1rem; background: #f0fdf4;
                   border-radius: 0.5rem; border: 1px solid #86efac;">
         <div style="font-weight: 600; color: #166534; font-size: 16px;">
-          ✅ {{ ventaForm.clienteNombre }} {{ ventaForm.clienteApellido }}
+          {{ ventaForm.clienteNombre }} {{ ventaForm.clienteApellido }}
         </div>
         <div style="font-size: 13px; color: #15803d; margin-top: 4px;">
           DNI: {{ ventaForm.dni }}
@@ -106,14 +107,14 @@
       <div class="grid grid-2">
         <div class="form-group">
           <label class="form-label">Tipo de Comprobante</label>
-          <select class="form-control" [(ngModel)]="ventaForm.tipoComprobante">
+          <select class="form-control" [(ngModel)]="ventaForm.tipoComprobante" name="tipoComprobante">
             <option value="BOLETA">Boleta</option>
             <option value="FACTURA">Factura</option>
           </select>
         </div>
         <div class="form-group">
           <label class="form-label">Método de Pago</label>
-          <select class="form-control" [(ngModel)]="ventaForm.metodoPago">
+          <select class="form-control" [(ngModel)]="ventaForm.metodoPago" name="metodoPago">
             <option value="EFECTIVO">Efectivo</option>
             <option value="TARJETA">Tarjeta</option>
             <option value="YAPE">Yape</option>

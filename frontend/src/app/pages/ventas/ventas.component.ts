@@ -72,13 +72,23 @@ export class VentasComponent implements OnInit {
   }
 
   convertirOrdenAVenta(orden: Orden): Venta {
+    // createdAt viene como string ISO-8601 desde el backend (ej: "2025-01-15T10:30:00Z")
+    // new Date(isoString) lo parsea correctamente con la fecha exacta de cada orden
+    let fecha: Date;
+    if (orden.createdAt) {
+      fecha = new Date(orden.createdAt);
+    } else {
+      // Si no tiene fecha (órdenes antiguas), se usa fecha inválida para mostrar "—"
+      fecha = new Date(NaN);
+    }
+
     return {
       id: orden.id,
-      clienteNombre: 'Cliente',
-      clienteApellido: '',
-      dni: '',
+      clienteNombre:   orden.clienteNombre   || '—',
+      clienteApellido: orden.clienteApellido  || '',
+      dni:             orden.clienteDni       || '—',
       total: orden.total,
-      fecha: orden.createdAt ? new Date(orden.createdAt) : new Date(),
+      fecha,
       productos: orden.items.map(item => ({
         nombre: item.producto?.nombre || 'Producto',
         cantidad: item.cantidad,
