@@ -30,6 +30,21 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./pages/pago-exitoso/pago-exitoso.component').then(m => m.PagoExitosoComponent)
   },
+  {
+    path: 'terminos',
+    loadComponent: () =>
+      import('./pages/terminos/terminos.component').then(m => m.TerminosComponent)
+  },
+  {
+    path: 'privacidad',
+    loadComponent: () =>
+      import('./pages/privacidad/privacidad.component').then(m => m.PrivacidadComponent)
+  },
+  {
+    path: 'soporte',
+    loadComponent: () =>
+      import('./pages/soporte/soporte.component').then(m => m.SoporteComponent)
+  },
 
   {
     path: 'app',

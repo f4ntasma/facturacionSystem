@@ -714,7 +714,7 @@
       <h1>Facturación<br>Inteligente<br>para tu Negocio</h1>
       <p>Gestiona ventas, inventario y facturación electrónica desde un solo lugar. Rápido, simple y 100% legal ante SUNAT.</p>
       <div class="hero-btns">
-        <button class="btn-primary" (click)="irARegistro()">Comenzar Ahora</button>
+        <button class="btn-primary" (click)="scrollToSection('products')">Comenzar Ahora</button>
         <button class="btn-outline">Ver Demo</button>
       </div>
     </div>
@@ -791,7 +791,7 @@
             <ul style="padding: 0;">✓ Soporte 12h</ul>
           </li>
           <div class="prod-price" style="margin-top: 30px; margin-bottom: 2rem;">S/ 29.99 <span>/ mes</span></div>
-          <a href="/registro" class="btn-primary" style="margin-top: 20rem; text-decoration: none;">Comprar Ahora</a>
+          <button class="btn-primary" style="margin-top: 20rem; border: none; cursor: pointer;" (click)="comprar('Básico', '29.99')">Comprar Ahora</button>
         </div>
       </div>
       <div class="prod-card popular" style="text-align: center">
@@ -809,8 +809,8 @@
             <ul style="padding: 0;">✓ Acceso solo a un servicio</ul>
             <ul style="padding: 0;">✓ Soporte 24h</ul>
           </li>
-          <div class="prod-price purple-price" style="margin-top: 30px; margin-bottom: 2rem;">S/ 44.99 <span>/ mes</span></div>
-          <a href="/registro" class="btn-primary" style="margin-top: 20rem; text-decoration: none;">Comprar Ahora</a>
+          <div class="prod-price purple-price" style="margin-top: 30px; margin-bottom: 2rem;">S/ 49.99 <span>/ mes</span></div>
+          <button class="btn-primary" style="margin-top: 20rem; border: none; cursor: pointer;" (click)="comprar('Pro', '49.99')">Comprar Ahora</button>
         </div>
       </div>
       <div class="prod-card" style="text-align: center">
@@ -827,7 +827,7 @@
             <ul style="padding: 0;">✓ Soporte 24h + Support Whatsapp </ul>
           </li>
           <div class="prod-price" style="margin-top: 30px; margin-bottom: 2rem;">S/ 79.99 <span>/ mes</span></div>
-          <a href="/registro" class="btn-primary" style="margin-top: 20rem;text-decoration: none;">Comprar Ahora</a>
+          <button class="btn-primary" style="margin-top: 20rem; border: none; cursor: pointer;" (click)="comprar('Enterprise', '79.99')">Comprar Ahora</button>
         </div>
       </div>
     </div>
@@ -883,10 +883,9 @@
   <div class="footer-inner">
     <div class="footer-logo">Factullama</div>
     <ul class="footer-links">
-      <li><a href="#">Términos</a></li>
-      <li><a href="#">Privacidad</a></li>
-      <li><a href="#">Soporte</a></li>
-      <li><a href="#">Contacto</a></li>
+      <li><a href="/terminos">Términos</a></li>
+      <li><a href="/privacidad">Privacidad</a></li>
+      <li><a href="/soporte">Soporte</a></li>
     </ul>
     <div class="footer-copy">© 2026 Factullama. Todos los derechos reservados.</div>
   </div>

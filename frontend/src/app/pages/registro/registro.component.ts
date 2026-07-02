@@ -124,7 +124,7 @@ export class RegistroComponent {
 
   getPrecio(plan: string): string {
     switch (plan) {
-      case 'Pro': return '44.99';
+      case 'Pro': return '49.99';
       case 'Enterprise': return '79.99';
       default: return '29.99';
     }
