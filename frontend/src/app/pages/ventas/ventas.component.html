@@ -1,0 +1,234 @@
+<div class="fade-in">
+  
+<!-- Page Header -->
+<div style="display: flex; flex-direction: row; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 1rem;">
+  <div>
+    <h1 class="font-bold" style="font-size: 28px; color: var(--primary-blue);">Gestión de Ventas</h1>
+    <p class="text-muted" style="font-size: 14px; margin-top: 1.5rem;">Historial y gestión de ventas realizadas</p>
+  </div>
+  <button class="btn btn-primary" routerLink="/app/ventas/nueva">
+    Nueva Venta
+  </button>
+</div>
+
+  <!-- Filtros -->
+  <div class="card mb-4">
+    <div class="card-header">
+      <h3>Filtros de Búsqueda</h3>
+    </div>
+    <div class="card-body">
+      <div class="grid grid-4">
+        <div class="form-group">
+          <label class="form-label">Buscar Cliente o DNI</label>
+          <input type="text" 
+                 class="form-control" 
+                 placeholder="Ingrese nombre, apellido o DNI..."
+                 [(ngModel)]="searchTerm"
+                 (input)="aplicarFiltros()">
+        </div>
+        
+        <div class="form-group" style="margin-top: 1.5rem">
+          <label class="form-label">Fecha Desde</label>
+          <input type="date" 
+                 class="form-control"
+                 [(ngModel)]="fechaDesde"
+                 (change)="aplicarFiltros()">
+        </div>
+        
+        <div class="form-group" style="margin-top: 1.5rem">
+          <label class="form-label">Fecha Hasta</label>
+          <input type="date" 
+                 class="form-control"
+                 [(ngModel)]="fechaHasta"
+                 (change)="aplicarFiltros()">
+        </div>
+        
+        <div class="form-group" style="display: flex; align-items: flex-end; margin-top: 1.5rem">
+          <button class="btn btn-secondary" style="width: 100%;">
+            Limpiar Filtros
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabla de Ventas -->
+  <div class="card">
+    <div class="card-header">
+      <div class="d-flex justify-between items-center w-100">
+        <h3>Ventas Realizadas</h3>
+        <span class="badge badge-purple">{{ ventasFiltradas.length }} Ventas</span>
+      </div>
+    </div>
+    <div class="card-body">
+      <div *ngIf="loading" class="d-flex justify-center items-center" style="padding: 48px;">
+        <div class="spinner"></div>
+      </div>
+      
+      <div *ngIf="error" class="error-state">
+        <h3 style="color: red; text-align: center;">Error al cargar ventas</h3>
+        <p style="color: red; text-align: center;">No se pudieron cargar las ventas. Por favor, intenta nuevamente.</p>
+        <button class="btn btn-primary mt-4" (click)="cargarVentas()" style="display: block; margin: 20px auto;">
+          Reintentar
+        </button>
+      </div>
+      
+      <table class="table" *ngIf="!loading && !error">
+        <thead>
+          <tr>
+            <th>N° Venta</th>
+            <th>Cliente</th>
+            <th>DNI</th>
+            <th>Total</th>
+            <th>Fecha</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let venta of ventasFiltradas">
+            <td class="font-bold text-primary" style="font-family: monospace; font-size: 12px;">
+              #{{ venta.id.slice(-8).toUpperCase() }}
+            </td>
+            <td class="font-medium">{{ venta.clienteNombre }} {{ venta.clienteApellido }}</td>
+            <td class="text-muted" style="font-family: monospace;">{{ venta.dni }}</td>
+            <td class="font-bold" style="font-size: 16px; color: var(--success);">S/ {{ venta.total | number:'1.2-2' }}</td>
+            <td>{{ venta.fecha | date:'dd/MM/yyyy HH:mm' }}</td>
+            <td>
+              <span class="badge badge-success" style="background-color: rgb(166, 102, 219);">Completada</span>
+            </td>
+            <td>
+              <div class="d-flex gap-4">
+                <button class="btn btn-sm btn-ghost" (click)="verDetalle(venta)" title="Ver detalle" style="background-color: beige;">
+                  Ver
+                </button>
+                <button class="btn btn-sm btn-ghost" (click)="descargar(venta)" title="Descargar" style="background-color: cadetblue; color: white;">
+                  Descargar
+                </button>
+                <button *ngIf="!venta.facturaId"
+                        class="btn btn-sm btn-primary"
+                        (click)="emitirComprobante(venta)"
+                        title="Generar boleta o factura electronica para esta venta">
+                  Emitir comprobante
+                </button>
+                <span *ngIf="venta.facturaId"
+                      class="badge badge-success"
+                      title="Esta venta ya tiene comprobante electronico">
+                  Comprobante emitido
+                </span>
+                <button class="btn btn-sm btn-danger" (click)="anular(venta)" title="Anular">
+                  Anular
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      
+      <div *ngIf="ventasFiltradas.length === 0" class="empty-state">
+        <h3 style="text-align: center; color: var(--text-secondary);">No se encontraron ventas</h3>
+        <p style="text-align: center; color: var(--text-secondary);">Intenta con otros filtros de búsqueda</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Modal de Detalle -->
+<div *ngIf="mostrarDetalle" 
+     class="modal-overlay"
+     style="position: fixed; inset: 0; background: rgba(2, 2, 2, 0.6); 
+            display: flex; align-items: center; justify-content: center; z-index: 1000;">
+  
+  <div class="modal-content" 
+       style="background: #fff; padding: 32px; width: 600px; 
+              border-radius: 1rem; box-shadow: var(--shadow-xl);
+              animation: slideUp 0.3s ease-out;">
+    
+    <div class="d-flex justify-between items-center mb-4">
+      <h2 style="color: var(--primary-blue); margin: 0;">Detalle de Venta</h2>
+    </div>
+    
+    <div class="grid grid-2 mb-4">
+      <div class="card">
+        <div class="card-body">
+          <div class="text-muted mb-1" style="font-size: 12px; background-color: rgba(236, 199, 168, 0.59); border-radius: 1rem; margin-right: 28rem; padding-left:0.5rem;">Cliente</div>
+          <div class="font-semibold" style="margin-left: 0.5rem ;">{{ ventaSeleccionada.clienteNombre }} {{ ventaSeleccionada.clienteApellido }}</div>
+        </div>
+      </div>
+      
+      <div class="card" style="margin-top: 1rem;">
+        <div class="card-body">
+          <div class="text-muted mb-1" style="font-size: 12px; background-color: rgba(168, 236, 234, 0.312); border-radius: 1rem; padding-left:0.8rem; display: inline-block; min-width: 40px;">DNI</div>
+          <div class="font-semibold" style="margin-left: 0.5rem; font-family: monospace;">{{ ventaSeleccionada.dni }}</div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="card mb-4">
+      <div class="card-header" style="background-color: rgba(245, 245, 220, 0.47);">
+        <h4>Consumo</h4>
+      </div>
+      <div class="card-body" style="padding: 0;">
+        <table class="table" style="box-shadow: none; border-radius: 0;">
+          <thead>
+            <tr>
+              <th style="background-color: #f680802d;">Productos</th>
+              <th style="background-color: #f680802d;">Cant.</th>
+              <th style="background-color: #f680802d;">Precio Unit.</th>
+              <th style="background-color: #f680802d;">Subtotal</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let p of ventaSeleccionada.productos">
+              <td class="font-medium">{{ p.nombre }}</td>
+              <td>{{ p.cantidad }}</td>
+              <td>S/ {{ p.precio }}</td>
+              <td class="font-bold">S/ {{ p.cantidad * p.precio }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    
+    
+    <div class="d-flex justify-between items-center" style="background: var(--neutral-light); padding: 20px; border-radius: var(--radius);">
+      <div>
+        <span class="text-totalsell" style="font-size: 14px; margin-left: 17.5rem; color: rgb(55, 54, 54); margin-bottom: 0.5rem;">Total de la venta:</span>
+      </div>
+      <div class="font-bold" style="font-size: 24px; color: var(--success); margin-left: 2rem; padding-left: 0;">S/ {{ ventaSeleccionada.total }}</div>
+    </div>
+    
+    <div class="d-flex justify-end mt-4">
+      <button class="btn btn-outline" (click)="descargar(ventaSeleccionada)" style="margin-left: 20rem; background-color: rgb(255, 111, 0); color: white;">
+        Descargar
+      </button>
+      <button class="btn btn-primary" (click)="cerrarDetalle()" style="margin-left: 1rem;">
+        Cerrar
+      </button>
+    </div>
+    
+  </div>
+</div>
+
+<style>
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.modal-overlay {
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+</style>

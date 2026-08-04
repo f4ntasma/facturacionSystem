@@ -1,0 +1,566 @@
+<div class="fade-in">
+
+  <!-- Page Header (sin cambios) -->
+  <div class="d-flex justify-between items-center mb-4 w-100">
+    <div>
+      <h1 class="font-bold" style="font-size: 28px; color: var(--primary-blue);">Nueva Factura Electrónica</h1>
+      <p class="text-muted" style="font-size: 14px;">Complete el formulario para emitir el comprobante</p>
+    </div>
+    <div class="text-right">
+      <button class="btn btn-outline btn-sm" style="margin-left: 54rem; background: rgb(8, 134, 37); color: #f8f8f8;" (click)="volver()">Volver</button>
+    </div>
+  </div>
+
+  <!-- Stepper -->
+  <div class="nf-stepper">
+    <div *ngFor="let s of steps; let i = index"
+         class="nf-step"
+         [class.active]="currentStep === i"
+         [class.done]="currentStep > i"
+         [class.clickable]="currentStep > i"
+         (click)="goToStep(i)">
+      <div class="nf-step-num">
+        <i *ngIf="currentStep > i" class="pi pi-check" style="font-size:10px"></i>
+        <span *ngIf="currentStep <= i">{{ i + 1 }}</span>
+      </div>
+      <span class="nf-step-label">{{ s.label }}</span>
+    </div>
+  </div>
+
+  <!-- Body: formulario + panel -->
+  <div class="nf-body">
+
+    <!-- Zona de formulario -->
+    <div class="nf-form-area">
+
+      <!-- ======== PASO 0: DOCUMENTO ======== -->
+      <div *ngIf="currentStep === 0" [formGroup]="docForm">
+        <p class="step-heading">Tipo y datos del documento</p>
+        <p class="step-sub">Selecciona el comprobante y completa los datos de emisión</p>
+
+        <div class="tipo-grid">
+          <div class="tipo-opt"
+               [class.selected]="docForm.get('tipoComprobante')?.value === 'FACTURA'"
+               (click)="docForm.patchValue({tipoComprobante:'FACTURA'})">
+            <div class="tipo-opt-icon">
+              <i class="pi pi-file"></i>
+            </div>
+            <div>
+              <div class="tipo-opt-title">Factura</div>
+              <div class="tipo-opt-sub">Serie F — Solo RUC</div>
+            </div>
+          </div>
+          <div class="tipo-opt"
+               [class.selected]="docForm.get('tipoComprobante')?.value === 'BOLETA'"
+               (click)="docForm.patchValue({tipoComprobante:'BOLETA'})">
+            <div class="tipo-opt-icon">
+              <i class="pi pi-receipt"></i>
+            </div>
+            <div>
+              <div class="tipo-opt-title">Boleta de Venta</div>
+              <div class="tipo-opt-sub">Serie B — DNI / RUC</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-grid-3">
+          <div class="form-group" style="margin-bottom:14px">
+            <label class="form-label-sm">Serie <span class="req">*</span></label>
+            <input class="form-control form-control-sm" formControlName="serie" maxlength="4"
+                   style="text-transform:uppercase">
+            <span *ngIf="serieErrorMsg" style="font-size:11px; color:#dc2626; display:block; margin-top:3px">
+              {{ serieErrorMsg }}
+            </span>
+            <span *ngIf="!serieErrorMsg" style="font-size:11px; color:var(--neutral-gray); display:block; margin-top:3px">
+              {{ docForm.get('tipoComprobante')?.value === 'BOLETA' ? 'Formato B001 (4 chars)' : 'Formato F001 (4 chars)' }}
+            </span>
+          </div>
+          <div class="form-group" style="margin-bottom:14px">
+            <label class="form-label-sm">Correlativo <span class="req">*</span></label>
+            <input type="number" class="form-control form-control-sm num-right" formControlName="correlativo" min="1">
+          </div>
+          <div class="form-group" style="margin-bottom:14px">
+            <label class="form-label-sm">Fecha de emision <span class="req">*</span></label>
+            <input type="date" class="form-control form-control-sm" formControlName="fechaEmision">
+          </div>
+        </div>
+
+        <div class="form-grid-3">
+          <div class="form-group" style="margin-bottom:0">
+            <label class="form-label-sm">Moneda <span class="req">*</span></label>
+            <select class="form-control form-control-sm" formControlName="moneda">
+              <option value="PEN">PEN — Sol</option>
+              <option value="USD">USD — Dolar Estadounidense</option>
+              <option value="EUR">EUR — Euro</option>
+              <option value="CAD">CAD — Dolar Canadiense</option>
+              <option value="GBP">GBP — Libra Esterlina</option>
+              <option value="JPY">JPY — Yen</option>
+              <option value="CHF">CHF — Franco Suizo</option>
+              <option value="BRL">BRL — Real Brasileno</option>
+              <option value="CLP">CLP — Peso Chileno</option>
+              <option value="COP">COP — Peso Colombiano</option>
+              <option value="BOB">BOB — Boliviano</option>
+              <option value="AUD">AUD — Dolar Australiano</option>
+              <option value="MXN">MXN — Peso Mexicano</option>
+            </select>
+          </div>
+          <div class="form-group" style="margin-bottom:0">
+            <label class="form-label-sm">Tipo de operacion <span class="req">*</span></label>
+            <select class="form-control form-control-sm" formControlName="tipoOperacion">
+              <option value="0101">0101 — Venta interna</option>
+              <option value="0102">0102 — Exportacion</option>
+              <option value="0103">0103 — No domiciliados</option>
+              <option value="0104">0104 — Venta interna - Anticipos</option>
+              <option value="0105">0105 — Venta itinerante</option>
+              <option value="0106">0106 — Factura guia</option>
+              <option value="0107">0107 — Venta arroz pilado</option>
+              <option value="0108">0108 — Comprobante de percepcion</option>
+              <option value="0110">0110 — Factura - Guia remitente</option>
+            </select>
+          </div>
+          <div class="form-group" style="margin-bottom:0">
+            <label class="form-label-sm">Vencimiento</label>
+            <input type="date" class="form-control form-control-sm" formControlName="fechaVencimiento">
+          </div>
+        </div>
+      </div>
+
+      <!-- ======== PASO 1: CLIENTE ======== -->
+      <div *ngIf="currentStep === 1" [formGroup]="clienteForm">
+        <p class="step-heading">Datos del cliente receptor</p>
+        <p class="step-sub">Busca por RUC para autocompletar o ingresa los datos manualmente</p>
+
+        <div class="form-grid-2">
+          <div class="form-group" style="margin-bottom:14px">
+            <label class="form-label-sm">Tipo de documento <span class="req">*</span></label>
+            <select class="form-control form-control-sm" formControlName="tipoDocIdentidad">
+              <option value="6">6 — RUC</option>
+              <option value="1">1 — DNI</option>
+              <option value="4">4 — Carnet de extranjeria</option>
+              <option value="7">7 — Pasaporte</option>
+              <option value="0">0 — No domiciliado</option>
+            </select>
+          </div>
+          <div class="form-group" style="margin-bottom:14px">
+            <label class="form-label-sm">
+              Numero de documento <span class="req">*</span>
+            </label>
+            <div style="display:flex; gap:6px; align-items:center">
+              <input class="form-control form-control-sm"
+                     formControlName="nroDocIdentidad"
+                     style="flex:1"
+                     [maxlength]="clienteForm.get('tipoDocIdentidad')?.value === '6' ? 11 : 20"
+                     [placeholder]="clienteForm.get('tipoDocIdentidad')?.value === '6' ? '20xxxxxxxxx' : 'Numero de documento'">
+              <button *ngIf="clienteForm.get('tipoDocIdentidad')?.value === '6' || clienteForm.get('tipoDocIdentidad')?.value === '1'"
+                      type="button"
+                      class="btn btn-outline btn-sm"
+                      style="white-space:nowrap; font-size:12px; padding:4px 10px"
+                      [disabled]="rucLoading"
+                      (click)="clienteForm.get('tipoDocIdentidad')?.value === '6' ? consultarRuc() : consultarDni()">
+                <i *ngIf="rucLoading" class="pi pi-spin pi-spinner" style="font-size:12px"></i>
+                <span *ngIf="!rucLoading">Consultar</span>
+              </button>
+            </div>
+            <!-- Resultado consulta -->
+            <div *ngIf="rucData && !rucError" style="display:flex; gap:6px; margin-top:5px; flex-wrap:wrap">
+              <span [ngStyle]="{
+                      'font-size': '11px',
+                      'padding': '2px 8px',
+                      'border-radius': '4px',
+                      'font-weight': '700',
+                      'background': rucData.estado === 'ACTIVO' ? '#d1fae5' : '#fee2e2',
+                      'color': rucData.estado === 'ACTIVO' ? '#065f46' : '#991b1b'
+                    }">
+                {{ rucData.estado }}
+              </span>
+              <span [ngStyle]="{
+                      'font-size': '11px',
+                      'padding': '2px 8px',
+                      'border-radius': '4px',
+                      'font-weight': '700',
+                      'background': rucData.condicion === 'HABIDO' ? '#dbeafe' : '#fef9c3',
+                      'color': rucData.condicion === 'HABIDO' ? '#1e40af' : '#854d0e'
+                    }">
+                {{ rucData.condicion }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div *ngIf="rucError" class="warn-box" style="margin-bottom:10px">
+          <i class="pi pi-exclamation-circle" style="flex-shrink:0;margin-top:2px"></i>
+          {{ rucError }}
+        </div>
+
+        <div class="form-group" style="margin-bottom:14px">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px">
+            <label class="form-label-sm" style="margin-bottom:0">
+              {{ clienteForm.get('tipoDocIdentidad')?.value === '6' ? 'Razon social' : 'Nombre completo' }}
+              <span class="req">*</span>
+            </label>
+            <button *ngIf="docAutocompletado"
+                    type="button"
+                    style="font-size:11px; color:var(--primary-blue); background:none; border:none; cursor:pointer; padding:0; text-decoration:underline"
+                    (click)="limpiarConsulta()">
+              Cambiar datos
+            </button>
+          </div>
+          <input class="form-control form-control-sm"
+                 formControlName="clienteNombre"
+                 [readonly]="docAutocompletado"
+                 [style.background]="docAutocompletado ? '#f0f5ff' : ''"
+                 placeholder="Nombre o razon social del receptor">
+        </div>
+
+        <div class="form-group" style="margin-bottom:14px">
+          <label class="form-label-sm">Direccion fiscal</label>
+          <input class="form-control form-control-sm"
+                 formControlName="clienteDireccion"
+                 [readonly]="docAutocompletado"
+                 [style.background]="docAutocompletado ? '#f0f5ff' : ''"
+                 placeholder="Av. Principal 123, Lima (opcional)">
+        </div>
+
+        <div class="warn-box" *ngIf="advertenciaRuc">
+          <i class="pi pi-exclamation-triangle" style="flex-shrink:0;margin-top:2px"></i>
+          Las facturas electronicas solo pueden emitirse a receptores con RUC activo (tipo 6).
+          Cambia el tipo de documento o usa una boleta de venta.
+        </div>
+
+        <div class="info-box" *ngIf="!advertenciaRuc && (clienteForm.get('tipoDocIdentidad')?.value === '6' || clienteForm.get('tipoDocIdentidad')?.value === '1')">
+          <i class="pi pi-info-circle" style="flex-shrink:0;margin-top:2px"></i>
+          Al ingresar el RUC completo (11 digitos) o DNI (8 digitos) se autocompletan razon social y direccion desde SUNAT.
+        </div>
+      </div>
+
+      <!-- ======== PASO 2: ITEMS ======== -->
+      <div *ngIf="currentStep === 2" [formGroup]="itemsForm">
+        <p class="step-heading">Detalle de bienes y servicios</p>
+        <p class="step-sub">El IGV se calcula por linea segun el tipo de afectacion.</p>
+
+        <div style="overflow-x:auto">
+          <table class="items-table">
+            <thead>
+              <tr>
+                <th class="col-cod">Cod.</th>
+                <th class="col-desc">Descripcion <span class="req">*</span></th>
+                <th class="col-uni">Unid.</th>
+                <th class="col-cant">Cant.</th>
+                <th class="col-vu">V. Unit.</th>
+                <th class="col-afe">Afec. IGV</th>
+                <th class="col-sub">Subtotal</th>
+                <th class="col-del"></th>
+              </tr>
+            </thead>
+            <tbody formArrayName="items">
+              <tr *ngFor="let item of items.controls; let i = index" [formGroupName]="i">
+                <td class="col-cod">
+                  <input formControlName="codProducto" placeholder="P01">
+                </td>
+                <td class="col-desc">
+                  <input formControlName="descripcion" placeholder="Descripcion del bien o servicio">
+                </td>
+                <td class="col-uni">
+                  <select formControlName="unidad">
+                    <option value="NIU">NIU</option>
+                    <option value="ZZ">ZZ</option>
+                    <option value="KGM">KGM</option>
+                    <option value="LTR">LTR</option>
+                    <option value="MTR">MTR</option>
+                    <option value="UND">UND</option>
+                  </select>
+                </td>
+                <td class="col-cant">
+                  <input type="number" formControlName="cantidad" min="0.001" step="1" class="num-right">
+                </td>
+                <td class="col-vu">
+                  <input type="number" formControlName="mtoValorUnitario" min="0" step="0.01" class="num-right">
+                </td>
+                <td class="col-afe">
+                  <select formControlName="tipAfeIgv">
+                    <optgroup label="Gravado (IGV 18%)">
+                      <option [value]="10">10 — Gravado (oneroso)</option>
+                      <option [value]="11">11 — Gravado - Premio</option>
+                      <option [value]="12">12 — Gravado - Donacion</option>
+                      <option [value]="13">13 — Gravado - Retiro</option>
+                      <option [value]="14">14 — Gravado - Publicidad</option>
+                      <option [value]="15">15 — Gravado - Bonificacion</option>
+                      <option [value]="16">16 — Gravado - Entrega a trabajadores</option>
+                    </optgroup>
+                    <optgroup label="Exonerado (0%)">
+                      <option [value]="20">20 — Exonerado (oneroso)</option>
+                    </optgroup>
+                    <optgroup label="Inafecto (0%)">
+                      <option [value]="30">30 — Inafecto (oneroso)</option>
+                      <option [value]="31">31 — Inafecto - Premio</option>
+                      <option [value]="32">32 — Inafecto - Publicidad</option>
+                      <option [value]="33">33 — Inafecto - Bonificacion</option>
+                      <option [value]="34">34 — Inafecto - Retiro</option>
+                      <option [value]="35">35 — Inafecto - Muestras medicas</option>
+                      <option [value]="36">36 — Inafecto - Retiro por convenio colectivo</option>
+                    </optgroup>
+                    <optgroup label="Exportacion (0%)">
+                      <option [value]="40">40 — Exportacion</option>
+                    </optgroup>
+                  </select>
+                </td>
+                <td class="col-sub">
+                  <span style="font-size:12px; color:var(--neutral-gray); font-variant-numeric:tabular-nums">
+                    {{ fmt((item.get('cantidad')?.value || 0) * (item.get('mtoValorUnitario')?.value || 0)) }}
+                  </span>
+                </td>
+                <td class="col-del">
+                  <button type="button" class="btn-del-item" (click)="removeItem(i)"
+                          [disabled]="items.length === 1" title="Eliminar item">
+                    <i class="pi pi-trash"></i>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <button type="button" class="btn-add-item" (click)="addItem()">
+          <i class="pi pi-plus-circle"></i> Agregar item
+        </button>
+
+        <div class="info-box">
+          <i class="pi pi-info-circle" style="flex-shrink:0;margin-top:2px"></i>
+          <span>
+            Catalogo 07 SUNAT: <strong>10-16</strong> Gravado (IGV 18%) — <strong>20</strong> Exonerado — <strong>30-36</strong> Inafecto — <strong>40</strong> Exportacion.
+            Unidades: NIU = unidad, ZZ = servicio, KGM = kilogramo, LTR = litro, MTR = metro.
+          </span>
+        </div>
+      </div>
+
+      <!-- ======== PASO 3: PAGO ======== -->
+      <div *ngIf="currentStep === 3" [formGroup]="pagoForm">
+        <p class="step-heading">Forma de pago y datos adicionales</p>
+        <p class="step-sub">La leyenda de monto en letras se genera automaticamente.</p>
+
+        <div class="form-grid-2">
+          <div class="form-group" style="margin-bottom:14px">
+            <label class="form-label-sm">Forma de pago <span class="req">*</span></label>
+            <select class="form-control form-control-sm" formControlName="metodoPago">
+              <option value="CONTADO">Contado</option>
+              <option value="CREDITO">Credito</option>
+              <option value="TARJETA">Tarjeta</option>
+              <option value="YAPE">Yape</option>
+              <option value="PLIN">Plin</option>
+            </select>
+          </div>
+          <div class="form-group" style="margin-bottom:14px">
+            <label class="form-label-sm">N. de orden de compra</label>
+            <input class="form-control form-control-sm"
+                   formControlName="nroOrdenCompra"
+                   maxlength="20"
+                   placeholder="OC-001 (opcional)">
+          </div>
+        </div>
+
+        <div class="form-group" style="margin-bottom:14px">
+          <label class="form-label-sm">Guia de remision relacionada</label>
+          <input class="form-control form-control-sm"
+                 formControlName="guiaRemision"
+                 placeholder="T001-00000001 (opcional — si hay traslado de bienes)">
+        </div>
+
+        <div class="form-group" style="margin-bottom:14px">
+          <label class="form-label-sm">
+            Leyenda — monto en letras (Catalogo 52) <span class="req">*</span>
+          </label>
+          <input class="form-control form-control-sm"
+                 formControlName="leyenda"
+                 readonly
+                 style="background:#f8faff; color:var(--neutral-gray)"
+                 placeholder="Se genera automaticamente del total">
+        </div>
+
+        <div class="form-group" style="margin-bottom:0">
+          <label class="form-label-sm">Observaciones</label>
+          <textarea class="form-control"
+                    formControlName="observacion"
+                    rows="2"
+                    style="font-size:13px; min-height:unset; resize:none"
+                    placeholder="Notas o condiciones adicionales (opcional)"></textarea>
+        </div>
+
+        <div class="info-box" style="margin-top:14px">
+          <i class="pi pi-lock" style="flex-shrink:0;margin-top:2px"></i>
+          La leyenda de monto en letras (codigo 1000) es obligatoria segun SUNAT para facturas y boletas electronicas.
+        </div>
+      </div>
+
+      <!-- ======== PASO 4: REVISION ======== -->
+      <div *ngIf="currentStep === 4">
+        <p class="step-heading">Revision final antes de emitir</p>
+        <p class="step-sub">Verifica los datos. Una vez emitido no podra modificarse, solo anularse con Nota de Credito.</p>
+
+        <div class="revision-grid" style="margin-bottom:14px">
+          <div class="revision-card">
+            <p class="revision-card-title">Documento</p>
+            <div class="revision-row">
+              <span>Tipo</span>
+              <span>{{ tipoComprobanteLabel }}</span>
+            </div>
+            <div class="revision-row">
+              <span>Serie - Correlativo</span>
+              <span>{{ serieCorrelativo }}</span>
+            </div>
+            <div class="revision-row">
+              <span>Fecha</span>
+              <span>{{ docForm.get('fechaEmision')?.value || '—' }}</span>
+            </div>
+            <div class="revision-row">
+              <span>Moneda</span>
+              <span>{{ docForm.get('moneda')?.value }}</span>
+            </div>
+            <div class="revision-row">
+              <span>Tipo operacion</span>
+              <span>{{ docForm.get('tipoOperacion')?.value }}</span>
+            </div>
+          </div>
+          <div class="revision-card">
+            <p class="revision-card-title">Cliente</p>
+            <div class="revision-row">
+              <span>Tipo doc.</span>
+              <span>{{ tipoDocLabel }}</span>
+            </div>
+            <div class="revision-row">
+              <span>Numero</span>
+              <span>{{ clienteForm.get('nroDocIdentidad')?.value || '—' }}</span>
+            </div>
+            <div class="revision-row">
+              <span>Nombre / Razon</span>
+              <span>{{ clienteForm.get('clienteNombre')?.value || '—' }}</span>
+            </div>
+            <div class="revision-row">
+              <span>Metodo pago</span>
+              <span>{{ pagoForm.get('metodoPago')?.value }}</span>
+            </div>
+            <div class="revision-row" *ngIf="pagoForm.get('nroOrdenCompra')?.value">
+              <span>Orden de compra</span>
+              <span>{{ pagoForm.get('nroOrdenCompra')?.value }}</span>
+            </div>
+            <div class="revision-row" *ngIf="pagoForm.get('guiaRemision')?.value">
+              <span>Guia de remision</span>
+              <span>{{ pagoForm.get('guiaRemision')?.value }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="revision-card" style="margin-bottom:14px">
+          <p class="revision-card-title">Items ({{ items.length }})</p>
+          <div *ngFor="let item of items.controls" class="revision-items-row">
+            <span>{{ item.get('descripcion')?.value || 'Item sin descripcion' }}</span>
+            <span style="font-variant-numeric:tabular-nums">
+              {{ fmt((item.get('cantidad')?.value || 0) * (item.get('mtoValorUnitario')?.value || 0)) }}
+            </span>
+          </div>
+          <div *ngIf="items.length === 0" style="font-size:12px; color:var(--neutral-gray)">
+            Sin items agregados.
+          </div>
+        </div>
+
+        <div class="warn-box">
+          <i class="pi pi-exclamation-triangle" style="flex-shrink:0;margin-top:2px"></i>
+          Una vez emitido el comprobante ante SUNAT no puede modificarse. Solo podra anularse mediante una Nota de Credito electronica.
+        </div>
+
+        <div class="error-box" *ngIf="submitError">
+          <i class="pi pi-times-circle" style="flex-shrink:0;margin-top:2px"></i>
+          {{ submitError }}
+        </div>
+      </div>
+
+    </div><!-- /nf-form-area -->
+
+    <!-- Panel lateral de resumen -->
+    <div class="nf-panel">
+      <p class="panel-title">Resumen</p>
+
+      <div class="panel-badge"
+           [class.factura]="docForm.get('tipoComprobante')?.value === 'FACTURA'"
+           [class.boleta]="docForm.get('tipoComprobante')?.value === 'BOLETA'">
+        <i class="pi"
+           [class.pi-file]="docForm.get('tipoComprobante')?.value === 'FACTURA'"
+           [class.pi-receipt]="docForm.get('tipoComprobante')?.value === 'BOLETA'"></i>
+        {{ tipoComprobanteLabel }}
+      </div>
+
+      <div class="panel-row">
+        <span>Op. gravadas</span>
+        <span style="font-variant-numeric:tabular-nums">S/ {{ fmt(totalGravadas) }}</span>
+      </div>
+      <div class="panel-row">
+        <span>Op. exoneradas</span>
+        <span style="font-variant-numeric:tabular-nums">S/ {{ fmt(totalExoneradas) }}</span>
+      </div>
+      <div class="panel-row">
+        <span>Op. inafectas</span>
+        <span style="font-variant-numeric:tabular-nums">S/ {{ fmt(totalInafectas) }}</span>
+      </div>
+      <div class="panel-row">
+        <span>IGV (18%)</span>
+        <span style="font-variant-numeric:tabular-nums">S/ {{ fmt(totalIGV) }}</span>
+      </div>
+      <div class="panel-row total">
+        <span>Total</span>
+        <span style="font-variant-numeric:tabular-nums">S/ {{ fmt(totalGeneral) }}</span>
+      </div>
+
+      <div class="panel-divider"></div>
+
+      <p class="panel-title">Datos del doc.</p>
+      <div class="panel-meta-row">
+        <span>Serie</span>
+        <span>{{ docForm.get('serie')?.value || 'F001' }}</span>
+      </div>
+      <div class="panel-meta-row">
+        <span>Fecha</span>
+        <span>{{ docForm.get('fechaEmision')?.value || '—' }}</span>
+      </div>
+      <div class="panel-meta-row">
+        <span>Moneda</span>
+        <span>{{ docForm.get('moneda')?.value || 'PEN' }}</span>
+      </div>
+      <div class="panel-meta-row">
+        <span>Items</span>
+        <span>{{ items.length }}</span>
+      </div>
+    </div>
+
+  </div><!-- /nf-body -->
+
+  <!-- Footer de navegacion -->
+  <div class="nf-footer">
+    <div style="display:flex; gap:8px; align-items:center">
+      <button *ngIf="currentStep > 0"
+              class="btn btn-outline btn-sm"
+              (click)="prevStep()"
+              [disabled]="loading">
+        <i class="pi pi-arrow-left"></i> Atras
+      </button>
+    </div>
+
+    <div style="display:flex; gap:10px; align-items:center">
+      <span class="step-counter">Paso {{ currentStep + 1 }} de {{ steps.length }}</span>
+      <button *ngIf="currentStep < steps.length - 1"
+              class="btn btn-primary btn-sm"
+              (click)="nextStep()">
+        Continuar <i class="pi pi-arrow-right"></i>
+      </button>
+      <button *ngIf="currentStep === steps.length - 1"
+              class="btn btn-sm btn-emitir"
+              style="background: #1e4ac3;"
+              (click)="emitir()"
+              [disabled]="loading || items.length === 0 || advertenciaRuc">
+        <i *ngIf="loading" class="pi pi-spin pi-spinner" style="color: #f8f8f8;"></i>
+        <i *ngIf="!loading" class="pi pi-file-pdf" style="color: #f8f8f8;"></i>
+        {{ loading ? 'Emitiendo...' : 'Emitir y descargar PDF' }}
+      </button>
+    </div>
+  </div>
+
+</div>
+  

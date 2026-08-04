@@ -1,0 +1,60 @@
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
+import { FormsModule } from '@angular/forms';
+import { ClienteService, Cliente } from '../../services/cliente.service';
+
+@Component({
+  selector: 'app-clientes-list',
+  standalone: true,
+  imports: [CommonModule, RouterModule, FormsModule],
+  templateUrl: './clientes-list.component.html'
+})
+export class ClientesListComponent implements OnInit {
+  clientes: Cliente[] = [];
+  clientesFiltrados: Cliente[] = [];
+  loading = false;
+  searchTerm = '';
+
+  constructor(
+    private clienteService: ClienteService, 
+    private cdr: ChangeDetectorRef
+  ) {}
+
+  ngOnInit() {
+    this.loadClientes();
+  }
+
+  loadClientes() {
+    this.loading = true;
+    this.clienteService.getClientes().subscribe({
+      next: (clientes) => {
+        this.clientes = clientes;
+        this.clientesFiltrados = clientes;
+        this.loading = false;
+      },
+      error: (error) => {
+        console.error('Error cargando clientes:', error);
+        this.loading = false;
+      }
+    });
+  }
+
+  onGlobalFilter(event: any) {
+    const value = (event.target as HTMLInputElement).value.toLowerCase();
+    this.clientesFiltrados = this.clientes.filter(c =>
+      c.nombre.toLowerCase().includes(value) ||
+      c.apellido.toLowerCase().includes(value) ||
+      c.dni.toLowerCase().includes(value)
+    );
+  }
+
+  eliminarCliente(id: string) {
+    if (confirm('¿Está seguro de eliminar este cliente?')) {
+      this.clienteService.deleteCliente(id).subscribe({
+        next: () => this.loadClientes(),
+        error: (error) => console.error('Error eliminando cliente:', error)
+      });
+    }
+  }
+}
