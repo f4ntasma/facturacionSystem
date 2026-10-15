@@ -37,6 +37,8 @@ services:
       ALTOQUE_DEMO: ${ALTOQUE_DEMO:-true}
       APIPERU_TOKEN: ${APIPERU_TOKEN:-}
       MP_ACCESS_TOKEN: ${MP_ACCESS_TOKEN:-}
+    volumes:
+      - archivos:/data/archivos
 
   web:
     build: ./frontend
@@ -50,3 +52,4 @@ services:
 
 volumes:
   datos:
+  archivos:

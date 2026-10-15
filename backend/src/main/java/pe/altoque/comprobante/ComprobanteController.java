@@ -160,6 +160,30 @@ public class ComprobanteController {
                 MediaType.parseMediaType("text/csv; charset=utf-8"));
     }
 
+    /** XML firmados y CDR del rango en un ZIP (lo que pide el contador a fin de mes). Máximo 31 días por descarga. */
+    @GetMapping(value = "/exportar-xml", produces = "application/zip")
+    @Transactional(readOnly = true)
+    public ResponseEntity<byte[]> exportarXml(@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate desde,
+                                              @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate hasta) {
+        if (desde.isAfter(hasta)) throw ApiException.invalido("La fecha inicial es mayor que la final.");
+        if (java.time.temporal.ChronoUnit.DAYS.between(desde, hasta) > 31) throw ApiException.invalido("Descarga de a un mes como máximo.");
+        var salida = new java.io.ByteArrayOutputStream();
+        try (var zip = new java.util.zip.ZipOutputStream(salida)) {
+            for (Comprobante c : service.paraExportar(Sesion.actual(), desde, hasta)) {
+                for (Archivo.Tipo t : Archivo.Tipo.values()) {
+                    var meta = almacen.metaDeComprobante(c.getId(), t);
+                    if (meta.isEmpty()) continue;
+                    zip.putNextEntry(new java.util.zip.ZipEntry((t == Archivo.Tipo.XML ? "xml/" : "cdr/") + meta.get().getNombre()));
+                    zip.write(almacen.leer(meta.get()));
+                    zip.closeEntry();
+                }
+            }
+        } catch (java.io.IOException e) {
+            throw new IllegalStateException(e);
+        }
+        return descarga(salida.toByteArray(), "comprobantes-%s-a-%s.zip".formatted(desde, hasta), MediaType.parseMediaType("application/zip"));
+    }
+
     private void enviarSinFallar(Long id) {
         try {
             sunat.enviar(id);

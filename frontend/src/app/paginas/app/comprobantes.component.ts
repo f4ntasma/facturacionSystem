@@ -21,6 +21,7 @@ import { IconoComponent } from '../../shared/icono.component';
         </div>
         <div class="fila-wrap">
           <button type="button" class="btn btn-borde btn-chico" (click)="exportar()"><at-icono nombre="descargar" [tam]="18" /> Registro de ventas</button>
+          <button type="button" class="btn btn-borde btn-chico" (click)="exportarXml()" title="XML firmados y constancias (CDR) en un ZIP"><at-icono nombre="descargar" [tam]="18" /> XML y CDR</button>
           <a routerLink="/app/emitir" class="btn btn-tinta btn-chico"><at-icono nombre="sumar" [tam]="18" /> Emitir</a>
         </div>
       </header>
@@ -186,6 +187,17 @@ export class ComprobantesComponent {
     try {
       await this.api.descargar('/comprobantes/exportar', { desde, hasta });
       this.toast.ok('Registro de ventas descargado.');
+    } catch (e) {
+      this.toast.error(mensajeError(e));
+    }
+  }
+
+  protected async exportarXml() {
+    const hasta = this.hasta || hoyIso();
+    const desde = this.desde || hasta.substring(0, 8) + '01';
+    try {
+      await this.api.descargar('/comprobantes/exportar-xml', { desde, hasta });
+      this.toast.ok('XML y CDR descargados.');
     } catch (e) {
       this.toast.error(mensajeError(e));
     }

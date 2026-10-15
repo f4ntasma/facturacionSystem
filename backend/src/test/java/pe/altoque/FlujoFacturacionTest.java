@@ -159,6 +159,9 @@ class FlujoFacturacionTest {
         String csv = mvc.perform(get("/api/comprobantes/exportar?desde=" + hoy + "&hasta=" + hoy).header("Authorization", "Bearer " + token))
                 .andExpect(status().isOk()).andReturn().getResponse().getContentAsString(java.nio.charset.StandardCharsets.UTF_8);
         assertThat(csv).contains("F001;1").contains("FC01;1").contains("-59.00");
+        byte[] zip = mvc.perform(get("/api/comprobantes/exportar-xml?desde=" + hoy + "&hasta=" + hoy).header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsByteArray();
+        assertThat(new String(zip, java.nio.charset.StandardCharsets.ISO_8859_1)).contains("xml/20509998885-01-F001-1.xml");
 
         // Sin token no hay acceso
         mvc.perform(get("/api/comprobantes")).andExpect(status().isUnauthorized());

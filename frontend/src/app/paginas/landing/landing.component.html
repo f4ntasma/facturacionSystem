@@ -5,6 +5,7 @@
       <nav aria-label="Secciones" class="nav-links">
         <a href="#como">Cómo funciona</a>
         <a href="#funciones">Funciones</a>
+        <a href="#contadores">Contadores</a>
         <a href="#precios">Precios</a>
         <a href="#preguntas">Preguntas</a>
         @if (auth.logueado()) {
@@ -31,7 +32,7 @@
           <a href="#como" class="cta-borde">Mira cómo funciona</a>
         </div>
         <div class="checks">
-          @for (t of ['Boletas y facturas', 'Desde el celu o la compu', 'Envío por WhatsApp']; track t) {
+          @for (t of ['Boletas y facturas SUNAT', 'Desde S/ 39 al mes', '15 días gratis, sin tarjeta']; track t) {
             <span><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#14141F" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5L20 7"></path></svg>{{ t }}</span>
           }
         </div>
@@ -73,6 +74,32 @@
     </div>
   </div>
 
+  <section class="seccion problema">
+    <div class="contenedor col-48">
+      <div class="encabezado">
+        <span class="mono kicker">LA VERDAD, CAUSA</span>
+        <h2 class="display h2">El cuaderno te está costando plata.</h2>
+        <p class="bajada-seccion">Descuadres, fiados que se olvidan, productos que se acaban sin aviso. Y la boleta del portal de SUNAT es gratis, sí, pero no te dice cuánto ganaste hoy.</p>
+      </div>
+      <div class="tabla-comp" role="table" aria-label="Comparación entre cuaderno, portal de SUNAT y Al Toque">
+        <div class="tc-fila tc-cab" role="row">
+          <span role="columnheader"></span>
+          <span role="columnheader">Cuaderno o Excel</span>
+          <span role="columnheader">Portal SUNAT</span>
+          <span role="columnheader" class="tc-at">Al Toque</span>
+        </div>
+        @for (f of comparacion; track f.que) {
+          <div class="tc-fila" role="row">
+            <span role="rowheader">{{ f.que }}</span>
+            <span role="cell" [class]="f.cuaderno ? 'si' : 'no'">{{ f.cuaderno ? 'Sí' : 'No' }}</span>
+            <span role="cell" [class]="f.sunat ? 'si' : 'no'">{{ f.sunat ? 'Sí' : 'No' }}</span>
+            <span role="cell" class="tc-at si">Sí</span>
+          </div>
+        }
+      </div>
+    </div>
+  </section>
+
   <section id="como" class="seccion como">
     <div class="contenedor col-48">
       <div class="encabezado">
@@ -98,8 +125,43 @@
         <div class="fun"><svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="#FFC81E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5a8.4 8.4 0 0 1-12.4 7.4L3 21l2.1-5.5A8.4 8.4 0 1 1 21 11.5z"></path></svg><h3>Envío por WhatsApp</h3><p>Tu cliente recibe su boleta al toque, sin gastar papel.</p></div>
         <div class="fun"><svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="#FFC81E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9V2h12v7"></path><rect x="3" y="9" width="18" height="8" rx="2"></rect><path d="M7 14h10v8H7z"></path></svg><h3>Funciona con tu ticketera</h3><p>Imprime boletas en papel térmico, rapidito y bien presentadas.</p></div>
         <div class="fun"><svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="#FFC81E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v18h18"></path><path d="M7 15l4-4 3 3 5-6"></path></svg><h3>Cuadre del día</h3><p>Mira cuánto vendiste hoy, esta semana y este mes, sin hacer cuentas.</p></div>
-        <div class="fun"><svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="#FFC81E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="4"></circle><path d="M2 21c0-4 3-6 7-6s7 2 7 6"></path><path d="M17 4a4 4 0 0 1 0 8"></path></svg><h3>Tus caseritos guardados</h3><p>RUC y datos de tus clientes frecuentes listos pa' la próxima factura.</p></div>
+        <div class="fun"><svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="#FFC81E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 8 12 3 3 8v8l9 5 9-5z"></path><path d="m3 8 9 5 9-5"></path><path d="M12 13v8"></path></svg><h3>Stock que se cuadra solo</h3><p>Cada venta descuenta, cada devolución repone y el kardex te dice qué pasó con cada producto.</p></div>
+        <div class="fun"><svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="#FFC81E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="4"></circle><path d="M2 21c0-4 3-6 7-6s7 2 7 6"></path><path d="M17 4a4 4 0 0 1 0 8"></path></svg><h3>Tus caseritos y su fiado</h3><p>RUC y DNI se completan solos. Ventas al crédito con cuotas y lo que te deben, a la vista.</p></div>
+        <div class="fun"><svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="#FFC81E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="6" width="20" height="12" rx="2"></rect><circle cx="12" cy="12" r="3"></circle><path d="M6 12h.01M18 12h.01"></path></svg><h3>Caja con Yape y Plin</h3><p>Abre caja, cobra en efectivo, Yape, Plin o tarjeta y al cierre ves si te sobra o te falta.</p></div>
         <div class="fun"><svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="#FFC81E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6z"></path><path d="m9 12 2 2 4-4"></path></svg><h3>Envío automático a SUNAT</h3><p>Tus comprobantes se envían solitos. Tú vende tranquilo.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="sunat" class="seccion sunat">
+    <div class="contenedor sunat-in">
+      <div class="encabezado">
+        <span class="mono kicker">SUNAT SIN MIEDO</span>
+        <h2 class="display h2">SUNAT es estricta. Nosotros también.</h2>
+        <p class="bajada-seccion">Validamos todo antes de firmar, para que tu comprobante no rebote. Y si algo falla, te avisamos en cristiano.</p>
+      </div>
+      <ul class="sunat-lista">
+        @for (x of sunat; track x.t) {
+          <li><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#0B7A55" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5L20 7"></path></svg><div><strong>{{ x.t }}</strong><span>{{ x.d }}</span></div></li>
+        }
+      </ul>
+    </div>
+  </section>
+
+  <section id="contadores" class="contadores">
+    <div class="contenedor cont-in">
+      <div class="cont-texto">
+        <span class="mono kicker claro">PARA CONTADORES</span>
+        <h2 class="display h2-chico">Todos tus clientes, una sola cuenta.</h2>
+        <p>Entra a cada RUC con tu mismo correo, descarga el registro de ventas y un ZIP con los XML y CDR del mes sin pedirle nada a nadie. Tus clientes facturan bien desde el día uno.</p>
+        <a href="mailto:hola@altoque.pe?subject=Al%20Toque%20para%20mi%20estudio%20contable" class="cta-amarillo">Hablemos de tu estudio</a>
+      </div>
+      <div class="cont-arte" aria-hidden="true">
+        @for (n of rucsEjemplo; track n.ruc; let i = $index) {
+          <div class="ruc-tarjeta" [style.transform]="'rotate(' + (i - 1) * 2 + 'deg)'">
+            <strong>{{ n.nombre }}</strong><span class="mono">RUC {{ n.ruc }}</span><em>{{ i === 0 ? 'Aquí estás' : 'Cambiar' }}</em>
+          </div>
+        }
       </div>
     </div>
   </section>
@@ -120,6 +182,7 @@
         <span class="mono kicker">PRECIOS</span>
         <h2 class="display h2">Precios claros, sin letra chica.</h2>
         <p class="nota-precio">Prueba gratis 15 días con todo incluido. Sin tarjeta.</p>
+        <p class="mercado">Un sistema de ventas con facturación cuesta en promedio S/ 96 al mes en Perú. Con Al Toque pagas menos y no firmas contrato.</p>
         <div class="periodo" role="group" aria-label="Forma de pago">
           <button type="button" [class.activo]="!anual()" [attr.aria-pressed]="!anual()" (click)="anual.set(false)">Mensual</button>
           <button type="button" [class.activo]="anual()" [attr.aria-pressed]="anual()" (click)="anual.set(true)">Anual <span class="ahorro">2 meses gratis</span></button>
@@ -157,6 +220,10 @@
         <details><summary>¿Necesito RUC para usar Al Toque?</summary><p>Sí. Para emitir boletas y facturas electrónicas necesitas un RUC activo. Con eso ya estás listo.</p></details>
         <details><summary>¿Funciona en cualquier celular?</summary><p>Sí. Al Toque funciona en el navegador de cualquier celular Android o iPhone y en la compu, sin instalar nada. Si quieres, la agregas a tu pantalla de inicio como una app.</p></details>
         <details><summary>¿Cuánto demoro en empezar?</summary><p>Unos minutos: creas tu cuenta con tu RUC y ya puedes emitir en modo de pruebas. Para emitir con validez ante SUNAT subes tu certificado digital y tu clave SOL secundaria, y listo.</p></details>
+        <details><summary>Si SUNAT emite gratis, ¿por qué pagar?</summary><p>El portal de SUNAT solo emite el comprobante. Al Toque además te lleva la caja, el stock, los clientes que te deben y los reportes del día, y emite en segundos desde el mostrador, con tus productos ya cargados.</p></details>
+        <details><summary>¿Manejan detracciones?</summary><p>Sí. Si vendes servicios o bienes sujetos al SPOT, eliges el código al facturar y Al Toque calcula el monto, pone la leyenda y tu cuenta del Banco de la Nación en la factura, y cobra el neto.</p></details>
+        <details><summary>Soy contador, ¿puedo llevar a varios clientes?</summary><p>Sí. Con un solo correo entras a todos los RUC que te den acceso y cambias de negocio con un toque. Cada uno tiene sus propias series, caja y reportes.</p></details>
+        <details><summary>¿Qué pasa si SUNAT rechaza un comprobante?</summary><p>Te mostramos el motivo en simple. Un comprobante rechazado no tiene validez, así que el stock regresa solo y emites uno nuevo. Para anular uno aceptado tienes 7 días; después, se corrige con nota de crédito.</p></details>
         <details><summary>¿Puedo cambiar de plan cuando quiera?</summary><p>Claro. Subes o bajas de plan desde Ajustes cuando quieras; el cambio se aplica en tu siguiente periodo y no hay permanencia mínima.</p></details>
         <details><summary>¿Qué pasa si se cae el internet o SUNAT?</summary><p>Tu comprobante igual se genera y se firma. Si SUNAT no responde, Al Toque lo reintenta solito cada pocos minutos hasta que quede aceptado.</p></details>
       </div>
