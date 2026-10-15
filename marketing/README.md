@@ -17,6 +17,24 @@ y publicado solo después de que lo apruebes desde Telegram.
 | `n8n-video-diario.json` | El flujo listo para importar en n8n. |
 | `ejemplo-video.json` | Un guion de ejemplo para probar el renderizador. |
 
+## Aprende de lo que funciona
+
+Cada mañana, antes de escribir, el flujo mide en Instagram los videos publicados hace entre 2 y 90 días
+(alcance, me gusta, comentarios, compartidos, guardados y vistas) y les da un puntaje:
+
+```
+puntaje = (me gusta + 2 × comentarios + 3 × compartidos + 3 × guardados) ÷ alcance × 1000
+```
+
+Compartir y guardar pesan más porque son la señal de que el video le sirvió a alguien. Los videos con menos de 30 de alcance no cuentan.
+
+- La IA recibe los **5 mejores** (gancho, puntos, pilar) como referencia de tono y ritmo, y los **2 peores** para evitar ese enfoque.
+- Si un pilar rinde más que los demás, se le sugiere usar su energía en el tema del día.
+- **Cada lunes** te llega a Telegram el ranking: los 3 mejores videos y el promedio por pilar.
+- Necesita la credencial de Meta (la misma que publica). Mientras no haya videos medidos, el flujo funciona igual que antes.
+
+Lo medido vive en los datos del flujo en n8n (`published` y `aprendizaje`); no hace falta base de datos aparte.
+
 ## Pilares (uno por día)
 
 | Día | Pilar | De qué habla |
@@ -36,7 +54,7 @@ La IA no puede inventar testimonios, clientes, cifras ni normas: el guionista so
 1. En tu n8n: **Workflows › Import from file** → `n8n-video-diario.json`.
 2. Crea estas credenciales (los nodos ya las buscan por nombre):
    - **Clave de IA** (Header Auth): `x-goog-api-key` con una clave gratis de Google AI Studio, o `x-api-key` de Anthropic si en *Configuración* pones `aiProvider: 'claude'`.
-   - **Renderizador M&A** (Header Auth): la misma que ya usa el flujo de M&A Company (el renderizador es el mismo).
+   - **Renderizador M&A** (Header Auth): name `Authorization`, value `Bearer <RENDER_TOKEN>`; el token está en Dokploy › ma-company-contenido › ma-renderer › Environment.
    - **Telegram Al Toque**: un bot nuevo creado con @BotFather.
    - **Meta Al Toque (token de página)** (Query Auth): `access_token` = token de larga duración de la página de Facebook de Al Toque (con su Instagram profesional vinculado).
 3. En el nodo **Configuración** pon tu `telegramChatId`, el `instagramUserId` y el `facebookPageId`.

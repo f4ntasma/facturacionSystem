@@ -3,7 +3,7 @@
  "name": "Al Toque · Video diario",
  "nodes": [
   {
-   "id": "61da61e7-b23c-49fd-8aff-a7eebe4c50f7",
+   "id": "456be8c3-8fc6-4e52-a6ac-42c483c69cfe",
    "name": "Cada día 6:00",
    "type": "n8n-nodes-base.scheduleTrigger",
    "typeVersion": 1.2,
@@ -23,7 +23,7 @@
    }
   },
   {
-   "id": "5e345a03-f1d2-4fc0-80a4-39e21e3bf170",
+   "id": "865ede90-8706-4679-b0e5-fbc44f105329",
    "name": "Probar ahora",
    "type": "n8n-nodes-base.manualTrigger",
    "typeVersion": 1,
@@ -34,7 +34,7 @@
    "parameters": {}
   },
   {
-   "id": "4f2e3ce6-c9fc-4b3a-9685-9310ca297d05",
+   "id": "181e7a01-8ecd-46df-ac23-8b712f2a7f5c",
    "name": "Botón de Telegram",
    "type": "n8n-nodes-base.telegramTrigger",
    "typeVersion": 1.2,
@@ -48,7 +48,7 @@
     ],
     "additionalFields": {}
    },
-   "webhookId": "8dfb0096-a6fb-416c-96c5-b0d0611fb5ec",
+   "webhookId": "64e3b9db-206e-4329-afc2-a06ab7521047",
    "credentials": {
     "telegramApi": {
      "id": "",
@@ -57,7 +57,7 @@
    }
   },
   {
-   "id": "f25bcbd5-a330-4fdd-a07c-e0d67c3c1a8b",
+   "id": "c30af695-d9d7-4399-9ea0-89a4a8159e29",
    "name": "Configuración",
    "type": "n8n-nodes-base.code",
    "typeVersion": 2,
@@ -66,11 +66,11 @@
     260
    ],
    "parameters": {
-    "jsCode": "// ⚙️ CONFIGURACIÓN: cambia aquí los datos de tu cuenta.\nconst config = {\n  telegramChatId: 'PON_AQUI_TU_CHAT_ID',\n  // Mismo renderizador de videos que ya tienes desplegado; la marca Al Toque va en cada pedido.\n  rendererUrl: 'https://ma-renderer.vercel.app',\n  // 'gemini' = gratis (nivel gratuito de Google, unas 20 peticiones diarias) · 'claude' = de pago, mejor redacción.\n  aiProvider: 'gemini',\n  geminiModel: 'gemini-flash-latest',\n  claudeModel: 'claude-opus-5-5',\n  instagramUserId: 'PON_AQUI_EL_ID_DE_INSTAGRAM_DE_AL_TOQUE',\n  facebookPageId: 'PON_AQUI_EL_ID_DE_LA_PAGINA_DE_AL_TOQUE',\n  brand: {\"name\": \"Al Toque\", \"handle\": \"@altoque.pe\", \"website\": \"altoque-pe.vercel.app\", \"logo\": \"https://altoque-pe.vercel.app/marca-video.png\", \"colors\": {\"background\": \"#14141F\", \"surface\": \"#2A2A38\", \"primary\": \"#FFC81E\", \"accent\": \"#D1126B\", \"highlight\": \"#FFC81E\", \"text\": \"#FFFFFF\", \"muted\": \"#D9D8E0\"}, \"tagline\": \"\"},\n  voice: 'es-PE-CamilaNeural',\n  voiceRate: '+8%',\n};\nreturn $input.all().map((item) => ({ json: { config, event: item.json } }));\n"
+    "jsCode": "// ⚙️ CONFIGURACIÓN: cambia aquí los datos de tu cuenta.\nconst config = {\n  telegramChatId: '8534772721',\n  // Mismo renderizador de videos que ya tienes desplegado; la marca Al Toque va en cada pedido.\n  rendererUrl: 'https://ma-renderer.vercel.app',\n  // 'gemini' = gratis (nivel gratuito de Google, unas 20 peticiones diarias) · 'claude' = de pago, mejor redacción.\n  aiProvider: 'gemini',\n  geminiModel: 'gemini-flash-latest',\n  claudeModel: 'claude-opus-5-5',\n  instagramUserId: 'PON_AQUI_EL_ID_DE_INSTAGRAM_DE_AL_TOQUE',\n  facebookPageId: 'PON_AQUI_EL_ID_DE_LA_PAGINA_DE_AL_TOQUE',\n  brand: {\"name\": \"Al Toque\", \"handle\": \"@altoque.pe\", \"website\": \"altoque-pe.vercel.app\", \"logo\": \"https://altoque-pe.vercel.app/marca-video.png\", \"colors\": {\"background\": \"#14141F\", \"surface\": \"#2A2A38\", \"primary\": \"#FFC81E\", \"accent\": \"#D1126B\", \"highlight\": \"#FFC81E\", \"text\": \"#FFFFFF\", \"muted\": \"#D9D8E0\"}, \"tagline\": \"\"},\n  voice: 'es-PE-CamilaNeural',\n  voiceRate: '+8%',\n};\nreturn $input.all().map((item) => ({ json: { config, event: item.json } }));\n"
    }
   },
   {
-   "id": "03013c8d-b514-42a7-a11b-f006794375f3",
+   "id": "e2569875-52cc-4740-9f78-dc8d25461f47",
    "name": "¿Es un botón?",
    "type": "n8n-nodes-base.if",
    "typeVersion": 2.2,
@@ -88,7 +88,7 @@
      },
      "conditions": [
       {
-       "id": "3f0a4fef-2980-47b7-b250-717e1a6174bb",
+       "id": "f698a271-33f9-457e-a048-8f688435fc38",
        "leftValue": "={{ !!$json.event.callback_query }}",
        "rightValue": "true",
        "operator": {
@@ -103,7 +103,7 @@
    }
   },
   {
-   "id": "b848d057-da8d-4ab3-ba59-8c16b9d52656",
+   "id": "a3ced301-0aa0-41b0-a5a1-59fa117f2ee7",
    "name": "Preparar pedido a la IA",
    "type": "n8n-nodes-base.code",
    "typeVersion": 2,
@@ -112,11 +112,163 @@
     100
    ],
    "parameters": {
-    "jsCode": "// Arma el pedido a la IA: pilar del día, temas recientes (para no repetir) y, si vienes de \"Rehacer\", qué evitar.\nconst SYSTEM = \"Eres el guionista y community manager de **Al Toque**, un sistema peruano de facturación electrónica y punto de venta para negocios pequeños: bodegas, ferreterías, boticas, restaurantes, talleres, tiendas de ropa, emprendedores que venden por redes y estudios contables. Se usa desde el celular o la compu y emite boletas y facturas válidas ante SUNAT.\\n\\nTu trabajo: escribir **un video corto vertical por día** (Reels, TikTok, Shorts y Facebook) que haga que el dueño de un negocio diga «eso me pasa a mí» y quiera probar Al Toque.\\n\\n## Público\\n- Dueños de mypes en Perú, casi siempre ellos mismos atienden el mostrador. Muchos llevan todo en cuaderno o Excel; otros emiten en el portal de SUNAT a mano.\\n- Les importa: no perder plata, saber cuánto ganaron hoy, que no les falte mercadería, no tener problemas con SUNAT y no perder tiempo.\\n- No son técnicos. No hables de «XML», «UBL» ni «API» salvo que lo expliques en cinco palabras.\\n- También le hablas, algunos días, al **contador** que lleva varios negocios.\\n\\n## Voz de la marca\\n- Cercana, rápida y con buen humor peruano: «causa», «caserito», «al toque», «pe», «bacán», «chamba». Úsalos con medida: uno o dos por video, nunca en cada frase.\\n- Clara y directa, de tú. Frases cortas.\\n- Optimista y práctica: problema → lo que te cuesta → la salida.\\n- Nunca burlarse del cliente ni de su negocio. Nunca hablar mal de la competencia por su nombre.\\n- Nunca sugerir evadir impuestos ni «que SUNAT no se entere». Al Toque es para estar en regla sin enredos.\\n\\n## Pilares de contenido (rota según el día)\\n1. **cuaderno**: el costo escondido de llevar todo a mano (descuadres, fiados olvidados, productos que se acaban, no saber cuánto ganaste).\\n2. **sunat_facil**: una regla SUNAT explicada en simple y cómo Al Toque la cumple sola. Temas válidos: boleta con DNI desde S/ 700, factura solo con RUC, 7 días para anular, nota de crédito para corregir, detracciones (SPOT) en servicios de más de S/ 700, ventas al crédito con cuotas, guardar el XML y la constancia (CDR). No inventes normas ni plazos que no estén en esta lista.\\n3. **antes_despues**: un día del negocio sin Al Toque y con Al Toque (3 pasos manuales → 1 toque).\\n4. **truco**: una función concreta (cobrar con Yape y Plin y cuadrar caja, boleta por WhatsApp, stock que se descuenta solo, cliente que se completa con su DNI o RUC, reporte del día).\\n5. **rubro**: el mismo problema contado para un rubro específico (bodega, ferretería, botica, restaurante, taller, tienda de ropa, emprendedor de Instagram).\\n6. **contador**: para estudios contables: un correo para todos sus clientes, registro de ventas y XML del mes en un clic.\\n\\n## Datos que puedes usar (son reales)\\n- Planes desde **S/ 39 al mes** con IGV; el más pedido cuesta S/ 69. Pago anual: 2 meses gratis.\\n- **15 días de prueba gratis**, sin tarjeta.\\n- Funciona en el navegador del celular o la compu, sin instalar nada.\\n- Boletas, facturas, notas de crédito y débito, anulaciones, detracciones, crédito con cuotas, caja con Yape/Plin, stock con kardex, varios locales y usuarios.\\n- Si SUNAT no responde, Al Toque reintenta solo.\\nNo inventes clientes, testimonios, premios, cifras de ventas ni porcentajes de ahorro. Si das un ejemplo numérico, preséntalo como ejemplo («imagina que…», «si vendes S/ 300 al día…»).\\n\\n## Reglas del guion\\n- Duración total de 25 a 40 segundos narrados (unas 70 a 110 palabras en total).\\n- La escena 1 es el **gancho**: una pregunta o frase que se entienda en menos de 3 segundos. Máximo 9 palabras en pantalla.\\n- De 2 a 4 escenas `point`, cada una con un título de 1 a 3 palabras y un texto en pantalla de máximo 14 palabras.\\n- Cierra siempre con una escena `cta`. Alterna entre: «Prueba 15 días gratis: link en la bio», «Escríbenos por WhatsApp y te lo mostramos», «Comenta BOLETA y te pasamos el link», «Síguenos para más trucos de tu negocio».\\n- La narración no repite literalmente el texto en pantalla: lo complementa.\\n- En la narración escribe los números en palabras («setecientos soles») para que la voz los lea bien; en pantalla usa cifras («S/ 700»).\\n- En la narración escribe la marca como «Al Toque»; en pantalla, «Al Toque».\\n- No repitas un gancho ni un tema de la lista `recentTopics` que recibas.\\n\\n## Textos para cada red\\n- **Instagram y Facebook**: de 2 a 4 líneas, un emoji como máximo por línea, cierra con una pregunta o el llamado a la acción, y de 5 a 8 hashtags al final (mezcla #facturacionelectronica #boletaelectronica #sunat #emprendedoresperu #bodegasperu #mypesperu con uno del rubro del día).\\n- **TikTok**: de 1 a 2 líneas directas y de 3 a 5 hashtags.\\n- **LinkedIn**: solo para los pilares `sunat_facil` y `contador`; tono profesional, de 3 a 6 líneas, sin jerga, 3 hashtags. En los demás pilares, una línea breve.\\n\\n## Formato de respuesta\\nResponde **solo** con un objeto JSON válido, sin texto antes ni después, con esta forma:\\n\\n```json\\n{\\n  \\\"pillar\\\": \\\"cuaderno | sunat_facil | antes_despues | truco | rubro | contador\\\",\\n  \\\"topic\\\": \\\"tema en pocas palabras\\\",\\n  \\\"title\\\": \\\"título interno del video\\\",\\n  \\\"scenes\\\": [\\n    { \\\"type\\\": \\\"hook\\\", \\\"text\\\": \\\"texto en pantalla\\\", \\\"highlight\\\": [\\\"fragmento del texto a resaltar\\\"], \\\"narration\\\": \\\"lo que dice la voz\\\" },\\n    { \\\"type\\\": \\\"point\\\", \\\"index\\\": 1, \\\"title\\\": \\\"Título\\\", \\\"text\\\": \\\"texto en pantalla\\\", \\\"narration\\\": \\\"lo que dice la voz\\\" },\\n    { \\\"type\\\": \\\"cta\\\", \\\"text\\\": \\\"llamado a la acción\\\", \\\"narration\\\": \\\"lo que dice la voz\\\" }\\n  ],\\n  \\\"captions\\\": {\\n    \\\"instagram\\\": \\\"…\\\",\\n    \\\"facebook\\\": \\\"…\\\",\\n    \\\"tiktok\\\": \\\"…\\\",\\n    \\\"linkedin\\\": \\\"…\\\"\\n  }\\n}\\n```\\n`highlight` debe contener fragmentos que aparezcan literalmente en `text`.\\n\";\nconst SCHEMA = {\"type\": \"object\", \"properties\": {\"pillar\": {\"type\": \"string\", \"enum\": [\"cuaderno\", \"sunat_facil\", \"antes_despues\", \"truco\", \"rubro\", \"contador\"]}, \"topic\": {\"type\": \"string\"}, \"title\": {\"type\": \"string\"}, \"scenes\": {\"type\": \"array\", \"items\": {\"type\": \"object\", \"properties\": {\"type\": {\"type\": \"string\", \"enum\": [\"hook\", \"point\", \"cta\"]}, \"text\": {\"type\": \"string\"}, \"highlight\": {\"type\": \"array\", \"items\": {\"type\": \"string\"}}, \"index\": {\"type\": \"integer\"}, \"title\": {\"type\": \"string\"}, \"narration\": {\"type\": \"string\"}}, \"required\": [\"type\", \"text\", \"narration\"], \"additionalProperties\": false}}, \"captions\": {\"type\": \"object\", \"properties\": {\"instagram\": {\"type\": \"string\"}, \"facebook\": {\"type\": \"string\"}, \"tiktok\": {\"type\": \"string\"}, \"linkedin\": {\"type\": \"string\"}}, \"required\": [\"instagram\", \"facebook\", \"tiktok\", \"linkedin\"], \"additionalProperties\": false}}, \"required\": [\"pillar\", \"topic\", \"title\", \"scenes\", \"captions\"], \"additionalProperties\": false};\n// lunes a domingo\nconst PILLARS = ['cuaderno', 'sunat_facil', 'truco', 'rubro', 'antes_despues', 'contador', 'cuaderno'];\nconst store = $getWorkflowStaticData('global');\nconst recentTopics = (store.recentTopics ?? []).slice(-30);\nconst input = $input.first().json;\nconst config = input.config;\nconst today = new Date().toLocaleDateString('es-PE', { timeZone: 'America/Lima', weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });\nconst weekday = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Lima' })).getDay(); // 0 = domingo\nconst pillar = PILLARS[(weekday + 6) % 7];\n\nlet request = `Hoy es ${today}. Escribe el video de hoy con el pilar \"${pillar}\".\\n\\nTemas recientes que NO debes repetir:\\n${recentTopics.map((t) => '- ' + t).join('\\n') || '- (ninguno todavía)'}`;\nif (input.redo) {\n  request += `\\n\\nEl equipo rechazó la propuesta anterior (\"${input.redo.topic}\"). Propón un tema y un gancho claramente distintos.`;\n}\n\n// Gemini no acepta additionalProperties en el esquema: se quita solo para él.\nconst withoutExtras = (schema) => JSON.parse(JSON.stringify(schema, (key, value) => (key === 'additionalProperties' ? undefined : value)));\nconst claude = {\n  url: 'https://api.anthropic.com/v1/messages',\n  version: '2023-06-01',\n  beta: 'server-side-fallback-2026-07-01',\n  body: {\n    model: config.claudeModel,\n    max_tokens: 16000,\n    output_config: { effort: 'high', format: { type: 'json_schema', schema: SCHEMA } },\n    fallbacks: 'default',\n    system: SYSTEM,\n    messages: [{ role: 'user', content: request }],\n  },\n};\nconst gemini = {\n  url: `https://generativelanguage.googleapis.com/v1beta/models/${config.geminiModel}:generateContent`,\n  version: '',\n  beta: '',\n  body: {\n    systemInstruction: { parts: [{ text: SYSTEM }] },\n    contents: [{ role: 'user', parts: [{ text: request }] }],\n    generationConfig: { responseMimeType: 'application/json', responseJsonSchema: withoutExtras(SCHEMA), temperature: 0.9 },\n  },\n};\nreturn [{ json: { config, request: config.aiProvider === 'claude' ? claude : gemini } }];\n"
+    "jsCode": "// Arma el pedido a la IA: pilar del día, temas recientes (para no repetir) y, si vienes de \"Rehacer\", qué evitar.\nconst SYSTEM = \"Eres el guionista y community manager de **Al Toque**, un sistema peruano de facturación electrónica y punto de venta para negocios pequeños: bodegas, ferreterías, boticas, restaurantes, talleres, tiendas de ropa, emprendedores que venden por redes y estudios contables. Se usa desde el celular o la compu y emite boletas y facturas válidas ante SUNAT.\\n\\nTu trabajo: escribir **un video corto vertical por día** (Reels, TikTok, Shorts y Facebook) que haga que el dueño de un negocio diga «eso me pasa a mí» y quiera probar Al Toque.\\n\\n## Público\\n- Dueños de mypes en Perú, casi siempre ellos mismos atienden el mostrador. Muchos llevan todo en cuaderno o Excel; otros emiten en el portal de SUNAT a mano.\\n- Les importa: no perder plata, saber cuánto ganaron hoy, que no les falte mercadería, no tener problemas con SUNAT y no perder tiempo.\\n- No son técnicos. No hables de «XML», «UBL» ni «API» salvo que lo expliques en cinco palabras.\\n- También le hablas, algunos días, al **contador** que lleva varios negocios.\\n\\n## Voz de la marca\\n- Cercana, rápida y con buen humor peruano: «causa», «caserito», «al toque», «pe», «bacán», «chamba». Úsalos con medida: uno o dos por video, nunca en cada frase.\\n- Clara y directa, de tú. Frases cortas.\\n- Optimista y práctica: problema → lo que te cuesta → la salida.\\n- Nunca burlarse del cliente ni de su negocio. Nunca hablar mal de la competencia por su nombre.\\n- Nunca sugerir evadir impuestos ni «que SUNAT no se entere». Al Toque es para estar en regla sin enredos.\\n\\n## Pilares de contenido (rota según el día)\\n1. **cuaderno**: el costo escondido de llevar todo a mano (descuadres, fiados olvidados, productos que se acaban, no saber cuánto ganaste).\\n2. **sunat_facil**: una regla SUNAT explicada en simple y cómo Al Toque la cumple sola. Temas válidos: boleta con DNI desde S/ 700, factura solo con RUC, 7 días para anular, nota de crédito para corregir, detracciones (SPOT) en servicios de más de S/ 700, ventas al crédito con cuotas, guardar el XML y la constancia (CDR). No inventes normas ni plazos que no estén en esta lista.\\n3. **antes_despues**: un día del negocio sin Al Toque y con Al Toque (3 pasos manuales → 1 toque).\\n4. **truco**: una función concreta (cobrar con Yape y Plin y cuadrar caja, boleta por WhatsApp, stock que se descuenta solo, cliente que se completa con su DNI o RUC, reporte del día).\\n5. **rubro**: el mismo problema contado para un rubro específico (bodega, ferretería, botica, restaurante, taller, tienda de ropa, emprendedor de Instagram).\\n6. **contador**: para estudios contables: un correo para todos sus clientes, registro de ventas y XML del mes en un clic.\\n\\n## Datos que puedes usar (son reales)\\n- Planes desde **S/ 39 al mes** con IGV; el más pedido cuesta S/ 69. Pago anual: 2 meses gratis.\\n- **15 días de prueba gratis**, sin tarjeta.\\n- Funciona en el navegador del celular o la compu, sin instalar nada.\\n- Boletas, facturas, notas de crédito y débito, anulaciones, detracciones, crédito con cuotas, caja con Yape/Plin, stock con kardex, varios locales y usuarios.\\n- Si SUNAT no responde, Al Toque reintenta solo.\\nNo inventes clientes, testimonios, premios, cifras de ventas ni porcentajes de ahorro. Si das un ejemplo numérico, preséntalo como ejemplo («imagina que…», «si vendes S/ 300 al día…»).\\n\\n## Reglas del guion\\n- Duración total de 25 a 40 segundos narrados (unas 70 a 110 palabras en total).\\n- La escena 1 es el **gancho**: una pregunta o frase que se entienda en menos de 3 segundos. Máximo 9 palabras en pantalla.\\n- De 2 a 4 escenas `point`, cada una con un título de 1 a 3 palabras y un texto en pantalla de máximo 14 palabras.\\n- Cierra siempre con una escena `cta`. Alterna entre: «Prueba 15 días gratis: link en la bio», «Escríbenos por WhatsApp y te lo mostramos», «Comenta BOLETA y te pasamos el link», «Síguenos para más trucos de tu negocio».\\n- La narración no repite literalmente el texto en pantalla: lo complementa.\\n- En la narración escribe los números en palabras («setecientos soles») para que la voz los lea bien; en pantalla usa cifras («S/ 700»).\\n- En la narración escribe la marca como «Al Toque»; en pantalla, «Al Toque».\\n- No repitas un gancho ni un tema de la lista `recentTopics` que recibas.\\n\\n## Textos para cada red\\n- **Instagram y Facebook**: de 2 a 4 líneas, un emoji como máximo por línea, cierra con una pregunta o el llamado a la acción, y de 5 a 8 hashtags al final (mezcla #facturacionelectronica #boletaelectronica #sunat #emprendedoresperu #bodegasperu #mypesperu con uno del rubro del día).\\n- **TikTok**: de 1 a 2 líneas directas y de 3 a 5 hashtags.\\n- **LinkedIn**: solo para los pilares `sunat_facil` y `contador`; tono profesional, de 3 a 6 líneas, sin jerga, 3 hashtags. En los demás pilares, una línea breve.\\n\\n## Formato de respuesta\\nResponde **solo** con un objeto JSON válido, sin texto antes ni después, con esta forma:\\n\\n```json\\n{\\n  \\\"pillar\\\": \\\"cuaderno | sunat_facil | antes_despues | truco | rubro | contador\\\",\\n  \\\"topic\\\": \\\"tema en pocas palabras\\\",\\n  \\\"title\\\": \\\"título interno del video\\\",\\n  \\\"scenes\\\": [\\n    { \\\"type\\\": \\\"hook\\\", \\\"text\\\": \\\"texto en pantalla\\\", \\\"highlight\\\": [\\\"fragmento del texto a resaltar\\\"], \\\"narration\\\": \\\"lo que dice la voz\\\" },\\n    { \\\"type\\\": \\\"point\\\", \\\"index\\\": 1, \\\"title\\\": \\\"Título\\\", \\\"text\\\": \\\"texto en pantalla\\\", \\\"narration\\\": \\\"lo que dice la voz\\\" },\\n    { \\\"type\\\": \\\"cta\\\", \\\"text\\\": \\\"llamado a la acción\\\", \\\"narration\\\": \\\"lo que dice la voz\\\" }\\n  ],\\n  \\\"captions\\\": {\\n    \\\"instagram\\\": \\\"…\\\",\\n    \\\"facebook\\\": \\\"…\\\",\\n    \\\"tiktok\\\": \\\"…\\\",\\n    \\\"linkedin\\\": \\\"…\\\"\\n  }\\n}\\n```\\n`highlight` debe contener fragmentos que aparezcan literalmente en `text`.\\n\";\nconst SCHEMA = {\"type\": \"object\", \"properties\": {\"pillar\": {\"type\": \"string\", \"enum\": [\"cuaderno\", \"sunat_facil\", \"antes_despues\", \"truco\", \"rubro\", \"contador\"]}, \"topic\": {\"type\": \"string\"}, \"title\": {\"type\": \"string\"}, \"scenes\": {\"type\": \"array\", \"items\": {\"type\": \"object\", \"properties\": {\"type\": {\"type\": \"string\", \"enum\": [\"hook\", \"point\", \"cta\"]}, \"text\": {\"type\": \"string\"}, \"highlight\": {\"type\": \"array\", \"items\": {\"type\": \"string\"}}, \"index\": {\"type\": \"integer\"}, \"title\": {\"type\": \"string\"}, \"narration\": {\"type\": \"string\"}}, \"required\": [\"type\", \"text\", \"narration\"], \"additionalProperties\": false}}, \"captions\": {\"type\": \"object\", \"properties\": {\"instagram\": {\"type\": \"string\"}, \"facebook\": {\"type\": \"string\"}, \"tiktok\": {\"type\": \"string\"}, \"linkedin\": {\"type\": \"string\"}}, \"required\": [\"instagram\", \"facebook\", \"tiktok\", \"linkedin\"], \"additionalProperties\": false}}, \"required\": [\"pillar\", \"topic\", \"title\", \"scenes\", \"captions\"], \"additionalProperties\": false};\n// lunes a domingo\nconst PILLARS = ['cuaderno', 'sunat_facil', 'truco', 'rubro', 'antes_despues', 'contador', 'cuaderno'];\nconst store = $getWorkflowStaticData('global');\nconst recentTopics = (store.recentTopics ?? []).slice(-30);\nconst input = $input.first().json;\nconst config = input.config;\nconst today = new Date().toLocaleDateString('es-PE', { timeZone: 'America/Lima', weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });\nconst weekday = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Lima' })).getDay(); // 0 = domingo\nconst pillar = PILLARS[(weekday + 6) % 7];\n\nlet request = `Hoy es ${today}. Escribe el video de hoy con el pilar \"${pillar}\".\\n\\nTemas recientes que NO debes repetir:\\n${recentTopics.map((t) => '- ' + t).join('\\n') || '- (ninguno todavía)'}`;\nconst aprendizaje = store.aprendizaje;\nif (aprendizaje?.mejores?.length) {\n  const linea = (v) => `- [${v.pillar}] gancho «${v.hook}» · puntos: ${(v.puntos ?? []).join(' / ')} · puntaje ${v.puntaje}`;\n  request += `\\n\\nLo que MEJOR le funcionó a Al Toque en Instagram (aprende del tipo de gancho, el ritmo y el ángulo; no los copies):\\n${aprendizaje.mejores.map(linea).join('\\n')}`;\n  if (aprendizaje.peores?.length) {\n    request += `\\n\\nLo que PEOR funcionó (evita ese enfoque):\\n${aprendizaje.peores.map(linea).join('\\n')}`;\n  }\n  const mejorPilar = aprendizaje.porPilar?.[0];\n  if (mejorPilar && mejorPilar.pilar !== pillar) {\n    request += `\\n\\nEl pilar con mejor respuesta es \"${mejorPilar.pilar}\". Si encaja, usa su energía en el pilar de hoy.`;\n  }\n}\nif (input.redo) {\n  request += `\\n\\nEl equipo rechazó la propuesta anterior (\"${input.redo.topic}\"). Propón un tema y un gancho claramente distintos.`;\n}\n\n// Gemini no acepta additionalProperties en el esquema: se quita solo para él.\nconst withoutExtras = (schema) => JSON.parse(JSON.stringify(schema, (key, value) => (key === 'additionalProperties' ? undefined : value)));\nconst claude = {\n  url: 'https://api.anthropic.com/v1/messages',\n  version: '2023-06-01',\n  beta: 'server-side-fallback-2026-07-01',\n  body: {\n    model: config.claudeModel,\n    max_tokens: 16000,\n    output_config: { effort: 'high', format: { type: 'json_schema', schema: SCHEMA } },\n    fallbacks: 'default',\n    system: SYSTEM,\n    messages: [{ role: 'user', content: request }],\n  },\n};\nconst gemini = {\n  url: `https://generativelanguage.googleapis.com/v1beta/models/${config.geminiModel}:generateContent`,\n  version: '',\n  beta: '',\n  body: {\n    systemInstruction: { parts: [{ text: SYSTEM }] },\n    contents: [{ role: 'user', parts: [{ text: request }] }],\n    generationConfig: { responseMimeType: 'application/json', responseJsonSchema: withoutExtras(SCHEMA), temperature: 0.9 },\n  },\n};\nreturn [{ json: { config, request: config.aiProvider === 'claude' ? claude : gemini } }];\n"
+   },
+   "executeOnce": true
+  },
+  {
+   "id": "cb5f3322-d78e-43d6-bf9f-e8809de1e853",
+   "name": "Videos para medir",
+   "type": "n8n-nodes-base.code",
+   "typeVersion": 2,
+   "position": [
+    560,
+    -140
+   ],
+   "parameters": {
+    "jsCode": "// Videos publicados en Instagram que ya tienen datos (más de 2 días y menos de 90).\nconst store = $getWorkflowStaticData('global');\nconst config = $input.first().json.config;\nconst ahora = Date.now();\nconst medibles = (store.published ?? [])\n  .filter((v) => ahora - v.at > 2 * 86400000 && ahora - v.at < 90 * 86400000)\n  .slice(-30);\nif (!medibles.length) return [{ json: { config, sinDatos: true } }];\nreturn medibles.map((v) => ({ json: { config, mediaId: v.mediaId } }));\n"
    }
   },
   {
-   "id": "9ee6d2e3-af12-4ce7-9e2e-4858d4245e29",
+   "id": "4b7db8e6-e1f9-4334-a4d0-b3ee1585cceb",
+   "name": "¿Hay videos que medir?",
+   "type": "n8n-nodes-base.if",
+   "typeVersion": 2.2,
+   "position": [
+    760,
+    -140
+   ],
+   "parameters": {
+    "conditions": {
+     "options": {
+      "caseSensitive": true,
+      "leftValue": "",
+      "typeValidation": "loose",
+      "version": 2
+     },
+     "conditions": [
+      {
+       "id": "631700f3-99c7-4374-b656-c144f5ea9b60",
+       "leftValue": "={{ !$json.sinDatos }}",
+       "rightValue": "true",
+       "operator": {
+        "type": "string",
+        "operation": "equals"
+       }
+      }
+     ],
+     "combinator": "and"
+    },
+    "options": {}
+   }
+  },
+  {
+   "id": "9f5aaae9-085b-4b52-b7d1-7365978a46f3",
+   "name": "Instagram: métricas",
+   "type": "n8n-nodes-base.httpRequest",
+   "typeVersion": 4.2,
+   "position": [
+    960,
+    -240
+   ],
+   "parameters": {
+    "method": "GET",
+    "url": "=https://graph.facebook.com/v23.0/{{ $json.mediaId }}/insights",
+    "options": {
+     "timeout": 60000
+    },
+    "authentication": "genericCredentialType",
+    "genericAuthType": "httpQueryAuth",
+    "sendQuery": true,
+    "queryParameters": {
+     "parameters": [
+      {
+       "name": "metric",
+       "value": "reach,likes,comments,shares,saved,views"
+      }
+     ]
+    }
+   },
+   "credentials": {
+    "httpQueryAuth": {
+     "id": "",
+     "name": "Meta Al Toque (token de página)"
+    }
+   },
+   "onError": "continueRegularOutput"
+  },
+  {
+   "id": "a5b0f970-a7f6-4e7a-b528-908aa937cd5e",
+   "name": "Aprender de los resultados",
+   "type": "n8n-nodes-base.code",
+   "typeVersion": 2,
+   "position": [
+    1160,
+    -140
+   ],
+   "parameters": {
+    "jsCode": "// Puntúa cada video con sus métricas de Instagram y guarda los mejores y los peores para el guionista.\nconst store = $getWorkflowStaticData('global');\nconst config = $('Videos para medir').first().json.config;\nconst pedidos = $('Videos para medir').all();\nconst respuestas = $input.all();\nconst publicados = store.published ?? [];\nconst medidos = [];\nif (!pedidos[0].json.sinDatos) {\n  respuestas.forEach((r, i) => {\n    const mediaId = pedidos[i]?.json.mediaId;\n    const datos = r.json?.data;\n    if (!mediaId || !Array.isArray(datos)) return; // la métrica falló: se ignora ese video\n    const m = Object.fromEntries(datos.map((d) => [d.name, d.values?.[0]?.value ?? d.total_value?.value ?? 0]));\n    const video = publicados.find((v) => v.mediaId === mediaId);\n    if (!video) return;\n    video.metricas = m;\n    const alcance = Math.max(m.reach ?? 0, 1);\n    // Compartir y guardar pesan más: es lo que mejor predice que el video vende.\n    const interacciones = (m.likes ?? 0) + 2 * (m.comments ?? 0) + 3 * (m.shares ?? 0) + 3 * (m.saved ?? 0);\n    video.puntaje = alcance >= 30 ? Math.round((interacciones / alcance) * 1000) : null;\n    if (video.puntaje !== null) medidos.push(video);\n  });\n}\nmedidos.sort((a, b) => b.puntaje - a.puntaje);\nconst resumen = (v) => ({ pillar: v.pillar, topic: v.topic, hook: v.hook, puntos: v.puntos, puntaje: v.puntaje,\n  alcance: v.metricas.reach, vistas: v.metricas.views, compartidos: v.metricas.shares, guardados: v.metricas.saved });\nif (medidos.length) {\n  store.aprendizaje = {\n    actualizado: new Date().toISOString(),\n    mejores: medidos.slice(0, 5).map(resumen),\n    peores: medidos.length >= 6 ? medidos.slice(-2).map(resumen) : [],\n    porPilar: Object.entries(medidos.reduce((acc, v) => {\n      (acc[v.pillar] ??= []).push(v.puntaje);\n      return acc;\n    }, {})).map(([pilar, ps]) => ({ pilar, promedio: Math.round(ps.reduce((a, b) => a + b, 0) / ps.length), videos: ps.length }))\n      .sort((a, b) => b.promedio - a.promedio),\n  };\n}\nconst lunes = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Lima' })).getDay() === 1;\nconst a = store.aprendizaje;\nconst reporte = a ? [\n  '<b>📈 Lo que mejor le funcionó a Al Toque</b>',\n  ...a.mejores.slice(0, 3).map((v, i) => `${i + 1}. «${v.hook}» · ${v.pillar} · ${v.puntaje} pts · ${v.alcance ?? 0} de alcance`),\n  '',\n  '<b>Por pilar</b>',\n  ...a.porPilar.map((p) => `${p.pilar}: ${p.promedio} pts (${p.videos} videos)`),\n].join('\\n') : null;\nreturn [{ json: { config, enviarReporte: lunes && !!reporte, reporte } }];\n"
+   }
+  },
+  {
+   "id": "37abb068-bc4b-4d97-87ef-1d62f3a92295",
+   "name": "¿Es lunes?",
+   "type": "n8n-nodes-base.if",
+   "typeVersion": 2.2,
+   "position": [
+    1360,
+    -260
+   ],
+   "parameters": {
+    "conditions": {
+     "options": {
+      "caseSensitive": true,
+      "leftValue": "",
+      "typeValidation": "loose",
+      "version": 2
+     },
+     "conditions": [
+      {
+       "id": "a9e91acc-2ba2-44d6-b83d-48bc24a58252",
+       "leftValue": "={{ $json.enviarReporte }}",
+       "rightValue": "true",
+       "operator": {
+        "type": "string",
+        "operation": "equals"
+       }
+      }
+     ],
+     "combinator": "and"
+    },
+    "options": {}
+   }
+  },
+  {
+   "id": "2c7dfe86-691a-411f-b600-fab8162e78cf",
+   "name": "Reporte semanal",
+   "type": "n8n-nodes-base.telegram",
+   "typeVersion": 1.2,
+   "position": [
+    1560,
+    -260
+   ],
+   "parameters": {
+    "chatId": "={{ $json.config.telegramChatId }}",
+    "text": "={{ $json.reporte }}",
+    "additionalFields": {
+     "appendAttribution": false,
+     "parse_mode": "HTML"
+    }
+   },
+   "credentials": {
+    "telegramApi": {
+     "id": "",
+     "name": "Telegram Al Toque"
+    }
+   }
+  },
+  {
+   "id": "03c0c73f-6fba-4851-8ea1-632401e55d65",
    "name": "La IA escribe el guion",
    "type": "n8n-nodes-base.httpRequest",
    "typeVersion": 4.2,
@@ -160,7 +312,7 @@
    "waitBetweenTries": 15000
   },
   {
-   "id": "f9141fc7-c1f0-4b00-bac0-d4da94e71312",
+   "id": "d7cfefe7-b5a8-4a1b-8f6a-e1f9699c53c7",
    "name": "Leer guion",
    "type": "n8n-nodes-base.code",
    "typeVersion": 2,
@@ -173,7 +325,7 @@
    }
   },
   {
-   "id": "0f96d490-c2ce-44cf-9008-4a6772188fd7",
+   "id": "aa58f3bd-f557-4a90-8cb6-2ca914e161d6",
    "name": "Pedir el video",
    "type": "n8n-nodes-base.httpRequest",
    "typeVersion": 4.2,
@@ -203,7 +355,7 @@
    "maxTries": 3
   },
   {
-   "id": "8c99d9c6-6725-47d2-b862-c4cbbd271914",
+   "id": "0e74c270-7e49-4859-9d62-263b039c9c2f",
    "name": "Esperar el render",
    "type": "n8n-nodes-base.wait",
    "typeVersion": 1.1,
@@ -215,10 +367,10 @@
     "amount": 7,
     "unit": "minutes"
    },
-   "webhookId": "b434443e-7a83-4440-aec5-f0974bd07044"
+   "webhookId": "7284cc5f-3212-431d-a1ed-2cac70f3c322"
   },
   {
-   "id": "30f50294-1ca1-47eb-ab65-cf8be9180ae3",
+   "id": "23c0513d-8431-414e-a672-ce59ad822e35",
    "name": "Consultar el render",
    "type": "n8n-nodes-base.httpRequest",
    "typeVersion": 4.2,
@@ -245,7 +397,7 @@
    "maxTries": 3
   },
   {
-   "id": "884a6fe6-485c-4583-a43f-cf30a5e84612",
+   "id": "a8a79a1e-63f0-4f27-95a6-e52d146ec50a",
    "name": "¿Video listo?",
    "type": "n8n-nodes-base.if",
    "typeVersion": 2.2,
@@ -263,7 +415,7 @@
      },
      "conditions": [
       {
-       "id": "53c4d7af-b9e5-43b7-a394-2cc18c96481a",
+       "id": "b8a5f259-3499-433a-9f64-66db73f58ca5",
        "leftValue": "={{ $json.status }}",
        "rightValue": "done",
        "operator": {
@@ -278,7 +430,7 @@
    }
   },
   {
-   "id": "b0d320e0-289a-40c6-9dfb-0a4a109f704e",
+   "id": "6075779f-639e-404c-9e8a-f22cbb1230f7",
    "name": "¿Falló?",
    "type": "n8n-nodes-base.if",
    "typeVersion": 2.2,
@@ -296,7 +448,7 @@
      },
      "conditions": [
       {
-       "id": "7305b984-e1f0-4726-aa2a-b224ca1f0515",
+       "id": "34a0003c-0c69-48b3-9868-0631acd9b875",
        "leftValue": "={{ $json.status }}",
        "rightValue": "error",
        "operator": {
@@ -311,7 +463,7 @@
    }
   },
   {
-   "id": "f15c19ea-fad9-4413-85e2-74a15179975c",
+   "id": "abae3d1b-59e5-41b9-b8f9-9ba3573f783d",
    "name": "Esperar un poco más",
    "type": "n8n-nodes-base.wait",
    "typeVersion": 1.1,
@@ -323,10 +475,10 @@
     "amount": 1,
     "unit": "minutes"
    },
-   "webhookId": "1b0a936b-b813-459a-bb85-8c13828b297f"
+   "webhookId": "f8158dd6-cdf0-46b3-9b4c-6d24228fb98f"
   },
   {
-   "id": "f09bac0b-f1e6-4cb4-96d9-6529dc650179",
+   "id": "33363824-5d5b-45c4-a759-0c6dcaff9c3b",
    "name": "Avisar error de render",
    "type": "n8n-nodes-base.telegram",
    "typeVersion": 1.2,
@@ -350,7 +502,7 @@
    }
   },
   {
-   "id": "0288bb24-0bcb-4902-9bf4-e5d6d5c3fbb9",
+   "id": "90c53ca1-8d81-4d05-8501-bdc0bd12e632",
    "name": "Guardar pendiente",
    "type": "n8n-nodes-base.code",
    "typeVersion": 2,
@@ -363,7 +515,7 @@
    }
   },
   {
-   "id": "6de1186e-4ebb-472f-9597-d1837e47599f",
+   "id": "601e28f6-9cd5-4c33-ba21-61e377f6a69a",
    "name": "Enviar a Telegram para aprobar",
    "type": "n8n-nodes-base.telegram",
    "typeVersion": 1.2,
@@ -417,7 +569,7 @@
    }
   },
   {
-   "id": "8adafd8c-1293-408f-9e12-c0bff2fcccfb",
+   "id": "d646b817-03a5-4c97-b9d1-86f4fb4a5f00",
    "name": "Leer decisión",
    "type": "n8n-nodes-base.code",
    "typeVersion": 2,
@@ -430,7 +582,7 @@
    }
   },
   {
-   "id": "e89719c1-3f7e-4dac-9bdc-b55ebf18fc9f",
+   "id": "1522bb89-9faf-4d72-b498-0dc6f675ef60",
    "name": "Responder al botón",
    "type": "n8n-nodes-base.telegram",
    "typeVersion": 1.2,
@@ -454,7 +606,7 @@
    }
   },
   {
-   "id": "2ab9e4ee-315b-45b5-9594-92879b034bc5",
+   "id": "cb40f33c-90b3-4d53-9963-f472fd73f4b3",
    "name": "¿Qué decidiste?",
    "type": "n8n-nodes-base.switch",
    "typeVersion": 3.2,
@@ -475,7 +627,7 @@
         },
         "conditions": [
          {
-          "id": "58c82655-b26e-4c3a-8445-55af5c36c4f8",
+          "id": "ede73443-158c-45a2-94cf-a8038b0ce72b",
           "leftValue": "={{ $('Leer decisión').first().json.action }}",
           "rightValue": "ok",
           "operator": {
@@ -499,7 +651,7 @@
         },
         "conditions": [
          {
-          "id": "d7f337ff-88ee-41b0-9cc5-9abfeb9e9843",
+          "id": "97f2fd38-d742-45ca-9d3f-5396ab406a97",
           "leftValue": "={{ $('Leer decisión').first().json.action }}",
           "rightValue": "redo",
           "operator": {
@@ -523,7 +675,7 @@
         },
         "conditions": [
          {
-          "id": "ae56a195-eb10-4a94-8d7e-a7433f1e66c6",
+          "id": "6660a07b-0537-44e2-914a-9899a59f25ef",
           "leftValue": "={{ $('Leer decisión').first().json.action }}",
           "rightValue": "no",
           "operator": {
@@ -543,7 +695,7 @@
    }
   },
   {
-   "id": "2ffae22a-e554-46ff-9613-e42d0043905c",
+   "id": "07033704-43e4-4890-b28f-d9d1de81c4ea",
    "name": "Volver a generar",
    "type": "n8n-nodes-base.code",
    "typeVersion": 2,
@@ -556,7 +708,7 @@
    }
   },
   {
-   "id": "3d395cb7-9709-4dd9-9cf4-3751541a5ba2",
+   "id": "863bcdef-2ac4-43a9-90e7-fd75a7e88384",
    "name": "Confirmar descarte",
    "type": "n8n-nodes-base.telegram",
    "typeVersion": 1.2,
@@ -580,7 +732,7 @@
    }
   },
   {
-   "id": "b4c58a3b-02e1-4e4e-bcfc-852bd21987bc",
+   "id": "fb8b8c6f-b426-44a5-af12-3ab00050cdd4",
    "name": "Datos para publicar",
    "type": "n8n-nodes-base.code",
    "typeVersion": 2,
@@ -593,7 +745,7 @@
    }
   },
   {
-   "id": "6121045c-d165-4594-922f-6c440fa7302b",
+   "id": "002c595f-798e-4621-9822-01b40ec322c5",
    "name": "Instagram: subir Reel",
    "type": "n8n-nodes-base.httpRequest",
    "typeVersion": 4.2,
@@ -639,7 +791,7 @@
    }
   },
   {
-   "id": "91f215f2-3b68-4bb4-8ca3-98c92c478dd6",
+   "id": "8ddf8858-be48-4ca3-ae17-7a8d34d29a6d",
    "name": "Instagram procesa",
    "type": "n8n-nodes-base.wait",
    "typeVersion": 1.1,
@@ -651,10 +803,10 @@
     "amount": 1,
     "unit": "minutes"
    },
-   "webhookId": "1fcc9a7b-4981-440e-b650-6aca86633f2a"
+   "webhookId": "bdb448de-d8d5-4f6a-86df-77fb16124b6c"
   },
   {
-   "id": "56303663-efff-42fb-95ba-b2f4c872ea21",
+   "id": "a87ea95c-72d7-4a8e-b78f-52bf691440e7",
    "name": "Instagram: ¿listo?",
    "type": "n8n-nodes-base.httpRequest",
    "typeVersion": 4.2,
@@ -688,7 +840,7 @@
    }
   },
   {
-   "id": "f49bbdaf-d774-4571-a327-d1be9329fea3",
+   "id": "8fb33930-8df7-4a69-9792-fe7f3c276945",
    "name": "¿Reel procesado?",
    "type": "n8n-nodes-base.if",
    "typeVersion": 2.2,
@@ -706,7 +858,7 @@
      },
      "conditions": [
       {
-       "id": "05021e6a-b88d-42ea-91b5-f5c7c84202db",
+       "id": "062558f8-dcbe-43c0-be2a-b8f4cc0ddd97",
        "leftValue": "={{ $json.status_code }}",
        "rightValue": "FINISHED",
        "operator": {
@@ -721,7 +873,7 @@
    }
   },
   {
-   "id": "fa4c4748-0f29-431a-bd12-26330fab64db",
+   "id": "a7a15bb5-ac29-4527-9e42-b3941075c90a",
    "name": "¿Reel con error?",
    "type": "n8n-nodes-base.if",
    "typeVersion": 2.2,
@@ -739,7 +891,7 @@
      },
      "conditions": [
       {
-       "id": "c247ad38-0862-4db0-b805-5d69813fccb8",
+       "id": "f50c98f2-49a5-4316-ab69-6efc02ed6c32",
        "leftValue": "={{ $json.status_code }}",
        "rightValue": "ERROR",
        "operator": {
@@ -754,7 +906,7 @@
    }
   },
   {
-   "id": "7fd5b024-2270-4503-8980-2c9314accafa",
+   "id": "a8e02ea6-7462-448c-9f54-6a73f9531f69",
    "name": "Instagram: publicar",
    "type": "n8n-nodes-base.httpRequest",
    "typeVersion": 4.2,
@@ -788,17 +940,17 @@
    }
   },
   {
-   "id": "7a3c547a-824a-495f-b59d-218c86f13eba",
+   "id": "15b89fc6-ba73-4685-becc-1220e2c3baa8",
    "name": "Avisar Instagram",
    "type": "n8n-nodes-base.telegram",
    "typeVersion": 1.2,
    "position": [
-    2660,
-    520
+    2880,
+    400
    ],
    "parameters": {
     "chatId": "={{ $('Datos para publicar').first().json.config.telegramChatId }}",
-    "text": "=✅ Publicado en Instagram.",
+    "text": "=✅ Publicado en Instagram. Lo mediré en 2 días para aprender qué funciona.",
     "additionalFields": {
      "appendAttribution": false,
      "parse_mode": "HTML"
@@ -812,7 +964,20 @@
    }
   },
   {
-   "id": "682ec5a5-f194-42b4-b036-b6fe49465fb1",
+   "id": "ff94ccc6-1880-44dd-a2c3-c07a24251752",
+   "name": "Recordar publicación",
+   "type": "n8n-nodes-base.code",
+   "typeVersion": 2,
+   "position": [
+    2660,
+    400
+   ],
+   "parameters": {
+    "jsCode": "// Guarda el video publicado para medirlo en los próximos días.\nconst script = $('Leer decisión').first().json.item.script;\nconst store = $getWorkflowStaticData('global');\nconst hook = script.scenes.find((s) => s.type === 'hook')?.text ?? '';\nconst puntos = script.scenes.filter((s) => s.type === 'point').map((s) => s.text);\nstore.published = [...(store.published ?? []), {\n  mediaId: $input.first().json.id, at: Date.now(), pillar: script.pillar, topic: script.topic, title: script.title, hook, puntos,\n}].slice(-120);\nreturn $input.all();\n"
+   }
+  },
+  {
+   "id": "8310c3ae-f40c-4dec-b149-ca85363055cf",
    "name": "Avisar error de Instagram",
    "type": "n8n-nodes-base.telegram",
    "typeVersion": 1.2,
@@ -836,7 +1001,7 @@
    }
   },
   {
-   "id": "971f7eee-3c84-461d-a9d7-02c5a6c085a1",
+   "id": "5eb03074-b1f0-481a-84d9-d8ebd1325b04",
    "name": "Facebook: publicar video",
    "type": "n8n-nodes-base.httpRequest",
    "typeVersion": 4.2,
@@ -878,7 +1043,7 @@
    }
   },
   {
-   "id": "dd26d96e-a521-418e-a9e3-025c14f73e70",
+   "id": "25c39d25-9dd7-4b54-aa5f-8460a95a6559",
    "name": "Avisar Facebook",
    "type": "n8n-nodes-base.telegram",
    "typeVersion": 1.2,
@@ -902,7 +1067,7 @@
    }
   },
   {
-   "id": "ce5e8c19-452f-4123-8919-c4bda00309fa",
+   "id": "6db5e378-4a99-4e9c-b1aa-c5bd5b2e4efc",
    "name": "LinkedIn (pendiente)",
    "type": "n8n-nodes-base.noOp",
    "typeVersion": 1,
@@ -915,7 +1080,7 @@
    "notes": "Se activa cuando LinkedIn apruebe la app (Community Management API)."
   },
   {
-   "id": "e5ea36f8-022f-42c4-aeda-2bfc740a7082",
+   "id": "b98f5886-64e4-42e4-af0d-9502109c23e4",
    "name": "TikTok (pendiente)",
    "type": "n8n-nodes-base.noOp",
    "typeVersion": 1,
@@ -984,7 +1149,74 @@
     ],
     [
      {
+      "node": "Videos para medir",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Videos para medir": {
+   "main": [
+    [
+     {
+      "node": "¿Hay videos que medir?",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "¿Hay videos que medir?": {
+   "main": [
+    [
+     {
+      "node": "Instagram: métricas",
+      "type": "main",
+      "index": 0
+     }
+    ],
+    [
+     {
+      "node": "Aprender de los resultados",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Instagram: métricas": {
+   "main": [
+    [
+     {
+      "node": "Aprender de los resultados",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Aprender de los resultados": {
+   "main": [
+    [
+     {
       "node": "Preparar pedido a la IA",
+      "type": "main",
+      "index": 0
+     },
+     {
+      "node": "¿Es lunes?",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "¿Es lunes?": {
+   "main": [
+    [
+     {
+      "node": "Reporte semanal",
       "type": "main",
       "index": 0
      }
@@ -1269,6 +1501,17 @@
    ]
   },
   "Instagram: publicar": {
+   "main": [
+    [
+     {
+      "node": "Recordar publicación",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Recordar publicación": {
    "main": [
     [
      {

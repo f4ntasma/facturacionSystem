@@ -48,7 +48,7 @@ SCHEMA = {
 # ---------------------------------------------------------------- Código de los nodos
 CONFIG_JS = r"""// ⚙️ CONFIGURACIÓN: cambia aquí los datos de tu cuenta.
 const config = {
-  telegramChatId: 'PON_AQUI_TU_CHAT_ID',
+  telegramChatId: '8534772721',
   // Mismo renderizador de videos que ya tienes desplegado; la marca Al Toque va en cada pedido.
   rendererUrl: 'https://ma-renderer.vercel.app',
   // 'gemini' = gratis (nivel gratuito de Google, unas 20 peticiones diarias) · 'claude' = de pago, mejor redacción.
@@ -62,6 +62,78 @@ const config = {
   voiceRate: '+8%',
 };
 return $input.all().map((item) => ({ json: { config, event: item.json } }));
+"""
+
+MEDIBLES_JS = r"""// Videos publicados en Instagram que ya tienen datos (más de 2 días y menos de 90).
+const store = $getWorkflowStaticData('global');
+const config = $input.first().json.config;
+const ahora = Date.now();
+const medibles = (store.published ?? [])
+  .filter((v) => ahora - v.at > 2 * 86400000 && ahora - v.at < 90 * 86400000)
+  .slice(-30);
+if (!medibles.length) return [{ json: { config, sinDatos: true } }];
+return medibles.map((v) => ({ json: { config, mediaId: v.mediaId } }));
+"""
+
+APRENDER_JS = r"""// Puntúa cada video con sus métricas de Instagram y guarda los mejores y los peores para el guionista.
+const store = $getWorkflowStaticData('global');
+const config = $('Videos para medir').first().json.config;
+const pedidos = $('Videos para medir').all();
+const respuestas = $input.all();
+const publicados = store.published ?? [];
+const medidos = [];
+if (!pedidos[0].json.sinDatos) {
+  respuestas.forEach((r, i) => {
+    const mediaId = pedidos[i]?.json.mediaId;
+    const datos = r.json?.data;
+    if (!mediaId || !Array.isArray(datos)) return; // la métrica falló: se ignora ese video
+    const m = Object.fromEntries(datos.map((d) => [d.name, d.values?.[0]?.value ?? d.total_value?.value ?? 0]));
+    const video = publicados.find((v) => v.mediaId === mediaId);
+    if (!video) return;
+    video.metricas = m;
+    const alcance = Math.max(m.reach ?? 0, 1);
+    // Compartir y guardar pesan más: es lo que mejor predice que el video vende.
+    const interacciones = (m.likes ?? 0) + 2 * (m.comments ?? 0) + 3 * (m.shares ?? 0) + 3 * (m.saved ?? 0);
+    video.puntaje = alcance >= 30 ? Math.round((interacciones / alcance) * 1000) : null;
+    if (video.puntaje !== null) medidos.push(video);
+  });
+}
+medidos.sort((a, b) => b.puntaje - a.puntaje);
+const resumen = (v) => ({ pillar: v.pillar, topic: v.topic, hook: v.hook, puntos: v.puntos, puntaje: v.puntaje,
+  alcance: v.metricas.reach, vistas: v.metricas.views, compartidos: v.metricas.shares, guardados: v.metricas.saved });
+if (medidos.length) {
+  store.aprendizaje = {
+    actualizado: new Date().toISOString(),
+    mejores: medidos.slice(0, 5).map(resumen),
+    peores: medidos.length >= 6 ? medidos.slice(-2).map(resumen) : [],
+    porPilar: Object.entries(medidos.reduce((acc, v) => {
+      (acc[v.pillar] ??= []).push(v.puntaje);
+      return acc;
+    }, {})).map(([pilar, ps]) => ({ pilar, promedio: Math.round(ps.reduce((a, b) => a + b, 0) / ps.length), videos: ps.length }))
+      .sort((a, b) => b.promedio - a.promedio),
+  };
+}
+const lunes = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Lima' })).getDay() === 1;
+const a = store.aprendizaje;
+const reporte = a ? [
+  '<b>📈 Lo que mejor le funcionó a Al Toque</b>',
+  ...a.mejores.slice(0, 3).map((v, i) => `${i + 1}. «${v.hook}» · ${v.pillar} · ${v.puntaje} pts · ${v.alcance ?? 0} de alcance`),
+  '',
+  '<b>Por pilar</b>',
+  ...a.porPilar.map((p) => `${p.pilar}: ${p.promedio} pts (${p.videos} videos)`),
+].join('\n') : null;
+return [{ json: { config, enviarReporte: lunes && !!reporte, reporte } }];
+"""
+
+RECORDAR_JS = r"""// Guarda el video publicado para medirlo en los próximos días.
+const script = $('Leer decisión').first().json.item.script;
+const store = $getWorkflowStaticData('global');
+const hook = script.scenes.find((s) => s.type === 'hook')?.text ?? '';
+const puntos = script.scenes.filter((s) => s.type === 'point').map((s) => s.text);
+store.published = [...(store.published ?? []), {
+  mediaId: $input.first().json.id, at: Date.now(), pillar: script.pillar, topic: script.topic, title: script.title, hook, puntos,
+}].slice(-120);
+return $input.all();
 """
 
 PREPARE_JS = r"""// Arma el pedido a la IA: pilar del día, temas recientes (para no repetir) y, si vienes de "Rehacer", qué evitar.
@@ -78,6 +150,18 @@ const weekday = new Date(new Date().toLocaleString('en-US', { timeZone: 'America
 const pillar = PILLARS[(weekday + 6) % 7];
 
 let request = `Hoy es ${today}. Escribe el video de hoy con el pilar "${pillar}".\n\nTemas recientes que NO debes repetir:\n${recentTopics.map((t) => '- ' + t).join('\n') || '- (ninguno todavía)'}`;
+const aprendizaje = store.aprendizaje;
+if (aprendizaje?.mejores?.length) {
+  const linea = (v) => `- [${v.pillar}] gancho «${v.hook}» · puntos: ${(v.puntos ?? []).join(' / ')} · puntaje ${v.puntaje}`;
+  request += `\n\nLo que MEJOR le funcionó a Al Toque en Instagram (aprende del tipo de gancho, el ritmo y el ángulo; no los copies):\n${aprendizaje.mejores.map(linea).join('\n')}`;
+  if (aprendizaje.peores?.length) {
+    request += `\n\nLo que PEOR funcionó (evita ese enfoque):\n${aprendizaje.peores.map(linea).join('\n')}`;
+  }
+  const mejorPilar = aprendizaje.porPilar?.[0];
+  if (mejorPilar && mejorPilar.pilar !== pillar) {
+    request += `\n\nEl pilar con mejor respuesta es "${mejorPilar.pilar}". Si encaja, usa su energía en el pilar de hoy.`;
+  }
+}
 if (input.redo) {
   request += `\n\nEl equipo rechazó la propuesta anterior ("${input.redo.topic}"). Propón un tema y un gancho claramente distintos.`;
 }
@@ -238,8 +322,22 @@ link('Configuración', '¿Es un botón?')
 
 # ---------------------------------------------------------------- Generación
 prepare = PREPARE_JS.replace('__SYSTEM__', json.dumps(SYSTEM_PROMPT, ensure_ascii=False)).replace('__SCHEMA__', json.dumps(SCHEMA, ensure_ascii=False))
-code('Preparar pedido a la IA', prepare, [680, 100])
-link('¿Es un botón?', 'Preparar pedido a la IA', out=1)
+node('Preparar pedido a la IA', 'n8n-nodes-base.code', 2, {'jsCode': prepare}, [680, 100], executeOnce=True)
+code('Videos para medir', MEDIBLES_JS, [560, -140])
+link('¿Es un botón?', 'Videos para medir', out=1)
+if_node('¿Hay videos que medir?', '={{ !$json.sinDatos }}', 'true', [760, -140])
+link('Videos para medir', '¿Hay videos que medir?')
+http('Instagram: métricas', 'GET', f"={GRAPH}/{{{{ $json.mediaId }}}}/insights", [960, -240], cred=META,
+     query={'metric': 'reach,likes,comments,shares,saved,views'}, onError='continueRegularOutput')
+link('¿Hay videos que medir?', 'Instagram: métricas', out=0)
+code('Aprender de los resultados', APRENDER_JS, [1160, -140])
+link('Instagram: métricas', 'Aprender de los resultados')
+link('¿Hay videos que medir?', 'Aprender de los resultados', out=1)
+link('Aprender de los resultados', 'Preparar pedido a la IA')
+if_node('¿Es lunes?', '={{ $json.enviarReporte }}', 'true', [1360, -260])
+link('Aprender de los resultados', '¿Es lunes?')
+telegram_message('Reporte semanal', '={{ $json.reporte }}', [1560, -260])
+link('¿Es lunes?', 'Reporte semanal', out=0)
 # La credencial «Clave de IA» lleva la cabecera de la clave: x-goog-api-key (Gemini) o x-api-key (Claude).
 http('La IA escribe el guion', 'POST', '={{ $json.request.url }}', [900, 100], cred=AI_KEY,
      headers={'anthropic-version': '={{ $json.request.version }}', 'anthropic-beta': '={{ $json.request.beta }}'},
@@ -323,8 +421,10 @@ link('¿Reel con error?', 'Instagram procesa', out=1)
 http('Instagram: publicar', 'POST', f"={GRAPH}/{{{{ $('Datos para publicar').first().json.config.instagramUserId }}}}/media_publish", [2440, 520], cred=META,
      query={'creation_id': "={{ $('Instagram: subir Reel').first().json.id }}"})
 link('¿Reel procesado?', 'Instagram: publicar', out=0)
-telegram_message('Avisar Instagram', '=✅ Publicado en Instagram.', [2660, 520], chat="={{ $('Datos para publicar').first().json.config.telegramChatId }}")
-link('Instagram: publicar', 'Avisar Instagram')
+telegram_message('Avisar Instagram', '=✅ Publicado en Instagram. Lo mediré en 2 días para aprender qué funciona.', [2880, 400], chat="={{ $('Datos para publicar').first().json.config.telegramChatId }}")
+code('Recordar publicación', RECORDAR_JS, [2660, 400])
+link('Instagram: publicar', 'Recordar publicación')
+link('Recordar publicación', 'Avisar Instagram')
 telegram_message('Avisar error de Instagram', '=⚠️ Instagram no pudo procesar el video.', [2660, 700], chat="={{ $('Datos para publicar').first().json.config.telegramChatId }}")
 link('¿Reel con error?', 'Avisar error de Instagram', out=0)
 
