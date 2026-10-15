@@ -31,11 +31,12 @@ public class SuscripcionController {
 
     private static final Logger log = LoggerFactory.getLogger(SuscripcionController.class);
 
-    public record PlanPublico(String codigo, String nombre, String descripcion, BigDecimal precioMensual, Integer limiteComprobantes,
+    public record PlanPublico(String codigo, String nombre, String descripcion, BigDecimal precioMensual, BigDecimal precioAnual,
+                              Integer limiteComprobantes,
                               int maxUsuarios, int maxEstablecimientos, boolean notasCredito, boolean reportesAvanzados,
                               boolean soportePrioritario, boolean destacado) {
         static PlanPublico de(Plan p) {
-            return new PlanPublico(p.getCodigo(), p.getNombre(), p.getDescripcion(), p.getPrecioMensual(), p.getLimiteComprobantes(),
+            return new PlanPublico(p.getCodigo(), p.getNombre(), p.getDescripcion(), p.getPrecioMensual(), p.precioAnualOMensual(), p.getLimiteComprobantes(),
                     p.getMaxUsuarios(), p.getMaxEstablecimientos(), p.isNotasCredito(), p.isReportesAvanzados(),
                     p.isSoportePrioritario(), p.isDestacado());
         }
@@ -46,7 +47,8 @@ public class SuscripcionController {
     public record EstadoCuenta(String estado, LocalDate pruebaHasta, PlanPublico plan, List<SuscripcionVista> historial,
                                boolean pagosEnLinea) {}
 
-    public record CambioPlan(@NotBlank String plan) {}
+    /** periodo: MENSUAL (por defecto) o ANUAL. */
+    public record CambioPlan(@NotBlank String plan, String periodo) {}
 
     public record CambioResultado(String mensaje, String urlPago) {}
 
@@ -96,13 +98,14 @@ public class SuscripcionController {
         if (!pagosEnLinea()) {
             throw new ApiException(HttpStatus.SERVICE_UNAVAILABLE, "El pago en línea no está activo. Escríbenos y te activamos el plan al toque.");
         }
+        boolean anual = "ANUAL".equalsIgnoreCase(r.periodo());
         Suscripcion s = new Suscripcion();
         s.setEmpresa(e);
         s.setPlan(plan);
         LocalDate inicio = LocalDate.now();
         s.setPeriodoInicio(inicio);
-        s.setPeriodoFin(inicio.plusMonths(1));
-        s.setMonto(plan.getPrecioMensual());
+        s.setPeriodoFin(anual ? inicio.plusYears(1) : inicio.plusMonths(1));
+        s.setMonto(anual ? plan.precioAnualOMensual() : plan.getPrecioMensual());
         s.setEstado(Suscripcion.Estado.PENDIENTE);
         s.setProveedorPago("MERCADOPAGO");
         suscripciones.save(s);
@@ -144,7 +147,8 @@ public class SuscripcionController {
     private String crearPreferencia(Suscripcion s) {
         try {
             var cuerpo = Map.of(
-                    "items", List.of(Map.of("title", "Al Toque · Plan " + s.getPlan().getNombre() + " (1 mes)",
+                    "items", List.of(Map.of("title", "Al Toque · Plan " + s.getPlan().getNombre()
+                                    + (s.getPeriodoFin().isAfter(s.getPeriodoInicio().plusMonths(1)) ? " (12 meses)" : " (1 mes)"),
                             "quantity", 1, "currency_id", "PEN", "unit_price", s.getMonto())),
                     "external_reference", String.valueOf(s.getId()),
                     "notification_url", props.apiPublicUrl() + "/api/suscripcion/webhook",

@@ -120,6 +120,10 @@
         <span class="mono kicker">PRECIOS</span>
         <h2 class="display h2">Precios claros, sin letra chica.</h2>
         <p class="nota-precio">Prueba gratis 15 días con todo incluido. Sin tarjeta.</p>
+        <div class="periodo" role="group" aria-label="Forma de pago">
+          <button type="button" [class.activo]="!anual()" [attr.aria-pressed]="!anual()" (click)="anual.set(false)">Mensual</button>
+          <button type="button" [class.activo]="anual()" [attr.aria-pressed]="anual()" (click)="anual.set(true)">Anual <span class="ahorro">2 meses gratis</span></button>
+        </div>
       </div>
       <div class="planes">
         @for (p of planes(); track p.codigo) {
@@ -127,7 +131,13 @@
             @if (p.destacado) { <span class="mas-pedido">El más pedido</span> }
             <h3 class="display">{{ p.nombre }}</h3>
             <p>{{ p.descripcion }}</p>
-            <div class="mono precio">S/ {{ p.precioMensual }}<span> /mes</span></div>
+            @if (anual()) {
+              <div class="mono precio">S/ {{ p.precioAnual }}<span> /año</span></div>
+              <div class="mono equivale">Te sale S/ {{ mensualConAnual(p) }} al mes</div>
+            } @else {
+              <div class="mono precio">S/ {{ p.precioMensual }}<span> /mes</span></div>
+              <div class="mono equivale">Incluye IGV · sin permanencia</div>
+            }
             <ul>
               @for (b of beneficios(p); track b) { <li>{{ b }}</li> }
             </ul>

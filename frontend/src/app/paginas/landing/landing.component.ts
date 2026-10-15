@@ -7,9 +7,9 @@ import { PlanPublico } from '../../core/modelos';
 import { LogoComponent } from '../../shared/logo.component';
 
 const PLANES_BASE: PlanPublico[] = [
-  { codigo: 'CASERITO', nombre: 'Caserito', descripcion: "Pa' la bodega y el emprendedor que recién arranca.", precioMensual: 29, limiteComprobantes: 300, maxUsuarios: 1, maxEstablecimientos: 1, notasCredito: true, reportesAvanzados: false, soportePrioritario: false, destacado: false },
-  { codigo: 'NEGOCIANTE', nombre: 'Negociante', descripcion: "Pa' el negocio que ya se mueve todos los días.", precioMensual: 59, limiteComprobantes: 1500, maxUsuarios: 3, maxEstablecimientos: 1, notasCredito: true, reportesAvanzados: true, soportePrioritario: false, destacado: true },
-  { codigo: 'EMPRESA', nombre: 'Empresa', descripcion: "Pa' varias sedes, usuarios y mucho movimiento.", precioMensual: 149, limiteComprobantes: null, maxUsuarios: 20, maxEstablecimientos: 10, notasCredito: true, reportesAvanzados: true, soportePrioritario: true, destacado: false },
+  { codigo: 'CASERITO', nombre: 'Caserito', descripcion: "Pa' la bodega y el emprendedor que recién arranca.", precioMensual: 39, precioAnual: 390, limiteComprobantes: 500, maxUsuarios: 1, maxEstablecimientos: 1, notasCredito: true, reportesAvanzados: false, soportePrioritario: false, destacado: false },
+  { codigo: 'NEGOCIANTE', nombre: 'Negociante', descripcion: "Pa' el negocio que ya se mueve todos los días.", precioMensual: 69, precioAnual: 690, limiteComprobantes: 2000, maxUsuarios: 3, maxEstablecimientos: 1, notasCredito: true, reportesAvanzados: true, soportePrioritario: false, destacado: true },
+  { codigo: 'EMPRESA', nombre: 'Empresa', descripcion: "Pa' varias sedes, usuarios y mucho movimiento.", precioMensual: 139, precioAnual: 1390, limiteComprobantes: null, maxUsuarios: 15, maxEstablecimientos: 5, notasCredito: true, reportesAvanzados: true, soportePrioritario: true, destacado: false },
 ];
 
 @Component({
@@ -24,6 +24,7 @@ export class LandingComponent {
   private router = inject(Router);
   protected auth = inject(Auth);
   protected planes = signal<PlanPublico[]>(PLANES_BASE);
+  protected anual = signal(false);
   protected celular = '';
   protected readonly anio = new Date().getFullYear();
 
@@ -33,10 +34,15 @@ export class LandingComponent {
 
   protected beneficios(p: PlanPublico): string[] {
     const l: string[] = [p.limiteComprobantes ? `${p.limiteComprobantes.toLocaleString('es-PE')} comprobantes al mes` : 'Comprobantes ilimitados'];
-    if (p.codigo === 'CASERITO') l.push('Boletas y facturas', 'Envío por WhatsApp');
-    else if (p.codigo === 'NEGOCIANTE') l.push('Notas de crédito', 'Ticketera y reportes', `Hasta ${p.maxUsuarios} usuarios`);
-    else l.push('Varios usuarios y locales', p.soportePrioritario ? 'Soporte prioritario' : 'Reportes completos');
+    if (p.codigo === 'CASERITO') l.push('Boletas, facturas y notas', 'Ticket y envío por WhatsApp', 'Caja del día');
+    else if (p.codigo === 'NEGOCIANTE') l.push(`Hasta ${p.maxUsuarios} usuarios`, 'Ventas al crédito con cuotas', 'Reportes y exportar a Excel');
+    else l.push(`Hasta ${p.maxEstablecimientos} locales y ${p.maxUsuarios} usuarios`, 'Soporte prioritario por WhatsApp', 'Todo lo del Negociante');
     return l;
+  }
+
+  /** Lo que cuesta al mes pagando el año (redondeado a céntimos). */
+  protected mensualConAnual(p: PlanPublico): string {
+    return (Math.round((p.precioAnual / 12) * 100) / 100).toFixed(2);
   }
 
   protected empezar(plan?: string) {

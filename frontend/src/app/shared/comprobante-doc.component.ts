@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 import { CantidadPipe, FechaPipe, SolesPipe, HoraPipe } from '../core/formato';
-import { Comprobante, NOMBRE_METODO, NOMBRE_TIPO } from '../core/modelos';
+import { Comprobante, Detalle, NOMBRE_METODO, NOMBRE_TIPO } from '../core/modelos';
 import { LogoComponent } from './logo.component';
 
 const DOCS: Record<string, string> = { '0': 'DOC', '1': 'DNI', '4': 'CE', '6': 'RUC', '7': 'PAS', A: 'CED' };
@@ -48,7 +48,7 @@ const DOCS: Record<string, string> = { '0': 'DOC', '1': 'DNI', '4': 'CE', '6': '
           @for (d of c.detalles; track d.item) {
             <div class="item">
               <span>{{ d.cantidad | cant }} x {{ d.descripcion }}</span>
-              <span>{{ d.total.toFixed(2) }}</span>
+              <span>{{ importe(d) }}</span>
             </div>
             @if (d.cantidad !== 1) { <div class="pu">  P.U. {{ d.precioUnitario.toFixed(2) }}</div> }
           }
@@ -125,7 +125,7 @@ const DOCS: Record<string, string> = { '0': 'DOC', '1': 'DNI', '4': 'CE', '6': '
               <tr>
                 <td>{{ d.cantidad | cant }}</td><td>{{ d.unidadMedida }}</td>
                 <td>{{ d.descripcion }}@if (d.tipoAfectacion !== '10') { <span class="afe"> ({{ d.tipoAfectacion === '20' ? 'exonerado' : 'inafecto' }})</span> }</td>
-                <td class="d">{{ d.valorUnitario.toFixed(4) }}</td><td class="d">{{ d.precioUnitario.toFixed(2) }}</td><td class="d">{{ d.total.toFixed(2) }}</td>
+                <td class="d">{{ d.valorUnitario.toFixed(4) }}</td><td class="d">{{ d.precioUnitario.toFixed(2) }}</td><td class="d">{{ importe(d) }}</td>
               </tr>
             }
           </tbody>
@@ -181,7 +181,7 @@ const DOCS: Record<string, string> = { '0': 'DOC', '1': 'DNI', '4': 'CE', '6': '
     .sep-chica { margin-top: 6px; }
     .qr { width: 96px; height: 96px; image-rendering: pixelated; }
     .hash { font-size: 10px; word-break: break-all; }
-    .mini-legal { font-size: 10px; color: var(--gris); }
+    .mini-legal { font-size: 10px; color: var(--gris); overflow-wrap: anywhere; }
     .gracias { font-family: var(--f-texto); font-size: 18px; margin-top: 6px; line-height: 1.05; }
     .anulado { font-size: 18px; letter-spacing: .2em; color: var(--magenta); }
 
@@ -201,10 +201,11 @@ const DOCS: Record<string, string> = { '0': 'DOC', '1': 'DNI', '4': 'CE', '6': '
     .a4-tabla .d { text-align: right; font-family: var(--f-mono); white-space: nowrap; }
     .afe { color: var(--gris); font-size: 11px; }
     .a4-pie { display: flex; justify-content: space-between; gap: 24px; align-items: flex-start; }
-    .a4-izq { display: flex; flex-direction: column; gap: 10px; flex: 1; }
+    .a4-izq { display: flex; flex-direction: column; gap: 10px; flex: 1; min-width: 0; }
     .fila-qr { display: flex; gap: 12px; align-items: center; }
     .fila-qr img { width: 110px; height: 110px; }
-    .a4-totales { border-collapse: collapse; min-width: 240px; font-family: var(--f-mono); }
+    .a4-totales { border-collapse: collapse; min-width: 240px; flex-shrink: 0; font-family: var(--f-mono); }
+    .a4-totales td:last-child { white-space: nowrap; }
     .a4-totales td { padding: 4px 0; }
     .a4-totales td:last-child { text-align: right; padding-left: 20px; }
     .a4-totales .t td { border-top: 2px solid var(--tinta); font-weight: 700; font-size: 16px; padding-top: 8px; }
@@ -223,6 +224,11 @@ const DOCS: Record<string, string> = { '0': 'DOC', '1': 'DNI', '4': 'CE', '6': '
 export class ComprobanteDocComponent {
   readonly comp = input.required<Comprobante>();
   readonly formato = input<'ticket' | 'a4'>('ticket');
+
+  /** Importe de la línea sin el ICBPER: el impuesto a la bolsa va aparte en los totales. */
+  protected importe(d: Detalle): string {
+    return (d.total - (d.icbper ?? 0)).toFixed(2);
+  }
 
   protected readonly qrUrl = computed(() => `/api/public/c/${this.comp().tokenPublico}/qr.svg`);
   protected readonly enlace = computed(() => `${location.host}/c/${this.comp().tokenPublico}`);

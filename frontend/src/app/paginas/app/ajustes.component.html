@@ -159,9 +159,19 @@
           <div class="plan" [class.actual]="p.codigo === c.plan.codigo" [class.destacado]="p.destacado">
             <h3 class="display" style="font-size: 28px">{{ p.nombre }}</h3>
             <span class="mono" style="font-size: 26px; font-weight: 700">{{ p.precioMensual | soles }}<span class="chico" style="font-weight: 400"> /mes</span></span>
+            <span class="chico mono">o {{ p.precioAnual | soles }} al año (2 meses gratis)</span>
             <span class="chico">{{ p.limiteComprobantes ? p.limiteComprobantes + ' comprobantes/mes' : 'Comprobantes ilimitados' }} · {{ p.maxUsuarios }} usuario(s) · {{ p.maxEstablecimientos }} local(es)</span>
             @if (p.codigo === c.plan.codigo) { <span class="chip chip-tinta" style="align-self: flex-start">Tu plan</span> }
-            @else if (auth.esDueno()) { <button type="button" class="btn btn-tinta btn-chico" [disabled]="ocupado()" (click)="cambiarPlan(p)">Elegir {{ p.nombre }}</button> }
+            @if (auth.esDueno()) {
+              @if (c.estado === 'PRUEBA') {
+                @if (p.codigo !== c.plan.codigo) { <button type="button" class="btn btn-tinta btn-chico" [disabled]="ocupado()" (click)="cambiarPlan(p, 'MENSUAL')">Probar {{ p.nombre }}</button> }
+              } @else {
+                <div class="fila" style="gap: 6px; flex-wrap: wrap">
+                  <button type="button" class="btn btn-tinta btn-chico" [disabled]="ocupado()" (click)="cambiarPlan(p, 'MENSUAL')">{{ p.codigo === c.plan.codigo ? 'Pagar' : 'Elegir' }} 1 mes</button>
+                  <button type="button" class="btn btn-borde btn-chico" [disabled]="ocupado()" (click)="cambiarPlan(p, 'ANUAL')">Pagar el año</button>
+                </div>
+              }
+            }
           </div>
         }
       </div>

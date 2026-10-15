@@ -104,6 +104,11 @@
 .plan p { font-size: 17px; }
 .precio { font-size: 40px; font-weight: 700; }
 .precio span { font-size: 16px; font-weight: 400; }
+.equivale { font-size: 13px; margin-top: -12px; opacity: .75; }
+.periodo { display: inline-flex; gap: 4px; padding: 4px; margin-top: 18px; border-radius: 999px; background: var(--tinta); }
+.periodo button { border: 0; border-radius: 999px; padding: 10px 18px; font: inherit; font-weight: 800; color: var(--papel); background: transparent; cursor: pointer; }
+.periodo button.activo { background: var(--amarillo); color: var(--tinta); }
+.periodo .ahorro { font-family: 'Space Mono', monospace; font-size: 11px; font-weight: 700; margin-left: 4px; padding: 2px 6px; border-radius: 6px; background: var(--magenta); color: #fff; }
 .plan ul { margin: 0; padding: 0 0 0 20px; font-size: 17px; line-height: 1.8; flex-grow: 1; }
 .mas-pedido { position: absolute; top: -16px; right: 24px; background: var(--magenta); color: var(--blanco); font-size: 15px; font-weight: 800; padding: 8px 14px; border-radius: 999px; transform: rotate(4deg); }
 .elegir { text-align: center; border: 2px solid var(--tinta); background: transparent; border-radius: 14px; padding: 16px; font-size: 18px; font-weight: 800; cursor: pointer; }

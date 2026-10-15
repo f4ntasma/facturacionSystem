@@ -216,8 +216,8 @@ export class AjustesComponent {
   }
 
   // plan
-  protected async cambiarPlan(p: PlanPublico) {
-    const r = await this.correr(() => this.api.post<{ mensaje: string; urlPago?: string }>('/suscripcion/cambiar', { plan: p.codigo }), 'Procesando tu plan…');
+  protected async cambiarPlan(p: PlanPublico, periodo: 'MENSUAL' | 'ANUAL') {
+    const r = await this.correr(() => this.api.post<{ mensaje: string; urlPago?: string }>('/suscripcion/cambiar', { plan: p.codigo, periodo }), 'Procesando tu plan…');
     if (r?.urlPago) window.location.href = r.urlPago;
     else if (r) {
       this.toast.ok(r.mensaje);

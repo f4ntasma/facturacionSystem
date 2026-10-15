@@ -242,6 +242,7 @@ export interface PlanPublico {
   nombre: string;
   descripcion: string;
   precioMensual: number;
+  precioAnual: number;
   limiteComprobantes: number | null;
   maxUsuarios: number;
   maxEstablecimientos: number;

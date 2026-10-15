@@ -20,6 +20,8 @@ public class Plan {
     private String nombre;
     private String descripcion;
     private BigDecimal precioMensual;
+    /** 10 meses: 2 gratis por pagar el año */
+    private BigDecimal precioAnual;
     /** null = ilimitado */
     private Integer limiteComprobantes;
     private int maxUsuarios;
@@ -30,4 +32,9 @@ public class Plan {
     private boolean destacado;
     private int orden;
     private boolean activo;
+
+    /** Si no hay precio anual, se cobra 10 veces el mensual. */
+    public BigDecimal precioAnualOMensual() {
+        return precioAnual != null ? precioAnual : precioMensual.multiply(BigDecimal.TEN);
+    }
 }

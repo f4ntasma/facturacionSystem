@@ -32,6 +32,8 @@ El demo emite contra SUNAT beta con el RUC de pruebas `20000000001`.
 
 ## Con Docker (MariaDB + API + web)
 
+En Windows basta con doble clic en `iniciar.bat`: enciende Docker Desktop, levanta todo y abre http://localhost:8081.
+
 ```bash
 cp .env.example .env      # cambia las claves
 docker compose up --build # http://localhost:8081
@@ -179,6 +181,7 @@ erDiagram
 
 ## Antes de vender en serio
 
-- Cambia los precios de los planes en `V2__planes.sql` o directo en la tabla `plan` (hoy: S/ 29, 59 y 149).
+- Precios (incluyen IGV, `V3__precios_mercado.sql`): Caserito S/ 39, Negociante S/ 69, Empresa S/ 139 al mes; anual = 10 meses.
+  Para cambiarlos crea una migración nueva o edita la tabla `plan`.
 - Cambia los datos de contacto del pie de la landing (`hola@altoque.pe`).
 - Cada negocio pasa a producción en **Ajustes › SUNAT**: sube su `.pfx`, su usuario SOL secundario y elige *Producción*.
