@@ -2,186 +2,196 @@
 
 > Emite boletas y facturas electrónicas desde tu celular en segundos. Sin enredos, sin papeleo.
 
-Sistema de facturación electrónica SUNAT (Perú) para bodegas, restaurantes, talleres y empresas:
-boletas, facturas, notas de crédito y débito, anulaciones (resumen diario y comunicación de baja),
-caja del día, reportes y envío por WhatsApp.
+Sistema de facturación electrónica SUNAT y punto de venta para bodegas, ferreterías, boticas, restaurantes, talleres
+y estudios contables: boletas, facturas, notas de crédito y débito, anulaciones, detracciones, crédito con cuotas,
+caja con Yape/Plin, inventario con kardex y varios negocios por cuenta.
+
+**En línea:** https://altoque-pe.vercel.app · demo `demo@altoque.pe` / `altoque123` (SUNAT de pruebas)
 
 | Parte | Tecnología |
 |---|---|
 | `backend/` | Java 21 · Spring Boot 3.5 · JPA · Flyway · MariaDB (H2 en desarrollo) · JWT |
 | `frontend/` | Angular 21 (standalone, signals, zoneless) · CSS propio con la marca Al Toque |
-| SUNAT | XML UBL 2.1 propio, firma XMLDSig, cliente SOAP `billService` (beta y producción) |
+| `marketing/` | Video diario automático (n8n + IA + renderizador) |
+| SUNAT | XML UBL 2.1 propio, firma XMLDSig, cliente SOAP `billService` y `billConsultService` |
 
-Probado contra **SUNAT beta**: boletas (cliente varios, con DNI, exoneradas, con ICBPER), facturas al contado y al crédito
-con cuotas, notas de crédito y débito, resumen diario de anulación y comunicación de baja — todas aceptadas.
+Probado contra **SUNAT beta**: boletas (cliente varios, con DNI, exoneradas, con ICBPER), facturas al contado, al crédito
+con cuotas y **con detracción**, notas de crédito y débito, resumen diario de anulación y comunicación de baja: todas aceptadas.
 
 ---
 
-## Arrancar en desarrollo
+## Arrancar
 
 ```bash
-# API (puerto 8080, base H2 en ./backend/data, crea el negocio demo)
-cd backend && mvn spring-boot:run
+# Windows: doble clic en iniciar.bat (enciende Docker, levanta todo y abre http://localhost:8081)
 
-# Web (puerto 4200, /api se reenvía al 8080)
-cd frontend && npm install && npm start
-```
+# Desarrollo
+cd backend && mvn spring-boot:run          # API en :8080, base H2 en ./backend/data
+cd frontend && npm install && npm start     # web en :4200, /api → :8080
 
-Entra a http://localhost:4200 → **Ingresar → Usar demo** (`demo@altoque.pe` / `altoque123`).
-El demo emite contra SUNAT beta con el RUC de pruebas `20000000001`.
-
-## Con Docker (MariaDB + API + web)
-
-En Windows basta con doble clic en `iniciar.bat`: enciende Docker Desktop, levanta todo y abre http://localhost:8081.
-
-```bash
-cp .env.example .env      # cambia las claves
-docker compose up --build # http://localhost:8081
-```
-
-## Pruebas
-
-```bash
-cd backend && mvn test                                   # unitarias + flujo completo en modo simulado
+# Pruebas
+cd backend && mvn test                                   # unitarias + flujos completos en modo simulado
 SUNAT_BETA=1 mvn test -Dtest=SunatBetaTest               # envío real a SUNAT beta
 ```
 
 ---
 
-## Cómo funciona la emisión
+## Procesos SUNAT
 
-1. **Emitir** valida reglas SUNAT (factura exige RUC; boleta ≥ S/ 700 exige documento; cuotas suman el total),
-   bloquea la serie (`SELECT … FOR UPDATE`) y toma el correlativo al final para no dejar huecos.
-2. Calcula valor unitario, IGV e ICBPER desde el precio con IGV (IGV de línea = total − valor de venta, cuadra al céntimo).
-3. Arma el XML UBL 2.1, lo firma con el certificado de la empresa y lo guarda (`comprobante_archivo`).
-4. Lo envía con `sendBill`, guarda el CDR y deja el estado en `ACEPTADO`, `OBSERVADO` o `RECHAZADO`.
-   Si SUNAT no responde queda `PENDIENTE` y un proceso lo **reintenta cada 5 minutos**.
-5. Anular: boletas por **resumen diario** (RC), facturas por **comunicación de baja** (RA), con ticket que se consulta solo.
+| Proceso | Regla que se valida antes de firmar |
+|---|---|
+| Emisión | Fecha de emisión = hoy. Factura solo con RUC válido (dígito verificador). Boleta desde S/ 700 exige documento. Serie bloqueada con `SELECT … FOR UPDATE`; el correlativo se toma al final para no dejar huecos. |
+| Crédito | Factura al crédito con cuotas (obligatorio desde 2021), vencimientos posteriores a la emisión, cuotas que suman el neto pendiente. |
+| Detracción (SPOT) | Solo factura de más de S/ 700, con cuenta del Banco de la Nación configurada. Tipo de operación 1001, leyenda 2006, `PaymentMeans` y `PaymentTerms`; monto en soles enteros; cuotas y cobros sobre el neto. |
+| Notas | Sobre una boleta o factura aceptada, misma familia de serie (B/F), motivo del catálogo 09/10, sin pasar lo acreditable. «Error en el RUC» solo para facturas. |
+| Envío | `sendBill`. CDR 0 → aceptado; 4000+ → observado; 2000–3999 → rechazado (número consumido, stock repuesto); 0100–1999 o sin respuesta → pendiente y reintento automático (hasta 12 veces, cada 5 min). 1033 «registrado previamente» → en producción se recupera el CDR con `getStatusCdr`. |
+| Anulación | Hasta 7 días calendario: boletas y sus notas por resumen diario (RC), facturas y sus notas por comunicación de baja (RA), con ticket que se consulta solo. Después, nota de crédito. Al aceptarse, el stock se repone. |
+| Conservación | XML firmados y CDR en disco (`ARCHIVOS_DIR`), con SHA-256 verificado al leer. Descarga mensual en ZIP para el contador. |
 
 Ambientes por empresa: `SIMULADO` (firma sin enviar), `BETA` (SUNAT de pruebas, certificado autogenerado),
-`PRODUCCION` (exige certificado `.pfx` propio y usuario SOL secundario; las claves se guardan cifradas con AES-GCM).
+`PRODUCCION` (certificado `.pfx` propio y usuario SOL secundario; claves cifradas con AES-GCM).
 
 ---
 
 ## Modelo de datos (DER)
 
-El esquema vive en `backend/src/main/resources/db/migration` (Flyway). Todo dato de negocio cuelga de `empresa` (multiempresa).
-Los comprobantes guardan **copia** de los datos del cliente y del producto: lo emitido no cambia si luego editas el catálogo.
+Migraciones en `backend/src/main/resources/db/migration`: `V1__esquema.sql` (estructura), `V2__catalogos_sunat.sql`,
+`V3__ubigeo.sql` (1,875 distritos INEI) y `V4__planes.sql`.
+
+**Criterios:** tercera forma normal (lo calculable no se guarda: monto en letras, nombre de archivo, saldo, intentos,
+diferencia de caja, departamento y provincia de un ubigeo); catálogos SUNAT como tablas con FK (la base rechaza un código
+inválido); `empresa_id` como clave de tenant con FK compuestas que impiden mezclar datos de dos negocios; CHECKs de montos,
+estados y formatos; binarios fuera de la base.
+Excepciones deliberadas e inmutables: el comprobante copia los datos del receptor y del producto, y guarda sus totales tal como se firmaron.
 
 ```mermaid
 erDiagram
-    PLAN ||--o{ EMPRESA : "contrata"
-    PLAN ||--o{ SUSCRIPCION : ""
-    EMPRESA ||--o{ SUSCRIPCION : "paga"
-    EMPRESA ||--o{ CERTIFICADO_DIGITAL : "firma con"
-    EMPRESA ||--|{ ESTABLECIMIENTO : "tiene locales"
-    EMPRESA ||--|{ USUARIO : "equipo"
-    ESTABLECIMIENTO ||--o{ USUARIO : "trabaja en"
-    EMPRESA ||--|{ SERIE : ""
-    ESTABLECIMIENTO ||--|{ SERIE : "numera"
-    EMPRESA ||--o{ CLIENTE : "caseritos"
-    EMPRESA ||--o{ CATEGORIA : ""
-    EMPRESA ||--o{ PRODUCTO : ""
-    CATEGORIA |o--o{ PRODUCTO : "agrupa"
-    EMPRESA ||--o{ CAJA : ""
-    USUARIO ||--o{ CAJA : "abre"
+    DEPARTAMENTO ||--|{ PROVINCIA : ""
+    PROVINCIA ||--|{ DISTRITO : ""
+    DISTRITO ||--o{ EMPRESA : "domicilio fiscal"
+    DISTRITO |o--o{ ESTABLECIMIENTO : ""
 
-    EMPRESA ||--o{ COMPROBANTE : "emite"
-    SERIE ||--o{ COMPROBANTE : "numera"
+    PLAN ||--o{ EMPRESA : "contrata"
+    EMPRESA ||--o{ SUSCRIPCION : "paga"
+    EMPRESA ||--|| EMPRESA_SUNAT : "ambiente, SOL, cta. detracciones"
+    EMPRESA ||--o{ CERTIFICADO_DIGITAL : "firma con"
+    EMPRESA ||--|{ ESTABLECIMIENTO : "locales"
+    USUARIO ||--|{ MIEMBRO : "pertenece a"
+    EMPRESA ||--|{ MIEMBRO : "equipo"
+    ESTABLECIMIENTO |o--o{ MIEMBRO : "trabaja en"
+    ESTABLECIMIENTO ||--|{ SERIE : "numera"
+    SUNAT_TIPO_COMPROBANTE ||--o{ SERIE : ""
+
+    EMPRESA ||--o{ CLIENTE : "caseritos"
+    SUNAT_TIPO_DOCUMENTO ||--o{ CLIENTE : ""
+    EMPRESA ||--o{ CATEGORIA : ""
+    CATEGORIA |o--o{ PRODUCTO : ""
+    SUNAT_UNIDAD_MEDIDA ||--o{ PRODUCTO : ""
+    SUNAT_AFECTACION_IGV ||--o{ PRODUCTO : ""
+    PRODUCTO ||--o{ MOVIMIENTO_INVENTARIO : "kardex"
+    ESTABLECIMIENTO ||--o{ CAJA : ""
+
+    SERIE ||--o{ COMPROBANTE : "tipo + serie + correlativo"
     USUARIO ||--o{ COMPROBANTE : "vende"
     CLIENTE |o--o{ COMPROBANTE : "compra"
     CAJA |o--o{ COMPROBANTE : "turno"
-    COMPROBANTE |o--o{ COMPROBANTE : "nota modifica a"
-    COMPROBANTE ||--|{ COMPROBANTE_DETALLE : "items"
-    PRODUCTO |o--o{ COMPROBANTE_DETALLE : ""
+    COMPROBANTE ||--|{ COMPROBANTE_DETALLE : "ítems"
+    COMPROBANTE ||--o| COMPROBANTE_NOTA : "si es nota"
+    COMPROBANTE_NOTA }o--o| COMPROBANTE : "modifica a"
+    SUNAT_MOTIVO_NOTA ||--o{ COMPROBANTE_NOTA : ""
+    COMPROBANTE ||--o| COMPROBANTE_DETRACCION : "SPOT"
+    SUNAT_BIEN_DETRACCION ||--o{ COMPROBANTE_DETRACCION : ""
     COMPROBANTE ||--o{ COMPROBANTE_CUOTA : "crédito"
     COMPROBANTE ||--o{ PAGO : "cobros"
+    MEDIO_PAGO ||--o{ PAGO : ""
     CAJA |o--o{ PAGO : ""
-    COMPROBANTE ||--o{ COMPROBANTE_ARCHIVO : "XML y CDR"
+    COMPROBANTE |o--o{ MOVIMIENTO_INVENTARIO : "origen"
 
-    EMPRESA ||--o{ RESUMEN_DIARIO : "RC"
-    RESUMEN_DIARIO ||--|{ RESUMEN_DIARIO_ITEM : ""
-    COMPROBANTE ||--o{ RESUMEN_DIARIO_ITEM : "anula boleta"
-    EMPRESA ||--o{ COMUNICACION_BAJA : "RA"
-    COMUNICACION_BAJA ||--|{ COMUNICACION_BAJA_ITEM : ""
-    COMPROBANTE ||--o{ COMUNICACION_BAJA_ITEM : "anula factura"
+    EMPRESA ||--o{ LOTE_SUNAT : "RC / RA"
+    LOTE_SUNAT ||--|{ LOTE_SUNAT_ITEM : ""
+    COMPROBANTE ||--o{ LOTE_SUNAT_ITEM : "anulación"
+    COMPROBANTE ||--o{ ARCHIVO : "XML y CDR"
+    LOTE_SUNAT ||--o{ ARCHIVO : "XML y CDR"
     COMPROBANTE ||--o{ ENVIO_SUNAT : "bitácora"
+    LOTE_SUNAT ||--o{ ENVIO_SUNAT : "bitácora"
 
-    EMPRESA {
-        bigint id PK
-        varchar ruc UK
-        varchar razon_social
-        varchar ambiente_sunat "SIMULADO|BETA|PRODUCCION"
-        varchar sol_clave_enc "AES-GCM"
-        bigint plan_id FK
-        varchar estado "PRUEBA|ACTIVA|SUSPENDIDA"
-    }
-    SERIE {
-        bigint id PK
-        varchar tipo_comprobante "01|03|07|08"
-        varchar serie "F001 B001 FC01 BC01"
-        int correlativo_actual
-    }
     COMPROBANTE {
         bigint id PK
-        varchar tipo_comprobante
-        varchar serie
-        int correlativo "UK empresa+tipo+serie+correlativo"
+        bigint empresa_id FK "tenant"
+        bigint serie_id FK "UK serie_id + correlativo"
+        int correlativo "1..99999999"
         date fecha_emision
-        varchar cliente_tipo_doc "snapshot"
-        varchar cliente_num_doc
+        varchar tipo_operacion "0101 | 1001"
+        varchar forma_pago "CONTADO | CREDITO"
+        varchar cliente_num_doc "copia firmada"
         decimal total_gravado
         decimal total_igv
         decimal total_icbper
         decimal total
-        bigint comprobante_ref_id FK "notas"
-        varchar motivo_codigo "catálogos 09/10"
-        varchar estado_sunat "PENDIENTE|ACEPTADO|OBSERVADO|RECHAZADO|POR_ANULAR|ANULADO"
-        varchar estado_pago "PAGADO|PARCIAL|POR_COBRAR"
+        varchar estado_sunat "PENDIENTE..ANULADO"
+        varchar estado_pago
         varchar hash "DigestValue"
-        varchar token_publico UK "enlace WhatsApp/QR"
+        varchar token_publico UK
     }
-    COMPROBANTE_DETALLE {
-        bigint id PK
-        int item
-        decimal cantidad
-        decimal precio_unitario "con IGV"
-        decimal valor_unitario "sin IGV"
-        varchar tipo_afectacion "10|20|30"
-        decimal igv
-        decimal icbper
+    COMPROBANTE_NOTA {
+        bigint comprobante_id PK
+        bigint comprobante_ref_id FK "null si es externo"
+        varchar ref_serie
+        int ref_correlativo
+        varchar motivo_codigo FK "catálogo 09/10"
+        varchar sustento
     }
-    PAGO {
-        bigint id PK
-        varchar metodo "EFECTIVO|YAPE|PLIN|TARJETA|TRANSFERENCIA"
+    COMPROBANTE_DETRACCION {
+        bigint comprobante_id PK
+        varchar bien_codigo FK "catálogo 54"
+        decimal porcentaje
         decimal monto
+        varchar cuenta_banco
+    }
+    MOVIMIENTO_INVENTARIO {
+        bigint id PK
+        varchar tipo "VENTA DEVOLUCION ANULACION AJUSTE INGRESO"
+        decimal cantidad "+ entra, − sale"
+        decimal stock_resultante
+    }
+    ARCHIVO {
+        bigint id PK
+        varchar tipo "XML | CDR"
+        varchar ruta "RUC/AAAA/MM/archivo"
+        varchar sha256
     }
 ```
 
-| Tabla | Para qué |
+| Grupo | Tablas |
 |---|---|
-| `plan`, `suscripcion` | Planes Caserito / Negociante / Empresa, límites y cobros (Mercado Pago opcional) |
-| `empresa`, `certificado_digital` | Emisor, ambiente SUNAT, credenciales SOL y `.pfx` cifrados |
-| `establecimiento`, `serie` | Locales (código SUNAT 0000…) y numeración por tipo |
-| `usuario` | Dueño, administrador o vendedor |
-| `cliente`, `categoria`, `producto` | Catálogo (precio con IGV, afectación, ICBPER, stock, favoritos) |
-| `caja` | Apertura, cobros del turno y cuadre al cierre |
-| `comprobante`, `comprobante_detalle`, `comprobante_cuota`, `pago`, `comprobante_archivo` | Boletas, facturas y notas con sus ítems, cuotas, cobros, XML y CDR |
-| `resumen_diario(_item)`, `comunicacion_baja(_item)` | Anulaciones enviadas por ticket |
-| `envio_sunat` | Bitácora de cada llamada a SUNAT |
+| Referencia | `sunat_tipo_comprobante` (01), `sunat_tipo_documento` (06), `sunat_afectacion_igv` (07), `sunat_unidad_medida` (03), `sunat_motivo_nota` (09/10), `sunat_bien_detraccion` (54), `medio_pago` (59), `departamento`, `provincia`, `distrito` |
+| Negocio | `plan`, `empresa`, `empresa_sunat`, `suscripcion`, `certificado_digital`, `establecimiento`, `serie` |
+| Personas | `usuario` (una persona = un correo), `miembro` (rol y local en cada negocio: un contador entra a varios RUC) |
+| Catálogo | `cliente`, `categoria`, `producto`, `movimiento_inventario` |
+| Ventas | `caja`, `comprobante`, `comprobante_nota`, `comprobante_detraccion`, `comprobante_detalle`, `comprobante_cuota`, `pago` |
+| SUNAT | `lote_sunat`, `lote_sunat_item`, `archivo`, `envio_sunat` |
 
 ---
 
 ## Despliegue (Dokploy)
 
-- **Base de datos**: MariaDB 10.6+ (`utf8mb4`). Flyway crea las tablas al arrancar.
-- **API** (`backend/`, perfil `prod`): variables `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD`,
-  `JWT_SECRET`, `APP_CRYPTO_KEY`, `FRONTEND_URL`, `API_PUBLIC_URL`, `CORS_ORIGINS`; opcionales `APIPERU_TOKEN`, `MP_ACCESS_TOKEN`, `ALTOQUE_DEMO`.
-- **Web** (`frontend/`): nginx con `API_UPSTREAM` apuntando al servicio de la API (p. ej. `http://altoque-api:8080`).
+Proyecto `altoque` en Dokploy:
+
+| Servicio | Qué es |
+|---|---|
+| `altoque-db` | MariaDB 11.4 (`utf8mb4`, zona −05:00). Flyway crea todo al arrancar. |
+| `altoque-api` | `backend/` (Dockerfile). Volumen `altoque-archivos` en `/data/archivos` (XML y CDR: respáldalo). |
+| `altoque-web` | `frontend/` (nginx). `API_UPSTREAM=http://<app de la API>:8080`. |
+
+HTTPS: proxy en Vercel (`altoque-pe.vercel.app`) que reenvía al dominio interno de la web.
+
+Variables de la API: `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `JWT_SECRET`, `APP_CRYPTO_KEY`, `FRONTEND_URL`,
+`API_PUBLIC_URL`, `CORS_ORIGINS`, `ARCHIVOS_DIR`; opcionales `APIPERU_TOKEN` (DNI/RUC), `MP_ACCESS_TOKEN` (cobro de planes), `ALTOQUE_DEMO`.
+
+Para actualizar: zip de `backend/` o `frontend/` y `application.dropDeployment` (o sube el zip desde el panel).
 
 ## Antes de vender en serio
 
-- Precios (incluyen IGV, `V3__precios_mercado.sql`): Caserito S/ 39, Negociante S/ 69, Empresa S/ 139 al mes; anual = 10 meses.
-  Para cambiarlos crea una migración nueva o edita la tabla `plan`.
-- Cambia los datos de contacto del pie de la landing (`hola@altoque.pe`).
+- Precios (con IGV, `V4__planes.sql`): Caserito S/ 39, Negociante S/ 69, Empresa S/ 139 al mes; anual = 10 meses.
 - Cada negocio pasa a producción en **Ajustes › SUNAT**: sube su `.pfx`, su usuario SOL secundario y elige *Producción*.
+- Pon `ALTOQUE_DEMO=false` cuando ya no necesites la cuenta demo.

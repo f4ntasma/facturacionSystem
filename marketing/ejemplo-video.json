@@ -1,0 +1,54 @@
+{
+  "title": "El cuaderno te está costando plata",
+  "voice": "es-PE-CamilaNeural",
+  "voiceRate": "+8%",
+  "brand": {
+    "name": "Al Toque",
+    "handle": "@altoque.pe",
+    "website": "Prueba 15 días gratis",
+    "logo": "https://altoque-pe.vercel.app/marca-video.png",
+    "colors": {
+      "background": "#14141F",
+      "surface": "#2A2A38",
+      "primary": "#FFC81E",
+      "accent": "#D1126B",
+      "highlight": "#FFC81E",
+      "text": "#FFFFFF",
+      "muted": "#D9D8E0"
+    }
+  },
+  "scenes": [
+    {
+      "type": "hook",
+      "text": "¿Sabes cuánto ganaste hoy, causa?",
+      "highlight": ["cuánto ganaste hoy"],
+      "narration": "¿Sabes cuánto ganaste hoy? Si lo tienes que sacar del cuaderno, ya perdiste."
+    },
+    {
+      "type": "point",
+      "index": 1,
+      "title": "El fiado",
+      "text": "El fiado que se olvida es plata que no vuelve",
+      "narration": "El fiado que no anotaste bien es plata que no regresa."
+    },
+    {
+      "type": "point",
+      "index": 2,
+      "title": "Al toque",
+      "text": "Vendes, sale la boleta y tu caja se cuadra sola",
+      "narration": "Con Al Toque vendes, la boleta sale al toque y la caja se cuadra sola, con Yape y Plin incluidos."
+    },
+    {
+      "type": "point",
+      "index": 3,
+      "title": "Sin enredos",
+      "text": "Desde S/ 39 al mes, desde tu celular",
+      "narration": "Desde treinta y nueve soles al mes, desde tu celular y sin instalar nada."
+    },
+    {
+      "type": "cta",
+      "text": "Prueba 15 días gratis: link en la bio",
+      "narration": "Pruébalo quince días gratis. El link está en la bio."
+    }
+  ]
+}

@@ -1,0 +1,1299 @@
+{
+ "id": "AlToqueVideoDia1",
+ "name": "Al Toque · Video diario",
+ "nodes": [
+  {
+   "id": "b1d0bd3d-9b88-4acb-a9dc-81c0e65eb1a9",
+   "name": "Cada día 6:00",
+   "type": "n8n-nodes-base.scheduleTrigger",
+   "typeVersion": 1.2,
+   "position": [
+    0,
+    0
+   ],
+   "parameters": {
+    "rule": {
+     "interval": [
+      {
+       "field": "days",
+       "triggerAtHour": 6
+      }
+     ]
+    }
+   }
+  },
+  {
+   "id": "1a332bdb-c00c-4505-bd87-1292538f7349",
+   "name": "Probar ahora",
+   "type": "n8n-nodes-base.manualTrigger",
+   "typeVersion": 1,
+   "position": [
+    0,
+    180
+   ],
+   "parameters": {}
+  },
+  {
+   "id": "79ddbdc5-8898-4414-bde2-73aa6ebccbba",
+   "name": "Botón de Telegram",
+   "type": "n8n-nodes-base.telegramTrigger",
+   "typeVersion": 1.2,
+   "position": [
+    0,
+    520
+   ],
+   "parameters": {
+    "updates": [
+     "callback_query"
+    ],
+    "additionalFields": {}
+   },
+   "webhookId": "cb24f997-448e-4488-a4ef-b04311b21113",
+   "credentials": {
+    "telegramApi": {
+     "id": "",
+     "name": "Telegram Al Toque"
+    }
+   }
+  },
+  {
+   "id": "ac26c4d9-6d3c-4816-a0d5-217d888306ac",
+   "name": "Configuración",
+   "type": "n8n-nodes-base.code",
+   "typeVersion": 2,
+   "position": [
+    220,
+    260
+   ],
+   "parameters": {
+    "jsCode": "// ⚙️ CONFIGURACIÓN: cambia aquí los datos de tu cuenta.\nconst config = {\n  telegramChatId: 'PON_AQUI_TU_CHAT_ID',\n  // Mismo renderizador de videos que ya tienes desplegado; la marca Al Toque va en cada pedido.\n  rendererUrl: 'https://ma-renderer.vercel.app',\n  // 'gemini' = gratis (nivel gratuito de Google, unas 20 peticiones diarias) · 'claude' = de pago, mejor redacción.\n  aiProvider: 'gemini',\n  geminiModel: 'gemini-flash-latest',\n  claudeModel: 'claude-opus-5-5',\n  instagramUserId: 'PON_AQUI_EL_ID_DE_INSTAGRAM_DE_AL_TOQUE',\n  facebookPageId: 'PON_AQUI_EL_ID_DE_LA_PAGINA_DE_AL_TOQUE',\n  brand: {\"name\": \"Al Toque\", \"handle\": \"@altoque.pe\", \"website\": \"Prueba 15 días gratis\", \"logo\": \"https://altoque-pe.vercel.app/marca-video.png\", \"colors\": {\"background\": \"#14141F\", \"surface\": \"#2A2A38\", \"primary\": \"#FFC81E\", \"accent\": \"#D1126B\", \"highlight\": \"#FFC81E\", \"text\": \"#FFFFFF\", \"muted\": \"#D9D8E0\"}},\n  voice: 'es-PE-CamilaNeural',\n  voiceRate: '+8%',\n};\nreturn $input.all().map((item) => ({ json: { config, event: item.json } }));\n"
+   }
+  },
+  {
+   "id": "f2093861-4c16-4f2e-89c1-2d8336c24e9e",
+   "name": "¿Es un botón?",
+   "type": "n8n-nodes-base.if",
+   "typeVersion": 2.2,
+   "position": [
+    440,
+    260
+   ],
+   "parameters": {
+    "conditions": {
+     "options": {
+      "caseSensitive": true,
+      "leftValue": "",
+      "typeValidation": "loose",
+      "version": 2
+     },
+     "conditions": [
+      {
+       "id": "fce29957-29e4-449a-9dba-d0a2c6ac27b5",
+       "leftValue": "={{ !!$json.event.callback_query }}",
+       "rightValue": "true",
+       "operator": {
+        "type": "string",
+        "operation": "equals"
+       }
+      }
+     ],
+     "combinator": "and"
+    },
+    "options": {}
+   }
+  },
+  {
+   "id": "ac0f5d1a-5878-46a4-a120-7dfe42eea534",
+   "name": "Preparar pedido a la IA",
+   "type": "n8n-nodes-base.code",
+   "typeVersion": 2,
+   "position": [
+    680,
+    100
+   ],
+   "parameters": {
+    "jsCode": "// Arma el pedido a la IA: pilar del día, temas recientes (para no repetir) y, si vienes de \"Rehacer\", qué evitar.\nconst SYSTEM = \"Eres el guionista y community manager de **Al Toque**, un sistema peruano de facturación electrónica y punto de venta para negocios pequeños: bodegas, ferreterías, boticas, restaurantes, talleres, tiendas de ropa, emprendedores que venden por redes y estudios contables. Se usa desde el celular o la compu y emite boletas y facturas válidas ante SUNAT.\\n\\nTu trabajo: escribir **un video corto vertical por día** (Reels, TikTok, Shorts y Facebook) que haga que el dueño de un negocio diga «eso me pasa a mí» y quiera probar Al Toque.\\n\\n## Público\\n- Dueños de mypes en Perú, casi siempre ellos mismos atienden el mostrador. Muchos llevan todo en cuaderno o Excel; otros emiten en el portal de SUNAT a mano.\\n- Les importa: no perder plata, saber cuánto ganaron hoy, que no les falte mercadería, no tener problemas con SUNAT y no perder tiempo.\\n- No son técnicos. No hables de «XML», «UBL» ni «API» salvo que lo expliques en cinco palabras.\\n- También le hablas, algunos días, al **contador** que lleva varios negocios.\\n\\n## Voz de la marca\\n- Cercana, rápida y con buen humor peruano: «causa», «caserito», «al toque», «pe», «bacán», «chamba». Úsalos con medida: uno o dos por video, nunca en cada frase.\\n- Clara y directa, de tú. Frases cortas.\\n- Optimista y práctica: problema → lo que te cuesta → la salida.\\n- Nunca burlarse del cliente ni de su negocio. Nunca hablar mal de la competencia por su nombre.\\n- Nunca sugerir evadir impuestos ni «que SUNAT no se entere». Al Toque es para estar en regla sin enredos.\\n\\n## Pilares de contenido (rota según el día)\\n1. **cuaderno**: el costo escondido de llevar todo a mano (descuadres, fiados olvidados, productos que se acaban, no saber cuánto ganaste).\\n2. **sunat_facil**: una regla SUNAT explicada en simple y cómo Al Toque la cumple sola. Temas válidos: boleta con DNI desde S/ 700, factura solo con RUC, 7 días para anular, nota de crédito para corregir, detracciones (SPOT) en servicios de más de S/ 700, ventas al crédito con cuotas, guardar el XML y la constancia (CDR). No inventes normas ni plazos que no estén en esta lista.\\n3. **antes_despues**: un día del negocio sin Al Toque y con Al Toque (3 pasos manuales → 1 toque).\\n4. **truco**: una función concreta (cobrar con Yape y Plin y cuadrar caja, boleta por WhatsApp, stock que se descuenta solo, cliente que se completa con su DNI o RUC, reporte del día).\\n5. **rubro**: el mismo problema contado para un rubro específico (bodega, ferretería, botica, restaurante, taller, tienda de ropa, emprendedor de Instagram).\\n6. **contador**: para estudios contables: un correo para todos sus clientes, registro de ventas y XML del mes en un clic.\\n\\n## Datos que puedes usar (son reales)\\n- Planes desde **S/ 39 al mes** con IGV; el más pedido cuesta S/ 69. Pago anual: 2 meses gratis.\\n- **15 días de prueba gratis**, sin tarjeta.\\n- Funciona en el navegador del celular o la compu, sin instalar nada.\\n- Boletas, facturas, notas de crédito y débito, anulaciones, detracciones, crédito con cuotas, caja con Yape/Plin, stock con kardex, varios locales y usuarios.\\n- Si SUNAT no responde, Al Toque reintenta solo.\\nNo inventes clientes, testimonios, premios, cifras de ventas ni porcentajes de ahorro. Si das un ejemplo numérico, preséntalo como ejemplo («imagina que…», «si vendes S/ 300 al día…»).\\n\\n## Reglas del guion\\n- Duración total de 25 a 40 segundos narrados (unas 70 a 110 palabras en total).\\n- La escena 1 es el **gancho**: una pregunta o frase que se entienda en menos de 3 segundos. Máximo 9 palabras en pantalla.\\n- De 2 a 4 escenas `point`, cada una con un título de 1 a 3 palabras y un texto en pantalla de máximo 14 palabras.\\n- Cierra siempre con una escena `cta`. Alterna entre: «Prueba 15 días gratis: link en la bio», «Escríbenos por WhatsApp y te lo mostramos», «Comenta BOLETA y te pasamos el link», «Síguenos para más trucos de tu negocio».\\n- La narración no repite literalmente el texto en pantalla: lo complementa.\\n- En la narración escribe los números en palabras («setecientos soles») para que la voz los lea bien; en pantalla usa cifras («S/ 700»).\\n- En la narración escribe la marca como «Al Toque»; en pantalla, «Al Toque».\\n- No repitas un gancho ni un tema de la lista `recentTopics` que recibas.\\n\\n## Textos para cada red\\n- **Instagram y Facebook**: de 2 a 4 líneas, un emoji como máximo por línea, cierra con una pregunta o el llamado a la acción, y de 5 a 8 hashtags al final (mezcla #facturacionelectronica #boletaelectronica #sunat #emprendedoresperu #bodegasperu #mypesperu con uno del rubro del día).\\n- **TikTok**: de 1 a 2 líneas directas y de 3 a 5 hashtags.\\n- **LinkedIn**: solo para los pilares `sunat_facil` y `contador`; tono profesional, de 3 a 6 líneas, sin jerga, 3 hashtags. En los demás pilares, una línea breve.\\n\\n## Formato de respuesta\\nResponde **solo** con un objeto JSON válido, sin texto antes ni después, con esta forma:\\n\\n```json\\n{\\n  \\\"pillar\\\": \\\"cuaderno | sunat_facil | antes_despues | truco | rubro | contador\\\",\\n  \\\"topic\\\": \\\"tema en pocas palabras\\\",\\n  \\\"title\\\": \\\"título interno del video\\\",\\n  \\\"scenes\\\": [\\n    { \\\"type\\\": \\\"hook\\\", \\\"text\\\": \\\"texto en pantalla\\\", \\\"highlight\\\": [\\\"fragmento del texto a resaltar\\\"], \\\"narration\\\": \\\"lo que dice la voz\\\" },\\n    { \\\"type\\\": \\\"point\\\", \\\"index\\\": 1, \\\"title\\\": \\\"Título\\\", \\\"text\\\": \\\"texto en pantalla\\\", \\\"narration\\\": \\\"lo que dice la voz\\\" },\\n    { \\\"type\\\": \\\"cta\\\", \\\"text\\\": \\\"llamado a la acción\\\", \\\"narration\\\": \\\"lo que dice la voz\\\" }\\n  ],\\n  \\\"captions\\\": {\\n    \\\"instagram\\\": \\\"…\\\",\\n    \\\"facebook\\\": \\\"…\\\",\\n    \\\"tiktok\\\": \\\"…\\\",\\n    \\\"linkedin\\\": \\\"…\\\"\\n  }\\n}\\n```\\n`highlight` debe contener fragmentos que aparezcan literalmente en `text`.\\n\";\nconst SCHEMA = {\"type\": \"object\", \"properties\": {\"pillar\": {\"type\": \"string\", \"enum\": [\"cuaderno\", \"sunat_facil\", \"antes_despues\", \"truco\", \"rubro\", \"contador\"]}, \"topic\": {\"type\": \"string\"}, \"title\": {\"type\": \"string\"}, \"scenes\": {\"type\": \"array\", \"items\": {\"type\": \"object\", \"properties\": {\"type\": {\"type\": \"string\", \"enum\": [\"hook\", \"point\", \"cta\"]}, \"text\": {\"type\": \"string\"}, \"highlight\": {\"type\": \"array\", \"items\": {\"type\": \"string\"}}, \"index\": {\"type\": \"integer\"}, \"title\": {\"type\": \"string\"}, \"narration\": {\"type\": \"string\"}}, \"required\": [\"type\", \"text\", \"narration\"], \"additionalProperties\": false}}, \"captions\": {\"type\": \"object\", \"properties\": {\"instagram\": {\"type\": \"string\"}, \"facebook\": {\"type\": \"string\"}, \"tiktok\": {\"type\": \"string\"}, \"linkedin\": {\"type\": \"string\"}}, \"required\": [\"instagram\", \"facebook\", \"tiktok\", \"linkedin\"], \"additionalProperties\": false}}, \"required\": [\"pillar\", \"topic\", \"title\", \"scenes\", \"captions\"], \"additionalProperties\": false};\n// lunes a domingo\nconst PILLARS = ['cuaderno', 'sunat_facil', 'truco', 'rubro', 'antes_despues', 'contador', 'cuaderno'];\nconst store = $getWorkflowStaticData('global');\nconst recentTopics = (store.recentTopics ?? []).slice(-30);\nconst input = $input.first().json;\nconst config = input.config;\nconst today = new Date().toLocaleDateString('es-PE', { timeZone: 'America/Lima', weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });\nconst weekday = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Lima' })).getDay(); // 0 = domingo\nconst pillar = PILLARS[(weekday + 6) % 7];\n\nlet request = `Hoy es ${today}. Escribe el video de hoy con el pilar \"${pillar}\".\\n\\nTemas recientes que NO debes repetir:\\n${recentTopics.map((t) => '- ' + t).join('\\n') || '- (ninguno todavía)'}`;\nif (input.redo) {\n  request += `\\n\\nEl equipo rechazó la propuesta anterior (\"${input.redo.topic}\"). Propón un tema y un gancho claramente distintos.`;\n}\n\n// Gemini no acepta additionalProperties en el esquema: se quita solo para él.\nconst withoutExtras = (schema) => JSON.parse(JSON.stringify(schema, (key, value) => (key === 'additionalProperties' ? undefined : value)));\nconst claude = {\n  url: 'https://api.anthropic.com/v1/messages',\n  version: '2023-06-01',\n  beta: 'server-side-fallback-2026-07-01',\n  body: {\n    model: config.claudeModel,\n    max_tokens: 16000,\n    output_config: { effort: 'high', format: { type: 'json_schema', schema: SCHEMA } },\n    fallbacks: 'default',\n    system: SYSTEM,\n    messages: [{ role: 'user', content: request }],\n  },\n};\nconst gemini = {\n  url: `https://generativelanguage.googleapis.com/v1beta/models/${config.geminiModel}:generateContent`,\n  version: '',\n  beta: '',\n  body: {\n    systemInstruction: { parts: [{ text: SYSTEM }] },\n    contents: [{ role: 'user', parts: [{ text: request }] }],\n    generationConfig: { responseMimeType: 'application/json', responseJsonSchema: withoutExtras(SCHEMA), temperature: 0.9 },\n  },\n};\nreturn [{ json: { config, request: config.aiProvider === 'claude' ? claude : gemini } }];\n"
+   }
+  },
+  {
+   "id": "a98d1524-bd49-4eb9-b292-23b154dc273c",
+   "name": "La IA escribe el guion",
+   "type": "n8n-nodes-base.httpRequest",
+   "typeVersion": 4.2,
+   "position": [
+    900,
+    100
+   ],
+   "parameters": {
+    "method": "POST",
+    "url": "={{ $json.request.url }}",
+    "options": {
+     "timeout": 600000
+    },
+    "authentication": "genericCredentialType",
+    "genericAuthType": "httpHeaderAuth",
+    "sendHeaders": true,
+    "headerParameters": {
+     "parameters": [
+      {
+       "name": "anthropic-version",
+       "value": "={{ $json.request.version }}"
+      },
+      {
+       "name": "anthropic-beta",
+       "value": "={{ $json.request.beta }}"
+      }
+     ]
+    },
+    "sendBody": true,
+    "specifyBody": "json",
+    "jsonBody": "={{ JSON.stringify($json.request.body) }}"
+   },
+   "credentials": {
+    "httpHeaderAuth": {
+     "id": "",
+     "name": "Clave de IA"
+    }
+   },
+   "retryOnFail": true,
+   "maxTries": 3,
+   "waitBetweenTries": 15000
+  },
+  {
+   "id": "1a81ad1b-40d4-4a36-af36-5f84cb04a81e",
+   "name": "Leer guion",
+   "type": "n8n-nodes-base.code",
+   "typeVersion": 2,
+   "position": [
+    1120,
+    100
+   ],
+   "parameters": {
+    "jsCode": "// Lee el JSON que devolvió la IA (Gemini o Claude) y recuerda el tema para no repetirlo.\nconst response = $input.first().json;\nconst config = $('Preparar pedido a la IA').first().json.config;\nlet text;\nif (config.aiProvider === 'claude') {\n  if (response.stop_reason === 'refusal') throw new Error('Claude rechazó el pedido: ' + JSON.stringify(response.stop_details));\n  if (response.stop_reason === 'max_tokens') throw new Error('La respuesta de Claude se cortó (max_tokens).');\n  text = (response.content ?? []).find((block) => block.type === 'text')?.text;\n} else {\n  const candidate = response.candidates?.[0];\n  if (!candidate) throw new Error('Gemini no devolvió respuesta: ' + JSON.stringify(response.promptFeedback ?? response).slice(0, 300));\n  if (candidate.finishReason && candidate.finishReason !== 'STOP') throw new Error('Gemini terminó con ' + candidate.finishReason);\n  text = (candidate.content?.parts ?? []).map((part) => part.text ?? '').join('');\n}\nconst script = JSON.parse(text);\nif (!Array.isArray(script.scenes) || script.scenes.length < 3) throw new Error('El guion no tiene escenas suficientes.');\nconst store = $getWorkflowStaticData('global');\nstore.recentTopics = [...(store.recentTopics ?? []), script.topic].slice(-30);\nreturn [{ json: { config, script } }];\n"
+   }
+  },
+  {
+   "id": "58a535f6-ea40-4230-99e0-dba7e2e9e26f",
+   "name": "Pedir el video",
+   "type": "n8n-nodes-base.httpRequest",
+   "typeVersion": 4.2,
+   "position": [
+    1340,
+    100
+   ],
+   "parameters": {
+    "method": "POST",
+    "url": "={{ $json.config.rendererUrl }}/render",
+    "options": {
+     "timeout": 60000
+    },
+    "authentication": "genericCredentialType",
+    "genericAuthType": "httpHeaderAuth",
+    "sendBody": true,
+    "specifyBody": "json",
+    "jsonBody": "={{ JSON.stringify({ title: $json.script.title, scenes: $json.script.scenes, brand: $json.config.brand, voice: $json.config.voice, voiceRate: $json.config.voiceRate }) }}"
+   },
+   "credentials": {
+    "httpHeaderAuth": {
+     "id": "",
+     "name": "Renderizador M&A"
+    }
+   },
+   "retryOnFail": true,
+   "maxTries": 3
+  },
+  {
+   "id": "e846031b-4b79-4a46-8817-b6c8c89ae9d3",
+   "name": "Esperar el render",
+   "type": "n8n-nodes-base.wait",
+   "typeVersion": 1.1,
+   "position": [
+    1560,
+    100
+   ],
+   "parameters": {
+    "amount": 7,
+    "unit": "minutes"
+   },
+   "webhookId": "22ddcd93-7210-4470-882d-3a047bc49b05"
+  },
+  {
+   "id": "3ccec095-8e8b-4595-bf98-7669b1eb0ea6",
+   "name": "Consultar el render",
+   "type": "n8n-nodes-base.httpRequest",
+   "typeVersion": 4.2,
+   "position": [
+    1780,
+    100
+   ],
+   "parameters": {
+    "method": "GET",
+    "url": "={{ $('Pedir el video').first().json.statusUrl }}",
+    "options": {
+     "timeout": 60000
+    },
+    "authentication": "genericCredentialType",
+    "genericAuthType": "httpHeaderAuth"
+   },
+   "credentials": {
+    "httpHeaderAuth": {
+     "id": "",
+     "name": "Renderizador M&A"
+    }
+   },
+   "retryOnFail": true,
+   "maxTries": 3
+  },
+  {
+   "id": "bee48a26-8ce6-4a4f-ad1e-0bede1b6d8b5",
+   "name": "¿Video listo?",
+   "type": "n8n-nodes-base.if",
+   "typeVersion": 2.2,
+   "position": [
+    2000,
+    100
+   ],
+   "parameters": {
+    "conditions": {
+     "options": {
+      "caseSensitive": true,
+      "leftValue": "",
+      "typeValidation": "loose",
+      "version": 2
+     },
+     "conditions": [
+      {
+       "id": "1683a58b-b3de-40ca-8814-d964b7f732b6",
+       "leftValue": "={{ $json.status }}",
+       "rightValue": "done",
+       "operator": {
+        "type": "string",
+        "operation": "equals"
+       }
+      }
+     ],
+     "combinator": "and"
+    },
+    "options": {}
+   }
+  },
+  {
+   "id": "1b7ee01c-50d9-4555-9bf9-a5b819d15e90",
+   "name": "¿Falló?",
+   "type": "n8n-nodes-base.if",
+   "typeVersion": 2.2,
+   "position": [
+    2220,
+    260
+   ],
+   "parameters": {
+    "conditions": {
+     "options": {
+      "caseSensitive": true,
+      "leftValue": "",
+      "typeValidation": "loose",
+      "version": 2
+     },
+     "conditions": [
+      {
+       "id": "bfc18f4c-d13f-4101-9316-7b49b0a36624",
+       "leftValue": "={{ $json.status }}",
+       "rightValue": "error",
+       "operator": {
+        "type": "string",
+        "operation": "equals"
+       }
+      }
+     ],
+     "combinator": "and"
+    },
+    "options": {}
+   }
+  },
+  {
+   "id": "6482fe59-7443-469b-b846-ebaa4c9e5c17",
+   "name": "Esperar un poco más",
+   "type": "n8n-nodes-base.wait",
+   "typeVersion": 1.1,
+   "position": [
+    2440,
+    360
+   ],
+   "parameters": {
+    "amount": 1,
+    "unit": "minutes"
+   },
+   "webhookId": "dc9a48bc-0d45-46fe-b8d2-36b66272d29a"
+  },
+  {
+   "id": "11afbdea-bd18-4f33-865e-693b5910fd47",
+   "name": "Avisar error de render",
+   "type": "n8n-nodes-base.telegram",
+   "typeVersion": 1.2,
+   "position": [
+    2440,
+    200
+   ],
+   "parameters": {
+    "chatId": "={{ $('Leer guion').first().json.config.telegramChatId }}",
+    "text": "=⚠️ No se pudo generar el video de hoy: {{ $json.error }}",
+    "additionalFields": {
+     "appendAttribution": false,
+     "parse_mode": "HTML"
+    }
+   },
+   "credentials": {
+    "telegramApi": {
+     "id": "",
+     "name": "Telegram Al Toque"
+    }
+   }
+  },
+  {
+   "id": "243e3ad9-6573-4bee-8961-e9d2348b47a4",
+   "name": "Guardar pendiente",
+   "type": "n8n-nodes-base.code",
+   "typeVersion": 2,
+   "position": [
+    2220,
+    0
+   ],
+   "parameters": {
+    "jsCode": "// Guarda el video pendiente de aprobación; los botones de Telegram solo llevan su id.\nconst job = $input.first().json;\nconst { config, script } = $('Leer guion').first().json;\nconst store = $getWorkflowStaticData('global');\nstore.pending = store.pending ?? {};\nstore.pending[job.id] = { url: job.url, script, createdAt: Date.now() };\n// Se olvidan los pendientes de más de 7 días.\nfor (const [key, value] of Object.entries(store.pending)) {\n  if (Date.now() - value.createdAt > 7 * 86400000) delete store.pending[key];\n}\nconst escape = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');\nconst caption = `<b>${escape(script.title)}</b>\\nPilar: ${escape(script.pillar)} · ${Math.round(job.durationSeconds)} s\\n\\n<b>Instagram/Facebook:</b>\\n${escape(script.captions.instagram)}`.slice(0, 1000);\nreturn [{ json: { config, id: job.id, url: job.url, caption } }];\n"
+   }
+  },
+  {
+   "id": "7cbe2031-c4d8-4425-974a-97b33972a764",
+   "name": "Enviar a Telegram para aprobar",
+   "type": "n8n-nodes-base.telegram",
+   "typeVersion": 1.2,
+   "position": [
+    2440,
+    0
+   ],
+   "parameters": {
+    "operation": "sendVideo",
+    "chatId": "={{ $json.config.telegramChatId }}",
+    "file": "={{ $json.url }}",
+    "replyMarkup": "inlineKeyboard",
+    "inlineKeyboard": {
+     "rows": [
+      {
+       "row": {
+        "buttons": [
+         {
+          "text": "✅ Publicar",
+          "additionalFields": {
+           "callback_data": "=ok:{{ $json.id }}"
+          }
+         },
+         {
+          "text": "🔄 Rehacer",
+          "additionalFields": {
+           "callback_data": "=redo:{{ $json.id }}"
+          }
+         },
+         {
+          "text": "🗑 Descartar",
+          "additionalFields": {
+           "callback_data": "=no:{{ $json.id }}"
+          }
+         }
+        ]
+       }
+      }
+     ]
+    },
+    "additionalFields": {
+     "caption": "={{ $json.caption }}",
+     "parse_mode": "HTML"
+    }
+   },
+   "credentials": {
+    "telegramApi": {
+     "id": "",
+     "name": "Telegram Al Toque"
+    }
+   }
+  },
+  {
+   "id": "f32aa3e0-16d6-4072-be85-ae48e0aad6fe",
+   "name": "Leer decisión",
+   "type": "n8n-nodes-base.code",
+   "typeVersion": 2,
+   "position": [
+    680,
+    520
+   ],
+   "parameters": {
+    "jsCode": "// Interpreta el botón que tocaste en Telegram.\nconst { config, event } = $input.first().json;\nconst query = event.callback_query;\nconst [action, id] = String(query.data ?? '').split(':');\nconst fromChat = String(query.message?.chat?.id ?? '');\nconst store = $getWorkflowStaticData('global');\nconst item = store.pending?.[id];\nlet result = action;\nif (fromChat !== String(config.telegramChatId)) result = 'ignorar';\nelse if (!item) result = 'expirado';\nelse if (action !== 'redo') delete store.pending[id];\nreturn [{ json: { config, action: result, id, item, queryId: query.id, redo: item ? { topic: item.script.topic } : null } }];\n"
+   }
+  },
+  {
+   "id": "7dedc10a-b0aa-478b-bc5c-1e2066c9bf04",
+   "name": "Responder al botón",
+   "type": "n8n-nodes-base.telegram",
+   "typeVersion": 1.2,
+   "position": [
+    900,
+    520
+   ],
+   "parameters": {
+    "resource": "callback",
+    "operation": "answerQuery",
+    "queryId": "={{ $json.queryId }}",
+    "additionalFields": {
+     "text": "={{ { ok: 'Publicando…', redo: 'Preparando otra versión…', no: 'Descartado', expirado: 'Este video ya no está pendiente', ignorar: 'No autorizado' }[$json.action] }}"
+    }
+   },
+   "credentials": {
+    "telegramApi": {
+     "id": "",
+     "name": "Telegram Al Toque"
+    }
+   }
+  },
+  {
+   "id": "b76b62b9-77f5-495c-bca8-6f5e1c77a9cd",
+   "name": "¿Qué decidiste?",
+   "type": "n8n-nodes-base.switch",
+   "typeVersion": 3.2,
+   "position": [
+    1120,
+    520
+   ],
+   "parameters": {
+    "rules": {
+     "values": [
+      {
+       "conditions": {
+        "options": {
+         "caseSensitive": true,
+         "leftValue": "",
+         "typeValidation": "loose",
+         "version": 2
+        },
+        "conditions": [
+         {
+          "id": "b82189e7-03aa-470d-9e25-713cc69377f6",
+          "leftValue": "={{ $('Leer decisión').first().json.action }}",
+          "rightValue": "ok",
+          "operator": {
+           "type": "string",
+           "operation": "equals"
+          }
+         }
+        ],
+        "combinator": "and"
+       },
+       "renameOutput": true,
+       "outputKey": "Publicar"
+      },
+      {
+       "conditions": {
+        "options": {
+         "caseSensitive": true,
+         "leftValue": "",
+         "typeValidation": "loose",
+         "version": 2
+        },
+        "conditions": [
+         {
+          "id": "bd454109-75bf-4430-a69f-18c305266e28",
+          "leftValue": "={{ $('Leer decisión').first().json.action }}",
+          "rightValue": "redo",
+          "operator": {
+           "type": "string",
+           "operation": "equals"
+          }
+         }
+        ],
+        "combinator": "and"
+       },
+       "renameOutput": true,
+       "outputKey": "Rehacer"
+      },
+      {
+       "conditions": {
+        "options": {
+         "caseSensitive": true,
+         "leftValue": "",
+         "typeValidation": "loose",
+         "version": 2
+        },
+        "conditions": [
+         {
+          "id": "4bb89bac-c137-452b-8bfd-d4d244eafd7c",
+          "leftValue": "={{ $('Leer decisión').first().json.action }}",
+          "rightValue": "no",
+          "operator": {
+           "type": "string",
+           "operation": "equals"
+          }
+         }
+        ],
+        "combinator": "and"
+       },
+       "renameOutput": true,
+       "outputKey": "Descartar"
+      }
+     ]
+    },
+    "options": {}
+   }
+  },
+  {
+   "id": "2ed14ae4-fcf6-45e2-af2b-22a92e9db98a",
+   "name": "Volver a generar",
+   "type": "n8n-nodes-base.code",
+   "typeVersion": 2,
+   "position": [
+    1340,
+    420
+   ],
+   "parameters": {
+    "jsCode": "return [{ json: { config: $('Leer decisión').first().json.config, redo: $('Leer decisión').first().json.redo } }];"
+   }
+  },
+  {
+   "id": "c0f5cef9-1f54-4b11-9da3-0a504d61cc70",
+   "name": "Confirmar descarte",
+   "type": "n8n-nodes-base.telegram",
+   "typeVersion": 1.2,
+   "position": [
+    1340,
+    760
+   ],
+   "parameters": {
+    "chatId": "={{ $('Leer decisión').first().json.config.telegramChatId }}",
+    "text": "=🗑 Video descartado.",
+    "additionalFields": {
+     "appendAttribution": false,
+     "parse_mode": "HTML"
+    }
+   },
+   "credentials": {
+    "telegramApi": {
+     "id": "",
+     "name": "Telegram Al Toque"
+    }
+   }
+  },
+  {
+   "id": "416ea21d-5f46-4a14-a0d7-b1480cdea86b",
+   "name": "Datos para publicar",
+   "type": "n8n-nodes-base.code",
+   "typeVersion": 2,
+   "position": [
+    1340,
+    600
+   ],
+   "parameters": {
+    "jsCode": "const d = $('Leer decisión').first().json;\nreturn [{ json: { config: d.config, url: d.item.url, captions: d.item.script.captions, title: d.item.script.title } }];"
+   }
+  },
+  {
+   "id": "b12ca6b1-8097-4722-8d71-2baa3181e197",
+   "name": "Instagram: subir Reel",
+   "type": "n8n-nodes-base.httpRequest",
+   "typeVersion": 4.2,
+   "position": [
+    1560,
+    560
+   ],
+   "parameters": {
+    "method": "POST",
+    "url": "=https://graph.facebook.com/v23.0/{{ $json.config.instagramUserId }}/media",
+    "options": {
+     "timeout": 60000
+    },
+    "authentication": "genericCredentialType",
+    "genericAuthType": "httpQueryAuth",
+    "sendQuery": true,
+    "queryParameters": {
+     "parameters": [
+      {
+       "name": "media_type",
+       "value": "REELS"
+      },
+      {
+       "name": "video_url",
+       "value": "={{ $json.url }}"
+      },
+      {
+       "name": "caption",
+       "value": "={{ $json.captions.instagram }}"
+      },
+      {
+       "name": "share_to_feed",
+       "value": "true"
+      }
+     ]
+    }
+   },
+   "credentials": {
+    "httpQueryAuth": {
+     "id": "",
+     "name": "Meta Al Toque (token de página)"
+    }
+   }
+  },
+  {
+   "id": "744353e6-3ffe-4453-ab58-6c2ed8dc05e0",
+   "name": "Instagram procesa",
+   "type": "n8n-nodes-base.wait",
+   "typeVersion": 1.1,
+   "position": [
+    1780,
+    560
+   ],
+   "parameters": {
+    "amount": 1,
+    "unit": "minutes"
+   },
+   "webhookId": "829d5a47-7bc8-4da6-b7bb-ee070a2f3f67"
+  },
+  {
+   "id": "0dee8d65-b7de-4491-8fb0-5db65b4ae2db",
+   "name": "Instagram: ¿listo?",
+   "type": "n8n-nodes-base.httpRequest",
+   "typeVersion": 4.2,
+   "position": [
+    2000,
+    560
+   ],
+   "parameters": {
+    "method": "GET",
+    "url": "=https://graph.facebook.com/v23.0/{{ $('Instagram: subir Reel').first().json.id }}",
+    "options": {
+     "timeout": 60000
+    },
+    "authentication": "genericCredentialType",
+    "genericAuthType": "httpQueryAuth",
+    "sendQuery": true,
+    "queryParameters": {
+     "parameters": [
+      {
+       "name": "fields",
+       "value": "status_code"
+      }
+     ]
+    }
+   },
+   "credentials": {
+    "httpQueryAuth": {
+     "id": "",
+     "name": "Meta Al Toque (token de página)"
+    }
+   }
+  },
+  {
+   "id": "324014fb-2915-4380-a5db-46c139d980bc",
+   "name": "¿Reel procesado?",
+   "type": "n8n-nodes-base.if",
+   "typeVersion": 2.2,
+   "position": [
+    2220,
+    560
+   ],
+   "parameters": {
+    "conditions": {
+     "options": {
+      "caseSensitive": true,
+      "leftValue": "",
+      "typeValidation": "loose",
+      "version": 2
+     },
+     "conditions": [
+      {
+       "id": "fc450be6-f5cb-4a92-8032-f6436a8f7977",
+       "leftValue": "={{ $json.status_code }}",
+       "rightValue": "FINISHED",
+       "operator": {
+        "type": "string",
+        "operation": "equals"
+       }
+      }
+     ],
+     "combinator": "and"
+    },
+    "options": {}
+   }
+  },
+  {
+   "id": "40b3e68e-06c2-45b9-b011-32da124b0011",
+   "name": "¿Reel con error?",
+   "type": "n8n-nodes-base.if",
+   "typeVersion": 2.2,
+   "position": [
+    2440,
+    700
+   ],
+   "parameters": {
+    "conditions": {
+     "options": {
+      "caseSensitive": true,
+      "leftValue": "",
+      "typeValidation": "loose",
+      "version": 2
+     },
+     "conditions": [
+      {
+       "id": "6fc38421-0d64-4261-b079-a369871339db",
+       "leftValue": "={{ $json.status_code }}",
+       "rightValue": "ERROR",
+       "operator": {
+        "type": "string",
+        "operation": "equals"
+       }
+      }
+     ],
+     "combinator": "and"
+    },
+    "options": {}
+   }
+  },
+  {
+   "id": "faf1b384-6639-4be4-869d-9a98b6b585a6",
+   "name": "Instagram: publicar",
+   "type": "n8n-nodes-base.httpRequest",
+   "typeVersion": 4.2,
+   "position": [
+    2440,
+    520
+   ],
+   "parameters": {
+    "method": "POST",
+    "url": "=https://graph.facebook.com/v23.0/{{ $('Datos para publicar').first().json.config.instagramUserId }}/media_publish",
+    "options": {
+     "timeout": 60000
+    },
+    "authentication": "genericCredentialType",
+    "genericAuthType": "httpQueryAuth",
+    "sendQuery": true,
+    "queryParameters": {
+     "parameters": [
+      {
+       "name": "creation_id",
+       "value": "={{ $('Instagram: subir Reel').first().json.id }}"
+      }
+     ]
+    }
+   },
+   "credentials": {
+    "httpQueryAuth": {
+     "id": "",
+     "name": "Meta Al Toque (token de página)"
+    }
+   }
+  },
+  {
+   "id": "d5949cd3-4fe4-46dd-9756-b7f891a8ede8",
+   "name": "Avisar Instagram",
+   "type": "n8n-nodes-base.telegram",
+   "typeVersion": 1.2,
+   "position": [
+    2660,
+    520
+   ],
+   "parameters": {
+    "chatId": "={{ $('Datos para publicar').first().json.config.telegramChatId }}",
+    "text": "=✅ Publicado en Instagram.",
+    "additionalFields": {
+     "appendAttribution": false,
+     "parse_mode": "HTML"
+    }
+   },
+   "credentials": {
+    "telegramApi": {
+     "id": "",
+     "name": "Telegram Al Toque"
+    }
+   }
+  },
+  {
+   "id": "72be837c-c4ba-4266-b319-e3bf6560e815",
+   "name": "Avisar error de Instagram",
+   "type": "n8n-nodes-base.telegram",
+   "typeVersion": 1.2,
+   "position": [
+    2660,
+    700
+   ],
+   "parameters": {
+    "chatId": "={{ $('Datos para publicar').first().json.config.telegramChatId }}",
+    "text": "=⚠️ Instagram no pudo procesar el video.",
+    "additionalFields": {
+     "appendAttribution": false,
+     "parse_mode": "HTML"
+    }
+   },
+   "credentials": {
+    "telegramApi": {
+     "id": "",
+     "name": "Telegram Al Toque"
+    }
+   }
+  },
+  {
+   "id": "63f2c3c8-23e2-405f-b834-fa6ef52681d5",
+   "name": "Facebook: publicar video",
+   "type": "n8n-nodes-base.httpRequest",
+   "typeVersion": 4.2,
+   "position": [
+    1560,
+    840
+   ],
+   "parameters": {
+    "method": "POST",
+    "url": "=https://graph-video.facebook.com/v23.0/{{ $json.config.facebookPageId }}/videos",
+    "options": {
+     "timeout": 300000
+    },
+    "authentication": "genericCredentialType",
+    "genericAuthType": "httpQueryAuth",
+    "sendQuery": true,
+    "queryParameters": {
+     "parameters": [
+      {
+       "name": "file_url",
+       "value": "={{ $json.url }}"
+      },
+      {
+       "name": "description",
+       "value": "={{ $json.captions.facebook }}"
+      },
+      {
+       "name": "title",
+       "value": "={{ $json.title }}"
+      }
+     ]
+    }
+   },
+   "credentials": {
+    "httpQueryAuth": {
+     "id": "",
+     "name": "Meta Al Toque (token de página)"
+    }
+   }
+  },
+  {
+   "id": "79d572e8-aa95-41bf-9bb2-67a5c59f1ea3",
+   "name": "Avisar Facebook",
+   "type": "n8n-nodes-base.telegram",
+   "typeVersion": 1.2,
+   "position": [
+    1780,
+    840
+   ],
+   "parameters": {
+    "chatId": "={{ $('Datos para publicar').first().json.config.telegramChatId }}",
+    "text": "=✅ Publicado en Facebook.",
+    "additionalFields": {
+     "appendAttribution": false,
+     "parse_mode": "HTML"
+    }
+   },
+   "credentials": {
+    "telegramApi": {
+     "id": "",
+     "name": "Telegram Al Toque"
+    }
+   }
+  },
+  {
+   "id": "086ddfaf-748e-4d29-b25d-3183ff054f71",
+   "name": "LinkedIn (pendiente)",
+   "type": "n8n-nodes-base.noOp",
+   "typeVersion": 1,
+   "position": [
+    1560,
+    1000
+   ],
+   "parameters": {},
+   "disabled": true,
+   "notes": "Se activa cuando LinkedIn apruebe la app (Community Management API)."
+  },
+  {
+   "id": "458f01ba-fa53-450d-a364-900315e40cfa",
+   "name": "TikTok (pendiente)",
+   "type": "n8n-nodes-base.noOp",
+   "typeVersion": 1,
+   "position": [
+    1560,
+    1140
+   ],
+   "parameters": {},
+   "disabled": true,
+   "notes": "Se activa cuando TikTok audite la app (Content Posting API)."
+  }
+ ],
+ "connections": {
+  "Cada día 6:00": {
+   "main": [
+    [
+     {
+      "node": "Configuración",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Probar ahora": {
+   "main": [
+    [
+     {
+      "node": "Configuración",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Botón de Telegram": {
+   "main": [
+    [
+     {
+      "node": "Configuración",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Configuración": {
+   "main": [
+    [
+     {
+      "node": "¿Es un botón?",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "¿Es un botón?": {
+   "main": [
+    [
+     {
+      "node": "Leer decisión",
+      "type": "main",
+      "index": 0
+     }
+    ],
+    [
+     {
+      "node": "Preparar pedido a la IA",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Preparar pedido a la IA": {
+   "main": [
+    [
+     {
+      "node": "La IA escribe el guion",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "La IA escribe el guion": {
+   "main": [
+    [
+     {
+      "node": "Leer guion",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Leer guion": {
+   "main": [
+    [
+     {
+      "node": "Pedir el video",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Pedir el video": {
+   "main": [
+    [
+     {
+      "node": "Esperar el render",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Esperar el render": {
+   "main": [
+    [
+     {
+      "node": "Consultar el render",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Consultar el render": {
+   "main": [
+    [
+     {
+      "node": "¿Video listo?",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "¿Video listo?": {
+   "main": [
+    [
+     {
+      "node": "Guardar pendiente",
+      "type": "main",
+      "index": 0
+     }
+    ],
+    [
+     {
+      "node": "¿Falló?",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "¿Falló?": {
+   "main": [
+    [
+     {
+      "node": "Avisar error de render",
+      "type": "main",
+      "index": 0
+     }
+    ],
+    [
+     {
+      "node": "Esperar un poco más",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Esperar un poco más": {
+   "main": [
+    [
+     {
+      "node": "Consultar el render",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Guardar pendiente": {
+   "main": [
+    [
+     {
+      "node": "Enviar a Telegram para aprobar",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Leer decisión": {
+   "main": [
+    [
+     {
+      "node": "Responder al botón",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Responder al botón": {
+   "main": [
+    [
+     {
+      "node": "¿Qué decidiste?",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "¿Qué decidiste?": {
+   "main": [
+    [
+     {
+      "node": "Datos para publicar",
+      "type": "main",
+      "index": 0
+     }
+    ],
+    [
+     {
+      "node": "Volver a generar",
+      "type": "main",
+      "index": 0
+     }
+    ],
+    [
+     {
+      "node": "Confirmar descarte",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Volver a generar": {
+   "main": [
+    [
+     {
+      "node": "Preparar pedido a la IA",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Datos para publicar": {
+   "main": [
+    [
+     {
+      "node": "Instagram: subir Reel",
+      "type": "main",
+      "index": 0
+     },
+     {
+      "node": "Facebook: publicar video",
+      "type": "main",
+      "index": 0
+     },
+     {
+      "node": "LinkedIn (pendiente)",
+      "type": "main",
+      "index": 0
+     },
+     {
+      "node": "TikTok (pendiente)",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Instagram: subir Reel": {
+   "main": [
+    [
+     {
+      "node": "Instagram procesa",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Instagram procesa": {
+   "main": [
+    [
+     {
+      "node": "Instagram: ¿listo?",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Instagram: ¿listo?": {
+   "main": [
+    [
+     {
+      "node": "¿Reel procesado?",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "¿Reel procesado?": {
+   "main": [
+    [
+     {
+      "node": "Instagram: publicar",
+      "type": "main",
+      "index": 0
+     }
+    ],
+    [
+     {
+      "node": "¿Reel con error?",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "¿Reel con error?": {
+   "main": [
+    [
+     {
+      "node": "Avisar error de Instagram",
+      "type": "main",
+      "index": 0
+     }
+    ],
+    [
+     {
+      "node": "Instagram procesa",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Instagram: publicar": {
+   "main": [
+    [
+     {
+      "node": "Avisar Instagram",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  },
+  "Facebook: publicar video": {
+   "main": [
+    [
+     {
+      "node": "Avisar Facebook",
+      "type": "main",
+      "index": 0
+     }
+    ]
+   ]
+  }
+ },
+ "settings": {
+  "timezone": "America/Lima",
+  "executionOrder": "v1",
+  "saveManualExecutions": true
+ }
+}

@@ -1,0 +1,354 @@
+"""Genera marketing/n8n-video-diario.json: el flujo de n8n que escribe, renderiza, aprueba y publica el video diario de Al Toque.
+
+Uso: python marketing/build_workflow.py
+Reutiliza el renderizador de videos (Remotion + voz neural) ya desplegado; la marca Al Toque viaja en cada pedido.
+Los IDs de credenciales se completan al importar (scripts/deploy) o a mano en n8n.
+"""
+import json
+import uuid
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parent
+SYSTEM_PROMPT = (ROOT / 'guionista.md').read_text(encoding='utf-8')
+BRAND = json.loads((ROOT / 'marca.json').read_text(encoding='utf-8'))
+GRAPH = 'https://graph.facebook.com/v23.0'
+
+# ---------------------------------------------------------------- Esquema de salida de Claude
+SCENE = {
+    'type': 'object',
+    'properties': {
+        'type': {'type': 'string', 'enum': ['hook', 'point', 'cta']},
+        'text': {'type': 'string'},
+        'highlight': {'type': 'array', 'items': {'type': 'string'}},
+        'index': {'type': 'integer'},
+        'title': {'type': 'string'},
+        'narration': {'type': 'string'},
+    },
+    'required': ['type', 'text', 'narration'],
+    'additionalProperties': False,
+}
+SCHEMA = {
+    'type': 'object',
+    'properties': {
+        'pillar': {'type': 'string', 'enum': ['cuaderno', 'sunat_facil', 'antes_despues', 'truco', 'rubro', 'contador']},
+        'topic': {'type': 'string'},
+        'title': {'type': 'string'},
+        'scenes': {'type': 'array', 'items': SCENE},
+        'captions': {
+            'type': 'object',
+            'properties': {k: {'type': 'string'} for k in ('instagram', 'facebook', 'tiktok', 'linkedin')},
+            'required': ['instagram', 'facebook', 'tiktok', 'linkedin'],
+            'additionalProperties': False,
+        },
+    },
+    'required': ['pillar', 'topic', 'title', 'scenes', 'captions'],
+    'additionalProperties': False,
+}
+
+# ---------------------------------------------------------------- Código de los nodos
+CONFIG_JS = r"""// ⚙️ CONFIGURACIÓN: cambia aquí los datos de tu cuenta.
+const config = {
+  telegramChatId: 'PON_AQUI_TU_CHAT_ID',
+  // Mismo renderizador de videos que ya tienes desplegado; la marca Al Toque va en cada pedido.
+  rendererUrl: 'https://ma-renderer.vercel.app',
+  // 'gemini' = gratis (nivel gratuito de Google, unas 20 peticiones diarias) · 'claude' = de pago, mejor redacción.
+  aiProvider: 'gemini',
+  geminiModel: 'gemini-flash-latest',
+  claudeModel: 'claude-opus-5-5',
+  instagramUserId: 'PON_AQUI_EL_ID_DE_INSTAGRAM_DE_AL_TOQUE',
+  facebookPageId: 'PON_AQUI_EL_ID_DE_LA_PAGINA_DE_AL_TOQUE',
+  brand: __BRAND__,
+  voice: 'es-PE-CamilaNeural',
+  voiceRate: '+8%',
+};
+return $input.all().map((item) => ({ json: { config, event: item.json } }));
+"""
+
+PREPARE_JS = r"""// Arma el pedido a la IA: pilar del día, temas recientes (para no repetir) y, si vienes de "Rehacer", qué evitar.
+const SYSTEM = __SYSTEM__;
+const SCHEMA = __SCHEMA__;
+// lunes a domingo
+const PILLARS = ['cuaderno', 'sunat_facil', 'truco', 'rubro', 'antes_despues', 'contador', 'cuaderno'];
+const store = $getWorkflowStaticData('global');
+const recentTopics = (store.recentTopics ?? []).slice(-30);
+const input = $input.first().json;
+const config = input.config;
+const today = new Date().toLocaleDateString('es-PE', { timeZone: 'America/Lima', weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+const weekday = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Lima' })).getDay(); // 0 = domingo
+const pillar = PILLARS[(weekday + 6) % 7];
+
+let request = `Hoy es ${today}. Escribe el video de hoy con el pilar "${pillar}".\n\nTemas recientes que NO debes repetir:\n${recentTopics.map((t) => '- ' + t).join('\n') || '- (ninguno todavía)'}`;
+if (input.redo) {
+  request += `\n\nEl equipo rechazó la propuesta anterior ("${input.redo.topic}"). Propón un tema y un gancho claramente distintos.`;
+}
+
+// Gemini no acepta additionalProperties en el esquema: se quita solo para él.
+const withoutExtras = (schema) => JSON.parse(JSON.stringify(schema, (key, value) => (key === 'additionalProperties' ? undefined : value)));
+const claude = {
+  url: 'https://api.anthropic.com/v1/messages',
+  version: '2023-06-01',
+  beta: 'server-side-fallback-2026-07-01',
+  body: {
+    model: config.claudeModel,
+    max_tokens: 16000,
+    output_config: { effort: 'high', format: { type: 'json_schema', schema: SCHEMA } },
+    fallbacks: 'default',
+    system: SYSTEM,
+    messages: [{ role: 'user', content: request }],
+  },
+};
+const gemini = {
+  url: `https://generativelanguage.googleapis.com/v1beta/models/${config.geminiModel}:generateContent`,
+  version: '',
+  beta: '',
+  body: {
+    systemInstruction: { parts: [{ text: SYSTEM }] },
+    contents: [{ role: 'user', parts: [{ text: request }] }],
+    generationConfig: { responseMimeType: 'application/json', responseJsonSchema: withoutExtras(SCHEMA), temperature: 0.9 },
+  },
+};
+return [{ json: { config, request: config.aiProvider === 'claude' ? claude : gemini } }];
+"""
+
+READ_SCRIPT_JS = r"""// Lee el JSON que devolvió la IA (Gemini o Claude) y recuerda el tema para no repetirlo.
+const response = $input.first().json;
+const config = $('Preparar pedido a la IA').first().json.config;
+let text;
+if (config.aiProvider === 'claude') {
+  if (response.stop_reason === 'refusal') throw new Error('Claude rechazó el pedido: ' + JSON.stringify(response.stop_details));
+  if (response.stop_reason === 'max_tokens') throw new Error('La respuesta de Claude se cortó (max_tokens).');
+  text = (response.content ?? []).find((block) => block.type === 'text')?.text;
+} else {
+  const candidate = response.candidates?.[0];
+  if (!candidate) throw new Error('Gemini no devolvió respuesta: ' + JSON.stringify(response.promptFeedback ?? response).slice(0, 300));
+  if (candidate.finishReason && candidate.finishReason !== 'STOP') throw new Error('Gemini terminó con ' + candidate.finishReason);
+  text = (candidate.content?.parts ?? []).map((part) => part.text ?? '').join('');
+}
+const script = JSON.parse(text);
+if (!Array.isArray(script.scenes) || script.scenes.length < 3) throw new Error('El guion no tiene escenas suficientes.');
+const store = $getWorkflowStaticData('global');
+store.recentTopics = [...(store.recentTopics ?? []), script.topic].slice(-30);
+return [{ json: { config, script } }];
+"""
+
+SAVE_PENDING_JS = r"""// Guarda el video pendiente de aprobación; los botones de Telegram solo llevan su id.
+const job = $input.first().json;
+const { config, script } = $('Leer guion').first().json;
+const store = $getWorkflowStaticData('global');
+store.pending = store.pending ?? {};
+store.pending[job.id] = { url: job.url, script, createdAt: Date.now() };
+// Se olvidan los pendientes de más de 7 días.
+for (const [key, value] of Object.entries(store.pending)) {
+  if (Date.now() - value.createdAt > 7 * 86400000) delete store.pending[key];
+}
+const escape = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+const caption = `<b>${escape(script.title)}</b>\nPilar: ${escape(script.pillar)} · ${Math.round(job.durationSeconds)} s\n\n<b>Instagram/Facebook:</b>\n${escape(script.captions.instagram)}`.slice(0, 1000);
+return [{ json: { config, id: job.id, url: job.url, caption } }];
+"""
+
+DECISION_JS = r"""// Interpreta el botón que tocaste en Telegram.
+const { config, event } = $input.first().json;
+const query = event.callback_query;
+const [action, id] = String(query.data ?? '').split(':');
+const fromChat = String(query.message?.chat?.id ?? '');
+const store = $getWorkflowStaticData('global');
+const item = store.pending?.[id];
+let result = action;
+if (fromChat !== String(config.telegramChatId)) result = 'ignorar';
+else if (!item) result = 'expirado';
+else if (action !== 'redo') delete store.pending[id];
+return [{ json: { config, action: result, id, item, queryId: query.id, redo: item ? { topic: item.script.topic } : null } }];
+"""
+
+# ---------------------------------------------------------------- Ayudas para crear nodos
+nodes, connections = [], {}
+
+
+def node(name, type_, version, params, pos, **extra):
+    nodes.append({'id': str(uuid.uuid4()), 'name': name, 'type': type_, 'typeVersion': version,
+                  'position': pos, 'parameters': params, **extra})
+    return name
+
+
+def link(src, dst, out=0, inp=0):
+    outputs = connections.setdefault(src, {'main': []})['main']
+    while len(outputs) <= out:
+        outputs.append([])
+    outputs[out].append({'node': dst, 'type': 'main', 'index': inp})
+
+
+def code(name, js, pos):
+    return node(name, 'n8n-nodes-base.code', 2, {'jsCode': js}, pos)
+
+
+def condition(left, right, op='equals', type_='string'):
+    return {'id': str(uuid.uuid4()), 'leftValue': left, 'rightValue': right, 'operator': {'type': type_, 'operation': op}}
+
+
+def if_node(name, left, right, pos, op='equals'):
+    return node(name, 'n8n-nodes-base.if', 2.2, {
+        'conditions': {'options': {'caseSensitive': True, 'leftValue': '', 'typeValidation': 'loose', 'version': 2},
+                       'conditions': [condition(left, right, op)], 'combinator': 'and'},
+        'options': {}}, pos)
+
+
+def http(name, method, url, pos, cred=None, query=None, body=None, timeout=60000, headers=None, **extra):
+    params = {'method': method, 'url': url, 'options': {'timeout': timeout}}
+    creds = {}
+    if cred:
+        kind, cred_name = cred
+        params.update({'authentication': 'genericCredentialType', 'genericAuthType': kind})
+        creds = {'credentials': {kind: {'id': '', 'name': cred_name}}}
+    if headers:
+        params.update({'sendHeaders': True, 'headerParameters': {'parameters': [{'name': k, 'value': v} for k, v in headers.items()]}})
+    if query:
+        params.update({'sendQuery': True, 'queryParameters': {'parameters': [{'name': k, 'value': v} for k, v in query.items()]}})
+    if body is not None:
+        params.update({'sendBody': True, 'specifyBody': 'json', 'jsonBody': body})
+    return node(name, 'n8n-nodes-base.httpRequest', 4.2, params, pos, **creds, **extra)
+
+
+def wait(name, amount, unit, pos):
+    return node(name, 'n8n-nodes-base.wait', 1.1, {'amount': amount, 'unit': unit}, pos, webhookId=str(uuid.uuid4()))
+
+
+TELEGRAM = {'credentials': {'telegramApi': {'id': '', 'name': 'Telegram Al Toque'}}}
+
+
+def telegram_message(name, text, pos, chat='={{ $json.config.telegramChatId }}'):
+    return node(name, 'n8n-nodes-base.telegram', 1.2, {
+        'chatId': chat, 'text': text, 'additionalFields': {'appendAttribution': False, 'parse_mode': 'HTML'}}, pos, **TELEGRAM)
+
+
+RENDERER = ('httpHeaderAuth', 'Renderizador M&A')
+AI_KEY = ('httpHeaderAuth', 'Clave de IA')
+META = ('httpQueryAuth', 'Meta Al Toque (token de página)')
+
+# ---------------------------------------------------------------- Entradas
+node('Cada día 6:00', 'n8n-nodes-base.scheduleTrigger', 1.2,
+     {'rule': {'interval': [{'field': 'days', 'triggerAtHour': 6}]}}, [0, 0])
+node('Probar ahora', 'n8n-nodes-base.manualTrigger', 1, {}, [0, 180])
+node('Botón de Telegram', 'n8n-nodes-base.telegramTrigger', 1.2,
+     {'updates': ['callback_query'], 'additionalFields': {}}, [0, 520], webhookId=str(uuid.uuid4()), **TELEGRAM)
+code('Configuración', CONFIG_JS.replace('__BRAND__', json.dumps(BRAND, ensure_ascii=False)), [220, 260])
+for trigger in ('Cada día 6:00', 'Probar ahora', 'Botón de Telegram'):
+    link(trigger, 'Configuración')
+if_node('¿Es un botón?', '={{ !!$json.event.callback_query }}', 'true', [440, 260])
+link('Configuración', '¿Es un botón?')
+
+# ---------------------------------------------------------------- Generación
+prepare = PREPARE_JS.replace('__SYSTEM__', json.dumps(SYSTEM_PROMPT, ensure_ascii=False)).replace('__SCHEMA__', json.dumps(SCHEMA, ensure_ascii=False))
+code('Preparar pedido a la IA', prepare, [680, 100])
+link('¿Es un botón?', 'Preparar pedido a la IA', out=1)
+# La credencial «Clave de IA» lleva la cabecera de la clave: x-goog-api-key (Gemini) o x-api-key (Claude).
+http('La IA escribe el guion', 'POST', '={{ $json.request.url }}', [900, 100], cred=AI_KEY,
+     headers={'anthropic-version': '={{ $json.request.version }}', 'anthropic-beta': '={{ $json.request.beta }}'},
+     body='={{ JSON.stringify($json.request.body) }}', timeout=600000, retryOnFail=True, maxTries=3, waitBetweenTries=15000)
+link('Preparar pedido a la IA', 'La IA escribe el guion')
+code('Leer guion', READ_SCRIPT_JS, [1120, 100])
+link('La IA escribe el guion', 'Leer guion')
+http('Pedir el video', 'POST', '={{ $json.config.rendererUrl }}/render', [1340, 100], cred=RENDERER,
+     body='={{ JSON.stringify({ title: $json.script.title, scenes: $json.script.scenes, brand: $json.config.brand, voice: $json.config.voice, voiceRate: $json.config.voiceRate }) }}', retryOnFail=True, maxTries=3)
+link('Leer guion', 'Pedir el video')
+wait('Esperar el render', 7, 'minutes', [1560, 100])
+link('Pedir el video', 'Esperar el render')
+http('Consultar el render', 'GET', "={{ $('Pedir el video').first().json.statusUrl }}", [1780, 100], cred=RENDERER, retryOnFail=True, maxTries=3)
+link('Esperar el render', 'Consultar el render')
+if_node('¿Video listo?', '={{ $json.status }}', 'done', [2000, 100])
+link('Consultar el render', '¿Video listo?')
+if_node('¿Falló?', '={{ $json.status }}', 'error', [2220, 260])
+link('¿Video listo?', '¿Falló?', out=1)
+wait('Esperar un poco más', 1, 'minutes', [2440, 360])
+link('¿Falló?', 'Esperar un poco más', out=1)
+link('Esperar un poco más', 'Consultar el render')
+telegram_message('Avisar error de render', "=⚠️ No se pudo generar el video de hoy: {{ $json.error }}", [2440, 200],
+                 chat="={{ $('Leer guion').first().json.config.telegramChatId }}")
+link('¿Falló?', 'Avisar error de render', out=0)
+code('Guardar pendiente', SAVE_PENDING_JS, [2220, 0])
+link('¿Video listo?', 'Guardar pendiente', out=0)
+node('Enviar a Telegram para aprobar', 'n8n-nodes-base.telegram', 1.2, {
+    'operation': 'sendVideo', 'chatId': '={{ $json.config.telegramChatId }}', 'file': '={{ $json.url }}',
+    'replyMarkup': 'inlineKeyboard',
+    'inlineKeyboard': {'rows': [{'row': {'buttons': [
+        {'text': '✅ Publicar', 'additionalFields': {'callback_data': '=ok:{{ $json.id }}'}},
+        {'text': '🔄 Rehacer', 'additionalFields': {'callback_data': '=redo:{{ $json.id }}'}},
+        {'text': '🗑 Descartar', 'additionalFields': {'callback_data': '=no:{{ $json.id }}'}},
+    ]}}]},
+    'additionalFields': {'caption': '={{ $json.caption }}', 'parse_mode': 'HTML'}}, [2440, 0], **TELEGRAM)
+link('Guardar pendiente', 'Enviar a Telegram para aprobar')
+
+# ---------------------------------------------------------------- Decisión
+code('Leer decisión', DECISION_JS, [680, 520])
+link('¿Es un botón?', 'Leer decisión', out=0)
+node('Responder al botón', 'n8n-nodes-base.telegram', 1.2, {
+    'resource': 'callback', 'operation': 'answerQuery', 'queryId': '={{ $json.queryId }}',
+    'additionalFields': {'text': "={{ { ok: 'Publicando…', redo: 'Preparando otra versión…', no: 'Descartado', expirado: 'Este video ya no está pendiente', ignorar: 'No autorizado' }[$json.action] }}"}},
+    [900, 520], **TELEGRAM)
+link('Leer decisión', 'Responder al botón')
+node('¿Qué decidiste?', 'n8n-nodes-base.switch', 3.2, {
+    'rules': {'values': [
+        {'conditions': {'options': {'caseSensitive': True, 'leftValue': '', 'typeValidation': 'loose', 'version': 2},
+                        'conditions': [condition("={{ $('Leer decisión').first().json.action }}", value)], 'combinator': 'and'},
+         'renameOutput': True, 'outputKey': label}
+        for value, label in (('ok', 'Publicar'), ('redo', 'Rehacer'), ('no', 'Descartar'))]},
+    'options': {}}, [1120, 520])
+link('Responder al botón', '¿Qué decidiste?')
+
+# Rehacer: vuelve a escribir el guion con otro enfoque.
+code('Volver a generar', "return [{ json: { config: $('Leer decisión').first().json.config, redo: $('Leer decisión').first().json.redo } }];", [1340, 420])
+link('¿Qué decidiste?', 'Volver a generar', out=1)
+link('Volver a generar', 'Preparar pedido a la IA')
+
+telegram_message('Confirmar descarte', '=🗑 Video descartado.', [1340, 760], chat="={{ $('Leer decisión').first().json.config.telegramChatId }}")
+link('¿Qué decidiste?', 'Confirmar descarte', out=2)
+
+# Publicar: Instagram (Reel en dos pasos) y Facebook en paralelo.
+code('Datos para publicar', r"""const d = $('Leer decisión').first().json;
+return [{ json: { config: d.config, url: d.item.url, captions: d.item.script.captions, title: d.item.script.title } }];""", [1340, 600])
+link('¿Qué decidiste?', 'Datos para publicar', out=0)
+
+http('Instagram: subir Reel', 'POST', f"={GRAPH}/{{{{ $json.config.instagramUserId }}}}/media", [1560, 560], cred=META,
+     query={'media_type': 'REELS', 'video_url': '={{ $json.url }}', 'caption': '={{ $json.captions.instagram }}', 'share_to_feed': 'true'})
+link('Datos para publicar', 'Instagram: subir Reel')
+wait('Instagram procesa', 1, 'minutes', [1780, 560])
+link('Instagram: subir Reel', 'Instagram procesa')
+http('Instagram: ¿listo?', 'GET', f"={GRAPH}/{{{{ $('Instagram: subir Reel').first().json.id }}}}", [2000, 560], cred=META,
+     query={'fields': 'status_code'})
+link('Instagram procesa', 'Instagram: ¿listo?')
+if_node('¿Reel procesado?', '={{ $json.status_code }}', 'FINISHED', [2220, 560])
+link('Instagram: ¿listo?', '¿Reel procesado?')
+if_node('¿Reel con error?', '={{ $json.status_code }}', 'ERROR', [2440, 700])
+link('¿Reel procesado?', '¿Reel con error?', out=1)
+link('¿Reel con error?', 'Instagram procesa', out=1)
+http('Instagram: publicar', 'POST', f"={GRAPH}/{{{{ $('Datos para publicar').first().json.config.instagramUserId }}}}/media_publish", [2440, 520], cred=META,
+     query={'creation_id': "={{ $('Instagram: subir Reel').first().json.id }}"})
+link('¿Reel procesado?', 'Instagram: publicar', out=0)
+telegram_message('Avisar Instagram', '=✅ Publicado en Instagram.', [2660, 520], chat="={{ $('Datos para publicar').first().json.config.telegramChatId }}")
+link('Instagram: publicar', 'Avisar Instagram')
+telegram_message('Avisar error de Instagram', '=⚠️ Instagram no pudo procesar el video.', [2660, 700], chat="={{ $('Datos para publicar').first().json.config.telegramChatId }}")
+link('¿Reel con error?', 'Avisar error de Instagram', out=0)
+
+http('Facebook: publicar video', 'POST', f"=https://graph-video.facebook.com/v23.0/{{{{ $json.config.facebookPageId }}}}/videos", [1560, 840], cred=META,
+     query={'file_url': '={{ $json.url }}', 'description': '={{ $json.captions.facebook }}', 'title': '={{ $json.title }}'}, timeout=300000)
+link('Datos para publicar', 'Facebook: publicar video')
+telegram_message('Avisar Facebook', '=✅ Publicado en Facebook.', [1780, 840], chat="={{ $('Datos para publicar').first().json.config.telegramChatId }}")
+link('Facebook: publicar video', 'Avisar Facebook')
+
+node('LinkedIn (pendiente)', 'n8n-nodes-base.noOp', 1, {}, [1560, 1000], disabled=True,
+     notes='Se activa cuando LinkedIn apruebe la app (Community Management API).')
+link('Datos para publicar', 'LinkedIn (pendiente)')
+node('TikTok (pendiente)', 'n8n-nodes-base.noOp', 1, {}, [1560, 1140], disabled=True,
+     notes='Se activa cuando TikTok audite la app (Content Posting API).')
+link('Datos para publicar', 'TikTok (pendiente)')
+
+workflow = {
+    # id fijo: importar de nuevo actualiza el mismo flujo en vez de duplicarlo.
+    'id': 'AlToqueVideoDia1',
+    'name': 'Al Toque · Video diario',
+    'nodes': nodes,
+    'connections': connections,
+    'settings': {'timezone': 'America/Lima', 'executionOrder': 'v1', 'saveManualExecutions': True},
+}
+out = Path(__file__).with_name('n8n-video-diario.json')
+out.write_text(json.dumps(workflow, ensure_ascii=False, indent=1), encoding='utf-8')
+print(f'{out.name}: {len(nodes)} nodos')

@@ -10,8 +10,11 @@ public interface DistritoRepository extends JpaRepository<Distrito, String> {
 
     @Query("""
             select d from Distrito d join fetch d.provincia p join fetch p.departamento dep
-            where lower(d.nombre) like lower(concat(:q, '%')) or lower(p.nombre) like lower(concat(:q, '%')) or d.ubigeo = :q
-            order by case when lower(d.nombre) = lower(:q) then 0 else 1 end, d.nombre""")
+            where lower(d.nombre) like lower(concat('%', :q, '%')) or lower(p.nombre) like lower(concat(:q, '%')) or d.ubigeo = :q
+            order by case when lower(d.nombre) = lower(:q) then 0
+                          when lower(d.nombre) like lower(concat(:q, '%')) then 1
+                          when lower(d.nombre) like lower(concat('%', :q, '%')) then 2 else 3 end,
+                     case when p.codigo = '1501' then 0 else 1 end, d.nombre""")
     List<Distrito> buscar(String q, Pageable pageable);
 
     /** Busca por nombres (como los devuelve RENIEC/SUNAT): distrito + provincia + departamento. */
