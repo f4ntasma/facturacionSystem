@@ -3,7 +3,7 @@
  "name": "Al Toque · Video diario",
  "nodes": [
   {
-   "id": "b1d0bd3d-9b88-4acb-a9dc-81c0e65eb1a9",
+   "id": "61da61e7-b23c-49fd-8aff-a7eebe4c50f7",
    "name": "Cada día 6:00",
    "type": "n8n-nodes-base.scheduleTrigger",
    "typeVersion": 1.2,
@@ -23,7 +23,7 @@
    }
   },
   {
-   "id": "1a332bdb-c00c-4505-bd87-1292538f7349",
+   "id": "5e345a03-f1d2-4fc0-80a4-39e21e3bf170",
    "name": "Probar ahora",
    "type": "n8n-nodes-base.manualTrigger",
    "typeVersion": 1,
@@ -34,7 +34,7 @@
    "parameters": {}
   },
   {
-   "id": "79ddbdc5-8898-4414-bde2-73aa6ebccbba",
+   "id": "4f2e3ce6-c9fc-4b3a-9685-9310ca297d05",
    "name": "Botón de Telegram",
    "type": "n8n-nodes-base.telegramTrigger",
    "typeVersion": 1.2,
@@ -48,7 +48,7 @@
     ],
     "additionalFields": {}
    },
-   "webhookId": "cb24f997-448e-4488-a4ef-b04311b21113",
+   "webhookId": "8dfb0096-a6fb-416c-96c5-b0d0611fb5ec",
    "credentials": {
     "telegramApi": {
      "id": "",
@@ -57,7 +57,7 @@
    }
   },
   {
-   "id": "ac26c4d9-6d3c-4816-a0d5-217d888306ac",
+   "id": "f25bcbd5-a330-4fdd-a07c-e0d67c3c1a8b",
    "name": "Configuración",
    "type": "n8n-nodes-base.code",
    "typeVersion": 2,
@@ -66,11 +66,11 @@
     260
    ],
    "parameters": {
-    "jsCode": "// ⚙️ CONFIGURACIÓN: cambia aquí los datos de tu cuenta.\nconst config = {\n  telegramChatId: 'PON_AQUI_TU_CHAT_ID',\n  // Mismo renderizador de videos que ya tienes desplegado; la marca Al Toque va en cada pedido.\n  rendererUrl: 'https://ma-renderer.vercel.app',\n  // 'gemini' = gratis (nivel gratuito de Google, unas 20 peticiones diarias) · 'claude' = de pago, mejor redacción.\n  aiProvider: 'gemini',\n  geminiModel: 'gemini-flash-latest',\n  claudeModel: 'claude-opus-5-5',\n  instagramUserId: 'PON_AQUI_EL_ID_DE_INSTAGRAM_DE_AL_TOQUE',\n  facebookPageId: 'PON_AQUI_EL_ID_DE_LA_PAGINA_DE_AL_TOQUE',\n  brand: {\"name\": \"Al Toque\", \"handle\": \"@altoque.pe\", \"website\": \"Prueba 15 días gratis\", \"logo\": \"https://altoque-pe.vercel.app/marca-video.png\", \"colors\": {\"background\": \"#14141F\", \"surface\": \"#2A2A38\", \"primary\": \"#FFC81E\", \"accent\": \"#D1126B\", \"highlight\": \"#FFC81E\", \"text\": \"#FFFFFF\", \"muted\": \"#D9D8E0\"}},\n  voice: 'es-PE-CamilaNeural',\n  voiceRate: '+8%',\n};\nreturn $input.all().map((item) => ({ json: { config, event: item.json } }));\n"
+    "jsCode": "// ⚙️ CONFIGURACIÓN: cambia aquí los datos de tu cuenta.\nconst config = {\n  telegramChatId: 'PON_AQUI_TU_CHAT_ID',\n  // Mismo renderizador de videos que ya tienes desplegado; la marca Al Toque va en cada pedido.\n  rendererUrl: 'https://ma-renderer.vercel.app',\n  // 'gemini' = gratis (nivel gratuito de Google, unas 20 peticiones diarias) · 'claude' = de pago, mejor redacción.\n  aiProvider: 'gemini',\n  geminiModel: 'gemini-flash-latest',\n  claudeModel: 'claude-opus-5-5',\n  instagramUserId: 'PON_AQUI_EL_ID_DE_INSTAGRAM_DE_AL_TOQUE',\n  facebookPageId: 'PON_AQUI_EL_ID_DE_LA_PAGINA_DE_AL_TOQUE',\n  brand: {\"name\": \"Al Toque\", \"handle\": \"@altoque.pe\", \"website\": \"altoque-pe.vercel.app\", \"logo\": \"https://altoque-pe.vercel.app/marca-video.png\", \"colors\": {\"background\": \"#14141F\", \"surface\": \"#2A2A38\", \"primary\": \"#FFC81E\", \"accent\": \"#D1126B\", \"highlight\": \"#FFC81E\", \"text\": \"#FFFFFF\", \"muted\": \"#D9D8E0\"}, \"tagline\": \"\"},\n  voice: 'es-PE-CamilaNeural',\n  voiceRate: '+8%',\n};\nreturn $input.all().map((item) => ({ json: { config, event: item.json } }));\n"
    }
   },
   {
-   "id": "f2093861-4c16-4f2e-89c1-2d8336c24e9e",
+   "id": "03013c8d-b514-42a7-a11b-f006794375f3",
    "name": "¿Es un botón?",
    "type": "n8n-nodes-base.if",
    "typeVersion": 2.2,
@@ -88,7 +88,7 @@
      },
      "conditions": [
       {
-       "id": "fce29957-29e4-449a-9dba-d0a2c6ac27b5",
+       "id": "3f0a4fef-2980-47b7-b250-717e1a6174bb",
        "leftValue": "={{ !!$json.event.callback_query }}",
        "rightValue": "true",
        "operator": {
@@ -103,7 +103,7 @@
    }
   },
   {
-   "id": "ac0f5d1a-5878-46a4-a120-7dfe42eea534",
+   "id": "b848d057-da8d-4ab3-ba59-8c16b9d52656",
    "name": "Preparar pedido a la IA",
    "type": "n8n-nodes-base.code",
    "typeVersion": 2,
@@ -116,7 +116,7 @@
    }
   },
   {
-   "id": "a98d1524-bd49-4eb9-b292-23b154dc273c",
+   "id": "9ee6d2e3-af12-4ce7-9e2e-4858d4245e29",
    "name": "La IA escribe el guion",
    "type": "n8n-nodes-base.httpRequest",
    "typeVersion": 4.2,
@@ -160,7 +160,7 @@
    "waitBetweenTries": 15000
   },
   {
-   "id": "1a81ad1b-40d4-4a36-af36-5f84cb04a81e",
+   "id": "f9141fc7-c1f0-4b00-bac0-d4da94e71312",
    "name": "Leer guion",
    "type": "n8n-nodes-base.code",
    "typeVersion": 2,
@@ -173,7 +173,7 @@
    }
   },
   {
-   "id": "58a535f6-ea40-4230-99e0-dba7e2e9e26f",
+   "id": "0f96d490-c2ce-44cf-9008-4a6772188fd7",
    "name": "Pedir el video",
    "type": "n8n-nodes-base.httpRequest",
    "typeVersion": 4.2,
@@ -203,7 +203,7 @@
    "maxTries": 3
   },
   {
-   "id": "e846031b-4b79-4a46-8817-b6c8c89ae9d3",
+   "id": "8c99d9c6-6725-47d2-b862-c4cbbd271914",
    "name": "Esperar el render",
    "type": "n8n-nodes-base.wait",
    "typeVersion": 1.1,
@@ -215,10 +215,10 @@
     "amount": 7,
     "unit": "minutes"
    },
-   "webhookId": "22ddcd93-7210-4470-882d-3a047bc49b05"
+   "webhookId": "b434443e-7a83-4440-aec5-f0974bd07044"
   },
   {
-   "id": "3ccec095-8e8b-4595-bf98-7669b1eb0ea6",
+   "id": "30f50294-1ca1-47eb-ab65-cf8be9180ae3",
    "name": "Consultar el render",
    "type": "n8n-nodes-base.httpRequest",
    "typeVersion": 4.2,
@@ -245,7 +245,7 @@
    "maxTries": 3
   },
   {
-   "id": "bee48a26-8ce6-4a4f-ad1e-0bede1b6d8b5",
+   "id": "884a6fe6-485c-4583-a43f-cf30a5e84612",
    "name": "¿Video listo?",
    "type": "n8n-nodes-base.if",
    "typeVersion": 2.2,
@@ -263,7 +263,7 @@
      },
      "conditions": [
       {
-       "id": "1683a58b-b3de-40ca-8814-d964b7f732b6",
+       "id": "53c4d7af-b9e5-43b7-a394-2cc18c96481a",
        "leftValue": "={{ $json.status }}",
        "rightValue": "done",
        "operator": {
@@ -278,7 +278,7 @@
    }
   },
   {
-   "id": "1b7ee01c-50d9-4555-9bf9-a5b819d15e90",
+   "id": "b0d320e0-289a-40c6-9dfb-0a4a109f704e",
    "name": "¿Falló?",
    "type": "n8n-nodes-base.if",
    "typeVersion": 2.2,
@@ -296,7 +296,7 @@
      },
      "conditions": [
       {
-       "id": "bfc18f4c-d13f-4101-9316-7b49b0a36624",
+       "id": "7305b984-e1f0-4726-aa2a-b224ca1f0515",
        "leftValue": "={{ $json.status }}",
        "rightValue": "error",
        "operator": {
@@ -311,7 +311,7 @@
    }
   },
   {
-   "id": "6482fe59-7443-469b-b846-ebaa4c9e5c17",
+   "id": "f15c19ea-fad9-4413-85e2-74a15179975c",
    "name": "Esperar un poco más",
    "type": "n8n-nodes-base.wait",
    "typeVersion": 1.1,
@@ -323,10 +323,10 @@
     "amount": 1,
     "unit": "minutes"
    },
-   "webhookId": "dc9a48bc-0d45-46fe-b8d2-36b66272d29a"
+   "webhookId": "1b0a936b-b813-459a-bb85-8c13828b297f"
   },
   {
-   "id": "11afbdea-bd18-4f33-865e-693b5910fd47",
+   "id": "f09bac0b-f1e6-4cb4-96d9-6529dc650179",
    "name": "Avisar error de render",
    "type": "n8n-nodes-base.telegram",
    "typeVersion": 1.2,
@@ -350,7 +350,7 @@
    }
   },
   {
-   "id": "243e3ad9-6573-4bee-8961-e9d2348b47a4",
+   "id": "0288bb24-0bcb-4902-9bf4-e5d6d5c3fbb9",
    "name": "Guardar pendiente",
    "type": "n8n-nodes-base.code",
    "typeVersion": 2,
@@ -363,7 +363,7 @@
    }
   },
   {
-   "id": "7cbe2031-c4d8-4425-974a-97b33972a764",
+   "id": "6de1186e-4ebb-472f-9597-d1837e47599f",
    "name": "Enviar a Telegram para aprobar",
    "type": "n8n-nodes-base.telegram",
    "typeVersion": 1.2,
@@ -417,7 +417,7 @@
    }
   },
   {
-   "id": "f32aa3e0-16d6-4072-be85-ae48e0aad6fe",
+   "id": "8adafd8c-1293-408f-9e12-c0bff2fcccfb",
    "name": "Leer decisión",
    "type": "n8n-nodes-base.code",
    "typeVersion": 2,
@@ -430,7 +430,7 @@
    }
   },
   {
-   "id": "7dedc10a-b0aa-478b-bc5c-1e2066c9bf04",
+   "id": "e89719c1-3f7e-4dac-9bdc-b55ebf18fc9f",
    "name": "Responder al botón",
    "type": "n8n-nodes-base.telegram",
    "typeVersion": 1.2,
@@ -454,7 +454,7 @@
    }
   },
   {
-   "id": "b76b62b9-77f5-495c-bca8-6f5e1c77a9cd",
+   "id": "2ab9e4ee-315b-45b5-9594-92879b034bc5",
    "name": "¿Qué decidiste?",
    "type": "n8n-nodes-base.switch",
    "typeVersion": 3.2,
@@ -475,7 +475,7 @@
         },
         "conditions": [
          {
-          "id": "b82189e7-03aa-470d-9e25-713cc69377f6",
+          "id": "58c82655-b26e-4c3a-8445-55af5c36c4f8",
           "leftValue": "={{ $('Leer decisión').first().json.action }}",
           "rightValue": "ok",
           "operator": {
@@ -499,7 +499,7 @@
         },
         "conditions": [
          {
-          "id": "bd454109-75bf-4430-a69f-18c305266e28",
+          "id": "d7f337ff-88ee-41b0-9cc5-9abfeb9e9843",
           "leftValue": "={{ $('Leer decisión').first().json.action }}",
           "rightValue": "redo",
           "operator": {
@@ -523,7 +523,7 @@
         },
         "conditions": [
          {
-          "id": "4bb89bac-c137-452b-8bfd-d4d244eafd7c",
+          "id": "ae56a195-eb10-4a94-8d7e-a7433f1e66c6",
           "leftValue": "={{ $('Leer decisión').first().json.action }}",
           "rightValue": "no",
           "operator": {
@@ -543,7 +543,7 @@
    }
   },
   {
-   "id": "2ed14ae4-fcf6-45e2-af2b-22a92e9db98a",
+   "id": "2ffae22a-e554-46ff-9613-e42d0043905c",
    "name": "Volver a generar",
    "type": "n8n-nodes-base.code",
    "typeVersion": 2,
@@ -556,7 +556,7 @@
    }
   },
   {
-   "id": "c0f5cef9-1f54-4b11-9da3-0a504d61cc70",
+   "id": "3d395cb7-9709-4dd9-9cf4-3751541a5ba2",
    "name": "Confirmar descarte",
    "type": "n8n-nodes-base.telegram",
    "typeVersion": 1.2,
@@ -580,7 +580,7 @@
    }
   },
   {
-   "id": "416ea21d-5f46-4a14-a0d7-b1480cdea86b",
+   "id": "b4c58a3b-02e1-4e4e-bcfc-852bd21987bc",
    "name": "Datos para publicar",
    "type": "n8n-nodes-base.code",
    "typeVersion": 2,
@@ -593,7 +593,7 @@
    }
   },
   {
-   "id": "b12ca6b1-8097-4722-8d71-2baa3181e197",
+   "id": "6121045c-d165-4594-922f-6c440fa7302b",
    "name": "Instagram: subir Reel",
    "type": "n8n-nodes-base.httpRequest",
    "typeVersion": 4.2,
@@ -639,7 +639,7 @@
    }
   },
   {
-   "id": "744353e6-3ffe-4453-ab58-6c2ed8dc05e0",
+   "id": "91f215f2-3b68-4bb4-8ca3-98c92c478dd6",
    "name": "Instagram procesa",
    "type": "n8n-nodes-base.wait",
    "typeVersion": 1.1,
@@ -651,10 +651,10 @@
     "amount": 1,
     "unit": "minutes"
    },
-   "webhookId": "829d5a47-7bc8-4da6-b7bb-ee070a2f3f67"
+   "webhookId": "1fcc9a7b-4981-440e-b650-6aca86633f2a"
   },
   {
-   "id": "0dee8d65-b7de-4491-8fb0-5db65b4ae2db",
+   "id": "56303663-efff-42fb-95ba-b2f4c872ea21",
    "name": "Instagram: ¿listo?",
    "type": "n8n-nodes-base.httpRequest",
    "typeVersion": 4.2,
@@ -688,7 +688,7 @@
    }
   },
   {
-   "id": "324014fb-2915-4380-a5db-46c139d980bc",
+   "id": "f49bbdaf-d774-4571-a327-d1be9329fea3",
    "name": "¿Reel procesado?",
    "type": "n8n-nodes-base.if",
    "typeVersion": 2.2,
@@ -706,7 +706,7 @@
      },
      "conditions": [
       {
-       "id": "fc450be6-f5cb-4a92-8032-f6436a8f7977",
+       "id": "05021e6a-b88d-42ea-91b5-f5c7c84202db",
        "leftValue": "={{ $json.status_code }}",
        "rightValue": "FINISHED",
        "operator": {
@@ -721,7 +721,7 @@
    }
   },
   {
-   "id": "40b3e68e-06c2-45b9-b011-32da124b0011",
+   "id": "fa4c4748-0f29-431a-bd12-26330fab64db",
    "name": "¿Reel con error?",
    "type": "n8n-nodes-base.if",
    "typeVersion": 2.2,
@@ -739,7 +739,7 @@
      },
      "conditions": [
       {
-       "id": "6fc38421-0d64-4261-b079-a369871339db",
+       "id": "c247ad38-0862-4db0-b805-5d69813fccb8",
        "leftValue": "={{ $json.status_code }}",
        "rightValue": "ERROR",
        "operator": {
@@ -754,7 +754,7 @@
    }
   },
   {
-   "id": "faf1b384-6639-4be4-869d-9a98b6b585a6",
+   "id": "7fd5b024-2270-4503-8980-2c9314accafa",
    "name": "Instagram: publicar",
    "type": "n8n-nodes-base.httpRequest",
    "typeVersion": 4.2,
@@ -788,7 +788,7 @@
    }
   },
   {
-   "id": "d5949cd3-4fe4-46dd-9756-b7f891a8ede8",
+   "id": "7a3c547a-824a-495f-b59d-218c86f13eba",
    "name": "Avisar Instagram",
    "type": "n8n-nodes-base.telegram",
    "typeVersion": 1.2,
@@ -812,7 +812,7 @@
    }
   },
   {
-   "id": "72be837c-c4ba-4266-b319-e3bf6560e815",
+   "id": "682ec5a5-f194-42b4-b036-b6fe49465fb1",
    "name": "Avisar error de Instagram",
    "type": "n8n-nodes-base.telegram",
    "typeVersion": 1.2,
@@ -836,7 +836,7 @@
    }
   },
   {
-   "id": "63f2c3c8-23e2-405f-b834-fa6ef52681d5",
+   "id": "971f7eee-3c84-461d-a9d7-02c5a6c085a1",
    "name": "Facebook: publicar video",
    "type": "n8n-nodes-base.httpRequest",
    "typeVersion": 4.2,
@@ -878,7 +878,7 @@
    }
   },
   {
-   "id": "79d572e8-aa95-41bf-9bb2-67a5c59f1ea3",
+   "id": "dd26d96e-a521-418e-a9e3-025c14f73e70",
    "name": "Avisar Facebook",
    "type": "n8n-nodes-base.telegram",
    "typeVersion": 1.2,
@@ -902,7 +902,7 @@
    }
   },
   {
-   "id": "086ddfaf-748e-4d29-b25d-3183ff054f71",
+   "id": "ce5e8c19-452f-4123-8919-c4bda00309fa",
    "name": "LinkedIn (pendiente)",
    "type": "n8n-nodes-base.noOp",
    "typeVersion": 1,
@@ -915,7 +915,7 @@
    "notes": "Se activa cuando LinkedIn apruebe la app (Community Management API)."
   },
   {
-   "id": "458f01ba-fa53-450d-a364-900315e40cfa",
+   "id": "e5ea36f8-022f-42c4-aeda-2bfc740a7082",
    "name": "TikTok (pendiente)",
    "type": "n8n-nodes-base.noOp",
    "typeVersion": 1,

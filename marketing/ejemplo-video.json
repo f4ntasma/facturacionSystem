@@ -5,7 +5,7 @@
   "brand": {
     "name": "Al Toque",
     "handle": "@altoque.pe",
-    "website": "Prueba 15 días gratis",
+    "website": "altoque-pe.vercel.app",
     "logo": "https://altoque-pe.vercel.app/marca-video.png",
     "colors": {
       "background": "#14141F",
@@ -15,13 +15,16 @@
       "highlight": "#FFC81E",
       "text": "#FFFFFF",
       "muted": "#D9D8E0"
-    }
+    },
+    "tagline": ""
   },
   "scenes": [
     {
       "type": "hook",
       "text": "¿Sabes cuánto ganaste hoy, causa?",
-      "highlight": ["cuánto ganaste hoy"],
+      "highlight": [
+        "cuánto ganaste hoy"
+      ],
       "narration": "¿Sabes cuánto ganaste hoy? Si lo tienes que sacar del cuaderno, ya perdiste."
     },
     {

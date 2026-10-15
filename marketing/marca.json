@@ -1,7 +1,7 @@
 {
   "name": "Al Toque",
   "handle": "@altoque.pe",
-  "website": "Prueba 15 días gratis",
+  "website": "altoque-pe.vercel.app",
   "logo": "https://altoque-pe.vercel.app/marca-video.png",
   "colors": {
     "background": "#14141F",
@@ -11,5 +11,6 @@
     "highlight": "#FFC81E",
     "text": "#FFFFFF",
     "muted": "#D9D8E0"
-  }
+  },
+  "tagline": ""
 }
