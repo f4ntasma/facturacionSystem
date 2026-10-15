@@ -1,0 +1,69 @@
+# Al Toque API · configuración base (perfil por defecto = desarrollo con H2)
+spring:
+  application:
+    name: altoque-api
+  datasource:
+    url: ${DB_URL:jdbc:h2:file:./data/altoque;MODE=MariaDB;DATABASE_TO_LOWER=TRUE;CASE_INSENSITIVE_IDENTIFIERS=TRUE;AUTO_SERVER=TRUE}
+    username: ${DB_USER:sa}
+    password: ${DB_PASSWORD:}
+    hikari:
+      maximum-pool-size: 10
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: ${JPA_DDL:validate}
+    properties:
+      hibernate:
+        jdbc.time_zone: America/Lima
+        default_batch_fetch_size: 50
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    baseline-version: 0
+  jackson:
+    time-zone: America/Lima
+    default-property-inclusion: non_null
+  servlet:
+    multipart:
+      max-file-size: 5MB
+
+server:
+  port: ${PORT:8080}
+  forward-headers-strategy: framework
+  compression:
+    enabled: true
+
+management:
+  endpoints.web.exposure.include: health,info
+  endpoint.health.show-details: never
+
+springdoc:
+  swagger-ui.path: /api/docs
+  api-docs.path: /api/docs/openapi
+
+altoque:
+  # Clave para firmar los JWT (mín. 32 caracteres). En producción: variable JWT_SECRET.
+  jwt-secret: ${JWT_SECRET:desarrollo-cambia-esta-clave-por-una-de-32-caracteres-o-mas}
+  jwt-horas: ${JWT_HORAS:12}
+  # Clave para cifrar la clave SOL y la del certificado (AES-GCM). En producción: APP_CRYPTO_KEY.
+  crypto-key: ${APP_CRYPTO_KEY:desarrollo-clave-cifrado-altoque}
+  frontend-url: ${FRONTEND_URL:http://localhost:4200}
+  cors-origins: ${CORS_ORIGINS:http://localhost:4200,https://altoque.pe,https://www.altoque.pe}
+  dias-prueba: ${DIAS_PRUEBA:15}
+  # Crea una empresa demo (demo@altoque.pe / altoque123) si no existe.
+  demo: ${ALTOQUE_DEMO:true}
+  # Token de apiperu.dev para autocompletar DNI/RUC (opcional).
+  apiperu-token: ${APIPERU_TOKEN:}
+  # Mercado Pago para cobrar suscripciones (opcional).
+  mercadopago-token: ${MP_ACCESS_TOKEN:}
+  api-public-url: ${API_PUBLIC_URL:http://localhost:8080}
+  sunat:
+    beta-factura-url: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService
+    produccion-factura-url: https://e-factura.sunat.gob.pe/ol-ti-itcpfegem/billService
+    timeout-segundos: 25
+    # Reintento de pendientes y envío de resúmenes
+    reintento-cron: "0 */5 * * * *"
+
+logging:
+  level:
+    pe.altoque: INFO

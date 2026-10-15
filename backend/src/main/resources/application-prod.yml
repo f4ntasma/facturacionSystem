@@ -1,0 +1,14 @@
+# Producción (Dokploy): MariaDB y secretos por variables de entorno.
+spring:
+  datasource:
+    url: jdbc:mariadb://${DB_HOST}:${DB_PORT:3306}/${DB_NAME}?useUnicode=true&characterEncoding=UTF-8
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
+  jpa:
+    hibernate:
+      ddl-auto: none
+
+altoque:
+  jwt-secret: ${JWT_SECRET}
+  crypto-key: ${APP_CRYPTO_KEY}
+  demo: ${ALTOQUE_DEMO:false}

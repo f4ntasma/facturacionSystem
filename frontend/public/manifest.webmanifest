@@ -1,0 +1,12 @@
+{
+  "name": "Al Toque · Facturación electrónica",
+  "short_name": "Al Toque",
+  "start_url": "/app",
+  "display": "standalone",
+  "background_color": "#F2F1EC",
+  "theme_color": "#FFC81E",
+  "lang": "es-PE",
+  "icons": [
+    { "src": "icono-app.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}

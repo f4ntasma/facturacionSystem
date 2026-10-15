@@ -1,0 +1,314 @@
+<div class="emitir">
+  <header class="cab">
+    <div class="segmentado" role="group" aria-label="Tipo de comprobante">
+      <button type="button" [attr.aria-pressed]="tipo() === '03'" (click)="cambiarTipo('03')">Boleta</button>
+      <button type="button" [attr.aria-pressed]="tipo() === '01'" (click)="cambiarTipo('01')">Factura</button>
+    </div>
+    @if (seriesDelTipo().length > 1) {
+      <label class="sr-only" for="serie">Serie</label>
+      <select id="serie" class="select serie mono" [ngModel]="serieId()" (ngModelChange)="serieId.set($event)">
+        <option [ngValue]="null">Serie automática</option>
+        @for (s of seriesDelTipo(); track s.id) { <option [ngValue]="s.id">{{ s.serie }}</option> }
+      </select>
+    }
+    <div class="tabs-movil segmentado" role="tablist">
+      <button type="button" role="tab" [attr.aria-pressed]="vista() === 'catalogo'" (click)="vista.set('catalogo')">Productos</button>
+      <button type="button" role="tab" [attr.aria-pressed]="vista() === 'pedido'" (click)="vista.set('pedido')">Pedido ({{ lineas().length }})</button>
+    </div>
+  </header>
+
+  <div class="cuerpo">
+    <!-- CATÁLOGO -->
+    <section class="catalogo" [class.oculto-movil]="vista() !== 'catalogo'" aria-label="Productos">
+      <div class="buscador">
+        <at-icono nombre="buscar" />
+        <label class="sr-only" for="buscar-prod">Buscar producto</label>
+        <input id="buscar-prod" class="input" placeholder="Busca por nombre o código" [ngModel]="busqueda()" (ngModelChange)="busqueda.set($event)" autocomplete="off" />
+      </div>
+      @if (categorias().length) {
+        <div class="cats" role="group" aria-label="Categorías">
+          <button type="button" class="chip-cat" [class.on]="!categoria()" (click)="categoria.set(null)">Todo</button>
+          @for (c of categorias(); track c) {
+            <button type="button" class="chip-cat" [class.on]="categoria() === c" (click)="categoria.set(c)">{{ c }}</button>
+          }
+        </div>
+      }
+      <div class="productos">
+        <button type="button" class="prod libre" (click)="libreAbierto.set(true)">
+          <at-icono nombre="sumar" [tam]="26" />
+          <span>Ítem libre</span>
+          <span class="mini suave">Servicio u otro</span>
+        </button>
+        @for (p of visibles(); track p.id) {
+          <button type="button" class="prod" (click)="agregar(p)" [attr.aria-label]="'Agregar ' + p.nombre">
+            @if (cantidadEn(p); as n) { <span class="badge mono">{{ n | cant }}</span> }
+            @if (p.favorito) { <span class="fav" aria-hidden="true"><at-icono nombre="estrella" [tam]="14" /></span> }
+            <span class="p-nombre">{{ p.nombre }}</span>
+            <span class="mono p-precio">{{ p.precio | soles }}</span>
+            @if (p.controlaStock) { <span class="mini" [class.bajo]="p.stock <= 5">Stock {{ p.stock | cant }}</span> }
+          </button>
+        }
+        @if (cargandoProductos()) {
+          @for (i of [1, 2, 3, 4, 5]; track i) { <div class="prod esqueleto"></div> }
+        }
+      </div>
+      @if (!cargandoProductos() && !productos().length) {
+        <div class="vacio">
+          <strong>Aún no tienes productos</strong>
+          <span>Usa «Ítem libre» o carga tu catálogo en Productos.</span>
+          <a routerLink="/app/productos" class="btn btn-borde btn-chico">Cargar productos</a>
+        </div>
+      }
+    </section>
+
+    <!-- PEDIDO -->
+    <section class="pedido" [class.oculto-movil]="vista() !== 'pedido'" aria-label="Pedido">
+      <div class="tarjeta col">
+        <!-- Cliente -->
+        <div class="col" style="gap: 10px">
+          <div class="entre">
+            <h2 class="subtitulo">Cliente</h2>
+            @if (tipo() === '03' && clienteAbierto()) {
+              <button type="button" class="btn btn-fantasma btn-chico" (click)="quitarCliente()">Cliente varios</button>
+            }
+          </div>
+          @if (!clienteAbierto()) {
+            <button type="button" class="cliente-varios" (click)="clienteAbierto.set(true)">
+              <span><strong>Cliente varios</strong><br /><span class="mini suave">Sin DNI (hasta S/ 700)</span></span>
+              <span class="chico"><strong>+ Agregar DNI</strong></span>
+            </button>
+          } @else {
+            @if (clienteResumen()) {
+              <div class="cliente-ok">
+                <span class="crece">{{ clienteResumen() }}</span>
+                <button type="button" class="btn btn-fantasma btn-chico" (click)="limpiarCliente(tipoDoc)">Cambiar</button>
+              </div>
+            } @else {
+              <div class="doc">
+                <label class="sr-only" for="tipodoc">Tipo de documento</label>
+                <select id="tipodoc" class="select" [(ngModel)]="tipoDoc" [disabled]="tipo() === '01'">
+                  @if (tipo() === '01') { <option value="6">RUC</option> } @else {
+                    <option value="1">DNI</option><option value="6">RUC</option><option value="4">C. extranjería</option><option value="7">Pasaporte</option>
+                  }
+                </select>
+                <div class="crece relativo">
+                  <label class="sr-only" for="numdoc">Número de documento o nombre</label>
+                  <input id="numdoc" class="input mono" [placeholder]="tipoDoc === '6' ? 'RUC o nombre del caserito' : 'DNI o nombre del caserito'"
+                    [(ngModel)]="numDoc" (ngModelChange)="alEscribirDoc()" autocomplete="off" />
+                  @if (buscandoCliente()) { <span class="chip chip-amarillo cargando">Buscando…</span> }
+                  @if (sugerencias().length) {
+                    <ul class="sugerencias" role="listbox">
+                      @for (s of sugerencias(); track s.id) {
+                        <li><button type="button" (click)="usarCliente(s)"><strong>{{ s.nombre }}</strong> <span class="mono mini">{{ s.numeroDocumento }}</span></button></li>
+                      }
+                    </ul>
+                  }
+                </div>
+              </div>
+              <div class="campo">
+                <label for="nomcli">{{ tipoDoc === '6' ? 'Razón social' : 'Nombre' }}</label>
+                <input id="nomcli" class="input" [(ngModel)]="nombre" autocomplete="off" />
+              </div>
+              @if (tipoDoc === '6') {
+                <div class="campo">
+                  <label for="dircli">Dirección <span class="suave">(opcional)</span></label>
+                  <input id="dircli" class="input" [(ngModel)]="direccion" autocomplete="off" />
+                </div>
+              }
+              <div class="campo">
+                <label for="telcli">Celular para WhatsApp <span class="suave">(opcional)</span></label>
+                <input id="telcli" class="input mono" type="tel" [(ngModel)]="telefono" placeholder="9XX XXX XXX" />
+              </div>
+              <label class="check chico"><input type="checkbox" [(ngModel)]="guardarCliente" /> Guardar como caserito</label>
+            }
+          }
+        </div>
+
+        <hr class="separador" />
+
+        <!-- Ítems -->
+        <div class="col" style="gap: 6px">
+          <div class="entre"><h2 class="subtitulo">Pedido</h2><span class="mini suave">{{ unidades() | cant }} unid.</span></div>
+          @for (l of lineas(); track l.clave) {
+            <div class="linea">
+              <div class="l-info crece">
+                <span class="l-desc">{{ l.descripcion }}</span>
+                @if (editando() === l.clave) {
+                  <div class="fila">
+                    <label class="sr-only" [for]="'pr' + l.clave">Precio</label>
+                    <input [id]="'pr' + l.clave" class="input mono chico l-precio" type="number" step="0.01" min="0.01" [ngModel]="l.precio"
+                      (change)="fijarPrecio(l.clave, $any($event.target).value)" />
+                    <button type="button" class="btn btn-chico btn-tinta" (click)="editando.set(null)">Ok</button>
+                  </div>
+                } @else {
+                  <button type="button" class="enlace mini" (click)="editando.set(l.clave)" title="Cambiar precio">
+                    {{ l.precio | soles }} c/u @if (l.tipoAfectacion === '20') { · exonerado } @if (l.icbper) { · + ICBPER }
+                  </button>
+                }
+              </div>
+              <div class="stepper">
+                <button type="button" (click)="cambiarCantidad(l.clave, -1)" [attr.aria-label]="'Quitar uno de ' + l.descripcion"><at-icono [nombre]="l.cantidad <= 1 ? 'borrar' : 'restar'" [tam]="18" /></button>
+                <input class="mono" type="number" min="0" step="any" [ngModel]="l.cantidad" (change)="fijarCantidad(l.clave, $any($event.target).value)" [attr.aria-label]="'Cantidad de ' + l.descripcion" />
+                <button type="button" (click)="cambiarCantidad(l.clave, 1)" [attr.aria-label]="'Sumar uno a ' + l.descripcion"><at-icono nombre="sumar" [tam]="18" /></button>
+              </div>
+              <span class="monto l-total">{{ l.cantidad * l.precio | soles }}</span>
+            </div>
+          } @empty {
+            <p class="suave chico centro" style="padding: 14px 0">Toca un producto para agregarlo al pedido.</p>
+          }
+        </div>
+
+        @if (lineas().length) {
+          <div class="totales">
+            @if (totales().gravado) { <div class="entre"><span>Op. gravada</span><span class="mono">{{ totales().gravado | soles }}</span></div> }
+            @if (totales().exonerado) { <div class="entre"><span>Op. exonerada</span><span class="mono">{{ totales().exonerado | soles }}</span></div> }
+            @if (totales().inafecto) { <div class="entre"><span>Op. inafecta</span><span class="mono">{{ totales().inafecto | soles }}</span></div> }
+            <div class="entre"><span>IGV 18%</span><span class="mono">{{ totales().igv | soles }}</span></div>
+            @if (totales().icbper) { <div class="entre"><span>ICBPER (bolsas)</span><span class="mono">{{ totales().icbper | soles }}</span></div> }
+            <div class="entre total"><span>Total</span><span class="mono">{{ totales().total | soles }}</span></div>
+          </div>
+
+          <hr class="separador" />
+
+          <!-- Pago -->
+          <div class="col" style="gap: 10px">
+            <div class="entre">
+              <h2 class="subtitulo">Pago</h2>
+              @if (tipo() === '01') {
+                <div class="segmentado chico-seg" role="group" aria-label="Forma de pago">
+                  <button type="button" [attr.aria-pressed]="formaPago() === 'CONTADO'" (click)="formaPago.set('CONTADO')">Contado</button>
+                  <button type="button" [attr.aria-pressed]="formaPago() === 'CREDITO'" (click)="formaPago.set('CREDITO')">Crédito</button>
+                </div>
+              }
+            </div>
+            <div class="metodos" role="group" aria-label="Medio de pago">
+              @for (m of metodos; track m) {
+                <button type="button" class="metodo" [class.on]="metodo() === m" (click)="metodo.set(m)" [attr.aria-pressed]="metodo() === m">{{ nombreMetodo[m] }}</button>
+              }
+            </div>
+            @if (formaPago() === 'CONTADO') {
+              @if (metodo() === 'EFECTIVO') {
+                <div class="grilla-2 g2">
+                  <div class="campo">
+                    <label for="recibido">Recibido</label>
+                    <input id="recibido" class="input mono" type="number" min="0" step="0.10" inputmode="decimal" placeholder="0.00" [ngModel]="recibido()" (ngModelChange)="recibido.set($event)" />
+                  </div>
+                  <div class="campo">
+                    <span class="lbl">Vuelto</span>
+                    <span class="vuelto mono">{{ vuelto() | soles }}</span>
+                  </div>
+                </div>
+                <div class="fila-wrap">
+                  @for (b of [10, 20, 50, 100, 200]; track b) {
+                    @if (b >= totales().total) { <button type="button" class="btn btn-chico btn-borde mono" (click)="recibido.set(b)">S/ {{ b }}</button> }
+                  }
+                  <button type="button" class="btn btn-chico btn-fantasma" (click)="recibido.set(totales().total)">Exacto</button>
+                </div>
+              } @else if (metodo() !== 'TARJETA') {
+                <div class="campo">
+                  <label for="ref">N.º de operación <span class="suave">(opcional)</span></label>
+                  <input id="ref" class="input mono" [(ngModel)]="referencia" />
+                </div>
+              }
+            } @else {
+              <div class="grilla-3 g3">
+                <div class="campo">
+                  <label for="adelanto">Pago hoy</label>
+                  <input id="adelanto" class="input mono" type="number" min="0" step="0.01" [ngModel]="adelanto()" (ngModelChange)="adelanto.set($event)" />
+                </div>
+                <div class="campo">
+                  <label for="ncuotas">Cuotas</label>
+                  <input id="ncuotas" class="input mono" type="number" min="1" max="24" [ngModel]="numCuotas()" (ngModelChange)="numCuotas.set($event)" />
+                </div>
+                <div class="campo">
+                  <label for="venc">1.er vencimiento</label>
+                  <input id="venc" class="input" type="date" [ngModel]="primerVencimiento()" (ngModelChange)="primerVencimiento.set($event)" />
+                </div>
+              </div>
+              <span class="mini suave">Las cuotas se reparten iguales cada 30 días; SUNAT las recibe en la factura.</span>
+            }
+          </div>
+
+          <button type="button" class="enlace chico" (click)="verObs.set(!verObs())">{{ verObs() ? '− Ocultar observaciones' : '+ Agregar observación' }}</button>
+          @if (verObs()) {
+            <label class="sr-only" for="obs">Observaciones</label>
+            <textarea id="obs" class="textarea" maxlength="500" [(ngModel)]="observaciones" placeholder="Ej.: Entrega en tienda"></textarea>
+          }
+
+          @if (error()) { <div class="aviso aviso-magenta" role="alert">{{ error() }}</div> }
+
+          <button type="button" class="btn btn-tinta btn-grande btn-bloque" [disabled]="emitiendo()" (click)="emitir()">
+            @if (emitiendo()) { Emitiendo… } @else { <at-icono nombre="enviar" /> Emitir {{ tipo() === '01' ? 'factura' : 'boleta' }} · {{ totales().total | soles }} }
+          </button>
+        }
+      </div>
+    </section>
+  </div>
+
+  @if (lineas().length && vista() === 'catalogo') {
+    <button type="button" class="barra-pedido" (click)="vista.set('pedido')">
+      <span class="chip chip-amarillo mono">{{ lineas().length }}</span>
+      <span class="crece">Ver pedido</span>
+      <span class="mono">{{ totales().total | soles }}</span>
+    </button>
+  }
+</div>
+
+<at-modal [abierto]="libreAbierto()" titulo="Ítem libre" (cerrar)="libreAbierto.set(false)">
+  <form class="col" (ngSubmit)="agregarLibre()">
+    <div class="campo">
+      <label for="l-desc">Descripción</label>
+      <input id="l-desc" name="desc" class="input" [(ngModel)]="libre.descripcion" placeholder="Ej.: Servicio de delivery" />
+    </div>
+    <div class="grilla-2" style="grid-template-columns: 1fr 1fr">
+      <div class="campo">
+        <label for="l-precio">Precio (con IGV)</label>
+        <input id="l-precio" name="precio" class="input mono" type="number" step="0.01" min="0.01" [(ngModel)]="libre.precio" />
+      </div>
+      <div class="campo">
+        <label for="l-cant">Cantidad</label>
+        <input id="l-cant" name="cant" class="input mono" type="number" step="any" min="0.001" [(ngModel)]="libre.cantidad" />
+      </div>
+    </div>
+    <div class="grilla-2" style="grid-template-columns: 1fr 1fr">
+      <div class="campo">
+        <label for="l-und">Unidad</label>
+        <select id="l-und" name="und" class="select" [(ngModel)]="libre.unidadMedida">
+          @for (u of cat.lista('unidades'); track u.codigo) { <option [value]="u.codigo">{{ u.nombre }}</option> }
+        </select>
+      </div>
+      <div class="campo">
+        <label for="l-afe">IGV</label>
+        <select id="l-afe" name="afe" class="select" [(ngModel)]="libre.tipoAfectacion">
+          @for (a of cat.lista('afectaciones'); track a.codigo) { <option [value]="a.codigo">{{ a.nombre }}</option> }
+        </select>
+      </div>
+    </div>
+    <button type="submit" class="btn btn-tinta btn-bloque">Agregar al pedido</button>
+  </form>
+</at-modal>
+
+@if (emitido(); as c) {
+  <div class="exito" role="dialog" aria-modal="true" aria-labelledby="exito-titulo">
+    <div class="exito-in">
+      <div class="exito-cab no-imprimir">
+        <span class="sello-ok"><at-icono nombre="check" [tam]="26" [grosor]="3" /></span>
+        <h2 id="exito-titulo" class="display">¡Listo, caserito!</h2>
+        <p>Tu {{ c.tipo === '01' ? 'factura' : 'boleta' }} salió al toque.
+          @if (c.estadoSunat === 'ACEPTADO' || c.estadoSunat === 'OBSERVADO') { SUNAT ya la aceptó. }
+          @else if (c.estadoSunat === 'PENDIENTE') { La enviamos a SUNAT en un ratito. }
+          @else if (c.estadoSunat === 'RECHAZADO') { Ojo: SUNAT la rechazó, revisa el detalle. }
+        </p>
+      </div>
+      <div class="exito-ticket">
+        <at-comprobante-doc [comp]="c" formato="ticket" />
+      </div>
+      <div class="exito-acciones no-imprimir">
+        <button type="button" class="btn btn-verde" (click)="whatsapp(c)"><at-icono nombre="whatsapp" /> Enviar por WhatsApp</button>
+        <button type="button" class="btn btn-amarillo" (click)="imprimirTicket()"><at-icono nombre="imprimir" /> Imprimir ticket</button>
+        <button type="button" class="btn btn-borde" (click)="verDetalle(c)">Ver detalle</button>
+        <button type="button" class="btn btn-tinta" (click)="nuevaVenta()"><at-icono nombre="sumar" /> Nueva venta</button>
+      </div>
+    </div>
+  </div>
+}

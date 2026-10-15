@@ -1,0 +1,5 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:altoque-test;MODE=MariaDB;DATABASE_TO_LOWER=TRUE;CASE_INSENSITIVE_IDENTIFIERS=TRUE;DB_CLOSE_DELAY=-1
+altoque:
+  demo: false

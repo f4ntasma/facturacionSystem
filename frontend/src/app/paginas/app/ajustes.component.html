@@ -1,0 +1,249 @@
+<div class="pagina" style="max-width: 980px">
+  <h1 class="titulo">Ajustes</h1>
+  <div class="tabs" role="tablist" aria-label="Secciones de ajustes">
+    @for (t of tabs; track t.v) {
+      @if (!t.admin || auth.esAdmin()) {
+        <button type="button" role="tab" [attr.aria-selected]="tab() === t.v" (click)="irA(t.v)">{{ t.t }}</button>
+      }
+    }
+  </div>
+
+  <!-- NEGOCIO -->
+  @if (tab() === 'negocio') {
+    @if (empresa(); as e) {
+      <form class="tarjeta col" (ngSubmit)="guardarNegocio()">
+        <div class="entre"><h2 class="subtitulo">Datos fiscales</h2><span class="mono chico">RUC {{ e.ruc }}</span></div>
+        <div class="grilla-2">
+          <div class="campo"><label for="rs">Razón social</label><input id="rs" name="rs" class="input" [(ngModel)]="e.razonSocial" [disabled]="!auth.esAdmin()" /></div>
+          <div class="campo"><label for="nc">Nombre comercial</label><input id="nc" name="nc" class="input" [(ngModel)]="e.nombreComercial" [disabled]="!auth.esAdmin()" /></div>
+        </div>
+        <div class="campo"><label for="df">Dirección fiscal</label><input id="df" name="df" class="input" [(ngModel)]="e.direccionFiscal" [disabled]="!auth.esAdmin()" /></div>
+        <div class="grilla-4">
+          <div class="campo"><label for="ub">Ubigeo</label><input id="ub" name="ub" class="input mono" maxlength="6" [(ngModel)]="e.ubigeo" [disabled]="!auth.esAdmin()" /></div>
+          <div class="campo"><label for="dep">Departamento</label><input id="dep" name="dep" class="input" [(ngModel)]="e.departamento" [disabled]="!auth.esAdmin()" /></div>
+          <div class="campo"><label for="pro">Provincia</label><input id="pro" name="pro" class="input" [(ngModel)]="e.provincia" [disabled]="!auth.esAdmin()" /></div>
+          <div class="campo"><label for="dis">Distrito</label><input id="dis" name="dis" class="input" [(ngModel)]="e.distrito" [disabled]="!auth.esAdmin()" /></div>
+        </div>
+        <div class="grilla-2">
+          <div class="campo"><label for="tel">Teléfono</label><input id="tel" name="tel" class="input mono" [(ngModel)]="e.telefono" [disabled]="!auth.esAdmin()" /></div>
+          <div class="campo"><label for="em">Correo</label><input id="em" name="em" class="input" type="email" [(ngModel)]="e.email" [disabled]="!auth.esAdmin()" /></div>
+        </div>
+        <div class="campo">
+          <label for="mt">Mensaje al pie del ticket</label>
+          <input id="mt" name="mt" class="input" maxlength="160" [(ngModel)]="e.mensajeTicket" placeholder="¡Gracias, caserito! Vuelve al toque." [disabled]="!auth.esAdmin()" />
+        </div>
+        @if (auth.esAdmin()) { <button type="submit" class="btn btn-tinta" [disabled]="ocupado()">Guardar cambios</button> }
+      </form>
+    } @else { <div class="esqueleto" style="height: 300px"></div> }
+  }
+
+  <!-- SUNAT -->
+  @if (tab() === 'sunat') {
+    @if (empresa(); as e) {
+      <section class="tarjeta col">
+        <h2 class="subtitulo">¿Dónde emites?</h2>
+        <div class="ambientes" role="group" aria-label="Ambiente SUNAT">
+          <button type="button" class="amb" [attr.aria-pressed]="ambiente() === 'SIMULADO'" (click)="ambiente.set('SIMULADO')" [disabled]="!auth.esDueno()">
+            <strong>Simulado</strong><span class="mini">Genera y firma, sin enviar. Para practicar.</span></button>
+          <button type="button" class="amb" [attr.aria-pressed]="ambiente() === 'BETA'" (click)="ambiente.set('BETA')" [disabled]="!auth.esDueno()">
+            <strong>Pruebas SUNAT (beta)</strong><span class="mini">Envía a SUNAT de pruebas. Sin valor tributario.</span></button>
+          <button type="button" class="amb" [attr.aria-pressed]="ambiente() === 'PRODUCCION'" (click)="ambiente.set('PRODUCCION')" [disabled]="!auth.esDueno()">
+            <strong>Producción</strong><span class="mini">Comprobantes válidos. Requiere certificado y clave SOL.</span></button>
+        </div>
+        <div class="grilla-2">
+          <div class="campo">
+            <label for="solu">Usuario SOL secundario</label>
+            <input id="solu" name="solu" class="input mono" [(ngModel)]="solUsuario" placeholder="Ej.: FACTURA1" [disabled]="!auth.esDueno()" />
+          </div>
+          <div class="campo">
+            <label for="solc">Clave SOL {{ e.solConfigurado ? '(ya guardada)' : '' }}</label>
+            <input id="solc" name="solc" class="input" type="password" autocomplete="new-password" [(ngModel)]="solClave" [placeholder]="e.solConfigurado ? '••••••••' : ''" [disabled]="!auth.esDueno()" />
+          </div>
+        </div>
+        <span class="ayuda chico suave">Crea un usuario secundario en SUNAT Operaciones en Línea con el perfil de emisor electrónico. Guardamos la clave cifrada.</span>
+        @if (auth.esDueno()) { <button type="button" class="btn btn-tinta" [disabled]="ocupado()" (click)="guardarSunat()">Guardar configuración SUNAT</button> }
+      </section>
+
+      <section class="tarjeta col">
+        <h2 class="subtitulo">Certificado digital</h2>
+        @if (certificado(); as c) {
+          <div class="aviso" [class.aviso-amarillo]="c.autogenerado" [class.aviso-verde]="!c.autogenerado">
+            <at-icono [nombre]="c.autogenerado ? 'info' : 'check'" />
+            <div class="chico">
+              @if (c.autogenerado) { <strong>Certificado de pruebas (lo generamos por ti).</strong> Sirve para simulado y beta, no para producción.<br /> }
+              @else { <strong>Certificado propio activo.</strong><br /> }
+              {{ c.sujeto }}<br />Vigente hasta {{ c.validoHasta.substring(0, 10) | fecha }}
+            </div>
+          </div>
+        } @else {
+          <p class="chico suave">Aún no hay certificado. Al emitir en pruebas generamos uno solito.</p>
+        }
+        @if (auth.esDueno()) {
+          <div class="grilla-2">
+            <div class="campo"><label for="pfx">Archivo .pfx / .p12</label><input id="pfx" class="input" type="file" accept=".pfx,.p12" (change)="elegirArchivo($event)" /></div>
+            <div class="campo"><label for="pfxc">Clave del certificado</label><input id="pfxc" name="pfxc" class="input" type="password" autocomplete="off" [(ngModel)]="certClave" /></div>
+          </div>
+          <button type="button" class="btn btn-borde" [disabled]="ocupado()" (click)="subirCertificado()"><at-icono nombre="llave" /> Subir certificado</button>
+        }
+      </section>
+    }
+  }
+
+  <!-- SERIES Y LOCALES -->
+  @if (tab() === 'series') {
+    <section class="tarjeta col">
+      <div class="entre"><h2 class="subtitulo">Series</h2>@if (auth.esAdmin()) { <button type="button" class="btn btn-chico btn-tinta" (click)="nuevaSerie()">+ Nueva serie</button> }</div>
+      <div class="tabla-caja" style="box-shadow: none">
+        <table class="tabla">
+          <thead><tr><th>Tipo</th><th>Serie</th><th>Local</th><th class="derecha">Último número</th><th></th></tr></thead>
+          <tbody>
+            @for (g of seriesPorTipo(); track g[0]) {
+              @for (s of g[1]; track s.id) {
+                <tr [style.opacity]="s.activo ? 1 : .5">
+                  <td>{{ nombreTipo[s.tipo] }}</td><td class="mono"><strong>{{ s.serie }}</strong></td><td>{{ s.establecimiento }}</td>
+                  <td class="derecha mono">{{ s.correlativoActual }}</td>
+                  <td class="derecha">@if (auth.esAdmin()) { <button type="button" class="btn btn-chico btn-fantasma" (click)="alternarSerie(s)">{{ s.activo ? 'Desactivar' : 'Activar' }}</button> }</td>
+                </tr>
+              }
+            }
+          </tbody>
+        </table>
+      </div>
+      <span class="mini suave">Boletas empiezan con B, facturas con F. Las notas usan la letra del comprobante que modifican (FC01, BC01…).</span>
+    </section>
+
+    <section class="tarjeta col">
+      <div class="entre"><h2 class="subtitulo">Locales</h2>@if (auth.esAdmin()) { <button type="button" class="btn btn-chico btn-tinta" (click)="editarLocal()">+ Nuevo local</button> }</div>
+      <div class="lista" style="box-shadow: none; border: 1px solid var(--linea)">
+        @for (l of locales(); track l.id) {
+          <div class="lista-item">
+            <div class="crece"><strong>{{ l.nombre }}</strong> <span class="mono mini">· {{ l.codigoSunat }}</span><br /><span class="mini suave">{{ l.direccion || 'Sin dirección' }}</span></div>
+            @if (!l.activo) { <span class="chip chip-gris">Inactivo</span> }
+            @if (auth.esAdmin()) { <button type="button" class="btn btn-icono btn-fantasma" (click)="editarLocal(l)" [attr.aria-label]="'Editar ' + l.nombre"><at-icono nombre="editar" [tam]="18" /></button> }
+          </div>
+        }
+      </div>
+    </section>
+  }
+
+  <!-- EQUIPO -->
+  @if (tab() === 'equipo') {
+    <section class="tarjeta col">
+      <div class="entre"><h2 class="subtitulo">Tu equipo</h2><button type="button" class="btn btn-chico btn-tinta" (click)="editarUsuario()">+ Agregar persona</button></div>
+      <div class="lista" style="box-shadow: none; border: 1px solid var(--linea)">
+        @for (u of usuarios(); track u.id) {
+          <div class="lista-item" [style.opacity]="u.activo ? 1 : .5">
+            <div class="crece"><strong>{{ u.nombre }}</strong><br /><span class="mini suave">{{ u.email }} · {{ u.establecimiento || 'Todos los locales' }}</span></div>
+            <span class="chip" [class.chip-tinta]="u.rol === 'PROPIETARIO'" [class.chip-amarillo]="u.rol === 'ADMINISTRADOR'">{{ u.rol === 'PROPIETARIO' ? 'Dueño' : u.rol === 'ADMINISTRADOR' ? 'Administrador' : 'Vendedor' }}</span>
+            <button type="button" class="btn btn-icono btn-fantasma" (click)="editarUsuario(u)" [attr.aria-label]="'Editar ' + u.nombre"><at-icono nombre="editar" [tam]="18" /></button>
+          </div>
+        }
+      </div>
+      <span class="mini suave">Vendedor: emite y cobra. Administrador: además gestiona productos, series y anulaciones. Dueño: todo, incluido SUNAT y plan.</span>
+    </section>
+  }
+
+  <!-- PLAN -->
+  @if (tab() === 'plan') {
+    @if (cuenta(); as c) {
+      <div class="aviso" [class.aviso-amarillo]="c.estado === 'PRUEBA'" [class.aviso-verde]="c.estado === 'ACTIVA'" [class.aviso-magenta]="c.estado === 'SUSPENDIDA'">
+        <at-icono nombre="info" />
+        <div>
+          Estás en el plan <strong>{{ c.plan.nombre }}</strong>.
+          @if (c.estado === 'PRUEBA' && c.pruebaHasta) { Tu prueba gratis va hasta el {{ c.pruebaHasta | fecha }}; mientras tanto puedes cambiar de plan libremente. }
+          @if (c.estado === 'SUSPENDIDA') { La cuenta está suspendida: elige un plan para reactivarla. }
+        </div>
+      </div>
+      <div class="planes">
+        @for (p of planes(); track p.codigo) {
+          <div class="plan" [class.actual]="p.codigo === c.plan.codigo" [class.destacado]="p.destacado">
+            <h3 class="display" style="font-size: 28px">{{ p.nombre }}</h3>
+            <span class="mono" style="font-size: 26px; font-weight: 700">{{ p.precioMensual | soles }}<span class="chico" style="font-weight: 400"> /mes</span></span>
+            <span class="chico">{{ p.limiteComprobantes ? p.limiteComprobantes + ' comprobantes/mes' : 'Comprobantes ilimitados' }} · {{ p.maxUsuarios }} usuario(s) · {{ p.maxEstablecimientos }} local(es)</span>
+            @if (p.codigo === c.plan.codigo) { <span class="chip chip-tinta" style="align-self: flex-start">Tu plan</span> }
+            @else if (auth.esDueno()) { <button type="button" class="btn btn-tinta btn-chico" [disabled]="ocupado()" (click)="cambiarPlan(p)">Elegir {{ p.nombre }}</button> }
+          </div>
+        }
+      </div>
+      @if (c.historial.length) {
+        <div class="tabla-caja">
+          <table class="tabla">
+            <thead><tr><th>Plan</th><th>Periodo</th><th class="derecha">Monto</th><th>Estado</th></tr></thead>
+            <tbody>@for (h of c.historial; track h.id) { <tr><td>{{ h.plan }}</td><td>{{ h.periodoInicio | fecha }} – {{ h.periodoFin | fecha }}</td><td class="derecha mono">{{ h.monto | soles }}</td><td>{{ h.estado }}</td></tr> }</tbody>
+          </table>
+        </div>
+      }
+    } @else { <div class="esqueleto" style="height: 240px"></div> }
+  }
+
+  <!-- CUENTA -->
+  @if (tab() === 'cuenta') {
+    @if (auth.perfil(); as p) {
+      <form class="tarjeta col" (ngSubmit)="cambiarClave()">
+        <h2 class="subtitulo">{{ p.nombre }}</h2>
+        <span class="chico suave">{{ p.email }}</span>
+        <div class="grilla-2">
+          <div class="campo"><label for="ca">Contraseña actual</label><input id="ca" name="ca" class="input" type="password" autocomplete="current-password" [(ngModel)]="clave.actual" /></div>
+          <div class="campo"><label for="cn">Nueva contraseña</label><input id="cn" name="cn" class="input" type="password" autocomplete="new-password" [(ngModel)]="clave.nueva" /></div>
+        </div>
+        <button type="submit" class="btn btn-tinta" [disabled]="ocupado()">Cambiar contraseña</button>
+      </form>
+      <button type="button" class="btn btn-borde" (click)="auth.salir('/')"><at-icono nombre="salir" /> Cerrar sesión</button>
+    }
+  }
+</div>
+
+<at-modal [abierto]="serieAbierta()" titulo="Nueva serie" (cerrar)="serieAbierta.set(false)">
+  <form class="col" (ngSubmit)="guardarSerie()">
+    <div class="campo"><label for="st">Tipo</label>
+      <select id="st" name="st" class="select" [(ngModel)]="serieForm.tipo">
+        <option value="03">Boleta</option><option value="01">Factura</option><option value="07">Nota de crédito</option><option value="08">Nota de débito</option>
+      </select></div>
+    <div class="grilla-2" style="grid-template-columns: 1fr 1fr">
+      <div class="campo"><label for="sc">Serie</label><input id="sc" name="sc" class="input mono" maxlength="4" [(ngModel)]="serieForm.serie" [placeholder]="serieForm.tipo === '01' ? 'F002' : serieForm.tipo === '03' ? 'B002' : 'BC02'" /></div>
+      <div class="campo"><label for="si">Último número usado</label><input id="si" name="si" class="input mono" type="number" min="0" [(ngModel)]="serieForm.correlativoInicial" /></div>
+    </div>
+    <span class="mini suave">Si vienes de otro sistema, pon el último número que emitiste con esta serie.</span>
+    <div class="campo"><label for="sl">Local</label>
+      <select id="sl" name="sl" class="select" [(ngModel)]="serieForm.establecimientoId">
+        @for (l of locales(); track l.id) { <option [ngValue]="l.id">{{ l.nombre }} ({{ l.codigoSunat }})</option> }
+      </select></div>
+    <button type="submit" class="btn btn-tinta" [disabled]="ocupado()">Crear serie</button>
+  </form>
+</at-modal>
+
+<at-modal [abierto]="localAbierto()" [titulo]="localForm.id ? 'Editar local' : 'Nuevo local'" (cerrar)="localAbierto.set(false)">
+  <form class="col" (ngSubmit)="guardarLocal()">
+    <div class="grilla-2" style="grid-template-columns: 1fr 2fr">
+      <div class="campo"><label for="lc">Código SUNAT</label><input id="lc" name="lc" class="input mono" maxlength="4" [(ngModel)]="localForm.codigoSunat" [disabled]="!!localForm.id" /></div>
+      <div class="campo"><label for="ln">Nombre</label><input id="ln" name="ln" class="input" [(ngModel)]="localForm.nombre" /></div>
+    </div>
+    <div class="campo"><label for="ld">Dirección</label><input id="ld" name="ld" class="input" [(ngModel)]="localForm.direccion" /></div>
+    <div class="campo"><label for="lu">Ubigeo <span class="suave">(opcional)</span></label><input id="lu" name="lu" class="input mono" maxlength="6" [(ngModel)]="localForm.ubigeo" /></div>
+    @if (localForm.id && localForm.codigoSunat !== '0000') { <label class="check"><input type="checkbox" name="la" [(ngModel)]="localForm.activo" /> Activo</label> }
+    <button type="submit" class="btn btn-tinta" [disabled]="ocupado()">Guardar local</button>
+  </form>
+</at-modal>
+
+<at-modal [abierto]="usuarioAbierto()" [titulo]="usuarioForm.id ? 'Editar persona' : 'Agregar persona'" (cerrar)="usuarioAbierto.set(false)">
+  <form class="col" (ngSubmit)="guardarUsuario()">
+    <div class="campo"><label for="un">Nombre</label><input id="un" name="un" class="input" [(ngModel)]="usuarioForm.nombre" /></div>
+    <div class="campo"><label for="ue">Correo</label><input id="ue" name="ue" class="input" type="email" [(ngModel)]="usuarioForm.email" /></div>
+    <div class="grilla-2" style="grid-template-columns: 1fr 1fr">
+      <div class="campo"><label for="ur">Rol</label>
+        <select id="ur" name="ur" class="select" [(ngModel)]="usuarioForm.rol" [disabled]="usuarioForm.rol === 'PROPIETARIO'">
+          @if (usuarioForm.rol === 'PROPIETARIO') { <option value="PROPIETARIO">Dueño</option> }
+          <option value="VENDEDOR">Vendedor</option>
+          @if (auth.esDueno()) { <option value="ADMINISTRADOR">Administrador</option> }
+        </select></div>
+      <div class="campo"><label for="ul">Local</label>
+        <select id="ul" name="ul" class="select" [(ngModel)]="usuarioForm.establecimientoId">
+          @for (l of locales(); track l.id) { <option [ngValue]="l.id">{{ l.nombre }}</option> }
+        </select></div>
+    </div>
+    <div class="campo"><label for="up">{{ usuarioForm.id ? 'Nueva contraseña (opcional)' : 'Contraseña inicial' }}</label>
+      <input id="up" name="up" class="input" type="password" autocomplete="new-password" [(ngModel)]="usuarioForm.password" /></div>
+    @if (usuarioForm.id && usuarioForm.rol !== 'PROPIETARIO') { <label class="check"><input type="checkbox" name="ua" [(ngModel)]="usuarioForm.activo" /> Activo</label> }
+    <button type="submit" class="btn btn-tinta" [disabled]="ocupado()">Guardar</button>
+  </form>
+</at-modal>

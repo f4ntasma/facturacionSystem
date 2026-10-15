@@ -1,0 +1,180 @@
+<div class="pagina">
+  @if (c(); as c) {
+    <header class="cabecera">
+      <div class="col" style="gap: 6px">
+        <a routerLink="/app/comprobantes" class="chico fila" style="gap: 4px; text-decoration: none"><at-icono nombre="izquierda" [tam]="18" /> Comprobantes</a>
+        <h1 class="titulo mono" style="font-stretch: 100%; font-size: clamp(24px, 4vw, 32px)">{{ c.numero }}</h1>
+        <div class="fila-wrap">
+          <span class="chico"><strong>{{ c.tipoNombre }}</strong> · {{ c.fechaEmision | fecha }} {{ c.horaEmision.substring(0, 5) }}</span>
+          <at-estado-sunat [estado]="c.estadoSunat" />
+          @if (c.tipo !== '07') { <at-estado-pago [estado]="c.estadoPago" /> }
+        </div>
+      </div>
+      <div class="segmentado no-imprimir" role="group" aria-label="Formato">
+        <button type="button" [attr.aria-pressed]="formato() === 'ticket'" (click)="formato.set('ticket')">Ticket</button>
+        <button type="button" [attr.aria-pressed]="formato() === 'a4'" (click)="formato.set('a4')">A4</button>
+      </div>
+    </header>
+
+    <div class="grid">
+      <section class="doc-caja" [class.ticket]="formato() === 'ticket'">
+        <at-comprobante-doc [comp]="c" [formato]="formato()" />
+      </section>
+
+      <aside class="col lado no-imprimir">
+        <div class="tarjeta col">
+          <div class="acciones">
+            <button type="button" class="btn btn-verde" (click)="whatsapp(c)"><at-icono nombre="whatsapp" /> WhatsApp</button>
+            <button type="button" class="btn btn-amarillo" (click)="imprimir()"><at-icono nombre="imprimir" /> Imprimir</button>
+            <button type="button" class="btn btn-borde" (click)="copiar(c)"><at-icono nombre="copiar" /> Copiar enlace</button>
+            <button type="button" class="btn btn-borde" (click)="descargar('xml')"><at-icono nombre="descargar" /> XML</button>
+            @if (c.sunatCodigo && c.estadoSunat !== 'PENDIENTE' && c.emisor.ambiente !== 'SIMULADO') {
+              <button type="button" class="btn btn-borde" (click)="descargar('cdr')"><at-icono nombre="descargar" /> CDR</button>
+            }
+          </div>
+        </div>
+
+        <div class="tarjeta col" style="gap: 8px">
+          <div class="entre"><h2 class="subtitulo">SUNAT</h2><at-estado-sunat [estado]="c.estadoSunat" /></div>
+          @if (c.sunatMensaje) { <p class="msg">{{ c.sunatCodigo ? c.sunatCodigo + ' · ' : '' }}{{ c.sunatMensaje }}</p> }
+          @if (c.anulacionMotivo) { <p class="msg"><strong>Motivo de anulación:</strong> {{ c.anulacionMotivo }}</p> }
+          @if (c.estadoSunat === 'PENDIENTE') {
+            <button type="button" class="btn btn-tinta btn-chico" [disabled]="ocupado()" (click)="reenviar()"><at-icono nombre="refrescar" [tam]="18" /> Reintentar envío</button>
+          }
+          @if (c.estadoSunat === 'RECHAZADO') {
+            <div class="aviso aviso-magenta chico">SUNAT no lo aceptó. Corrige los datos y emite un comprobante nuevo; este puedes anularlo.</div>
+          }
+          @if (envios().length) {
+            <details>
+              <summary class="chico">Historial de envíos ({{ envios().length }})</summary>
+              <ul class="bitacora" style="list-style: none; padding: 0; margin: 8px 0 0">
+                @for (e of envios(); track e.id) {
+                  <li><strong>{{ e.exito ? '✓' : '×' }} {{ e.operacion }}</strong> · {{ e.ambiente }} · {{ e.createdAt.substring(0, 16).replace('T', ' ') }}
+                    @if (e.codigo) { · código {{ e.codigo }} } <br /><span class="suave">{{ e.mensaje }}</span></li>
+                }
+              </ul>
+            </details>
+          }
+        </div>
+
+        @if (c.tipo !== '07') {
+          <div class="tarjeta col" style="gap: 8px">
+            <h2 class="subtitulo">Cobro</h2>
+            <div class="dato"><span>Total</span><span class="monto">{{ c.total | soles: c.moneda }}</span></div>
+            <div class="dato"><span>Pagado</span><span class="monto">{{ c.montoPagado | soles: c.moneda }}</span></div>
+            <div class="dato"><span><strong>Saldo</strong></span><span class="monto grande" [style.color]="c.saldo > 0 ? 'var(--magenta)' : 'var(--verde)'">{{ c.saldo | soles: c.moneda }}</span></div>
+            @for (p of c.pagos; track p.id) {
+              <div class="dato chico suave"><span>{{ nombreMetodo[p.metodo] }} · {{ p.pagadoAt.substring(0, 10) | fecha }}{{ p.referencia ? ' · ' + p.referencia : '' }}</span><span class="mono">{{ p.monto | soles }}</span></div>
+            }
+            @if (c.saldo > 0 && c.estadoSunat !== 'ANULADO' && c.estadoSunat !== 'RECHAZADO') {
+              <button type="button" class="btn btn-tinta" (click)="abrirCobro(c)"><at-icono nombre="dinero" /> Registrar cobro</button>
+            }
+          </div>
+        }
+
+        @if (c.referencia) {
+          <div class="tarjeta col" style="gap: 6px">
+            <h2 class="subtitulo">Modifica a</h2>
+            <a [routerLink]="['/app/comprobantes', c.referencia.id]" class="mono"><strong>{{ nombreTipo(c.referencia.tipo) }} {{ c.referencia.numero }}</strong></a>
+            <span class="chico">{{ c.motivoCodigo }} · {{ c.motivoDescripcion }}</span>
+          </div>
+        } @else {
+          <div class="tarjeta col" style="gap: 8px">
+            <h2 class="subtitulo">Notas</h2>
+            @for (n of c.notas; track n.id) {
+              <a [routerLink]="['/app/comprobantes', n.id]" class="chico">{{ nombreTipo(n.tipo) }} <span class="mono"><strong>{{ n.numero }}</strong></span></a>
+            } @empty {
+              <span class="chico suave">¿Devolución, descuento o error? Corrígelo con una nota.</span>
+            }
+            @if (esValido()) {
+              <div class="fila-wrap">
+                @if (auth.empresa()?.plan?.notasCredito) {
+                  <button type="button" class="btn btn-borde btn-chico" (click)="abrirNota('07')"><at-icono nombre="nota" [tam]="18" /> Nota de crédito</button>
+                }
+                <button type="button" class="btn btn-fantasma btn-chico" (click)="abrirNota('08')">Nota de débito</button>
+              </div>
+            }
+          </div>
+        }
+
+        @if (puedeAnular()) {
+          <button type="button" class="btn btn-fantasma" style="color: var(--magenta)" (click)="anularAbierto.set(true)"><at-icono nombre="anular" /> Anular comprobante</button>
+        }
+      </aside>
+    </div>
+
+    <at-modal [abierto]="cobroAbierto()" titulo="Registrar cobro" (cerrar)="cobroAbierto.set(false)">
+      <form class="col" (ngSubmit)="cobrar()">
+        <div class="campo">
+          <label for="c-monto">Monto (saldo {{ c.saldo | soles }})</label>
+          <input id="c-monto" name="monto" class="input mono" type="number" step="0.01" min="0.01" [max]="c.saldo" [(ngModel)]="cobro.monto" />
+        </div>
+        <div class="campo">
+          <label for="c-metodo">Medio</label>
+          <select id="c-metodo" name="metodo" class="select" [(ngModel)]="cobro.metodo">
+            @for (m of metodos; track m) { <option [value]="m">{{ nombreMetodo[m] }}</option> }
+          </select>
+        </div>
+        <div class="campo">
+          <label for="c-ref">N.º de operación <span class="suave">(opcional)</span></label>
+          <input id="c-ref" name="ref" class="input mono" [(ngModel)]="cobro.referencia" />
+        </div>
+        <button type="submit" class="btn btn-tinta btn-bloque" [disabled]="ocupado()">Registrar cobro</button>
+      </form>
+    </at-modal>
+
+    <at-modal [abierto]="anularAbierto()" titulo="Anular {{ c.numero }}" (cerrar)="anularAbierto.set(false)">
+      <form class="col" (ngSubmit)="anular()">
+        <p class="chico">
+          @if (c.estadoSunat === 'RECHAZADO') { SUNAT no lo aceptó, así que solo lo marcamos como anulado. }
+          @else if (c.serie.startsWith('B')) { Enviaremos un resumen diario de anulación a SUNAT. }
+          @else { Enviaremos una comunicación de baja a SUNAT. }
+          Si vendiste productos con stock, se reponen.
+        </p>
+        <div class="campo">
+          <label for="a-motivo">Motivo</label>
+          <input id="a-motivo" name="motivo" class="input" maxlength="100" [(ngModel)]="motivoAnulacion" placeholder="Ej.: Error en el monto" />
+        </div>
+        <button type="submit" class="btn btn-magenta btn-bloque" [disabled]="ocupado()">Sí, anular</button>
+      </form>
+    </at-modal>
+
+    <at-modal [abierto]="notaAbierta()" [titulo]="(notaTipo() === '07' ? 'Nota de crédito' : 'Nota de débito') + ' para ' + c.numero" [ancho]="640" (cerrar)="notaAbierta.set(false)">
+      <form class="col" (ngSubmit)="emitirNota()">
+        <div class="campo">
+          <label for="n-motivo">Motivo</label>
+          <select id="n-motivo" name="motivo" class="select" [ngModel]="motivo()" (ngModelChange)="motivo.set($event)">
+            @for (m of motivosNota(); track m.codigo) { <option [value]="m.codigo">{{ m.codigo }} · {{ m.nombre }}</option> }
+          </select>
+        </div>
+        <div class="campo">
+          <label for="n-desc">Detalle del motivo</label>
+          <input id="n-desc" name="desc" class="input" maxlength="250" [(ngModel)]="motivoDescripcion" placeholder="Ej.: El cliente devolvió una caja" />
+        </div>
+        @if (esTotal()) {
+          <div class="aviso aviso-amarillo chico">La nota anula todo el comprobante por {{ c.total | soles }}. Los productos con stock se reponen.</div>
+        } @else {
+          <span class="lbl chico"><strong>Ítems de la nota</strong> <span class="suave">(cantidad y precio con IGV)</span></span>
+          <div class="items-nota">
+            @for (it of itemsNota(); track $index; let i = $index) {
+              <div class="item-nota">
+                <input type="checkbox" [checked]="it.incluir" (change)="tocarItem(i, { incluir: $any($event.target).checked })" [attr.aria-label]="'Incluir ' + it.descripcion" />
+                <input class="input" [value]="it.descripcion" (change)="tocarItem(i, { descripcion: $any($event.target).value })" aria-label="Descripción" />
+                <input class="input mono" type="number" step="any" min="0" [value]="it.cantidad" (change)="tocarItem(i, { cantidad: +$any($event.target).value })" aria-label="Cantidad" />
+                <input class="input mono" type="number" step="0.01" min="0" [value]="it.precioUnitario" (change)="tocarItem(i, { precioUnitario: +$any($event.target).value })" aria-label="Precio" />
+              </div>
+            }
+          </div>
+          @if (notaTipo() === '08') {
+            <button type="button" class="btn btn-fantasma btn-chico" (click)="otroConcepto()">+ Otro concepto</button>
+          }
+        }
+        <div class="entre"><span><strong>Total de la nota</strong></span><span class="monto grande">{{ totalNota() | soles }}</span></div>
+        <button type="submit" class="btn btn-tinta btn-bloque" [disabled]="ocupado()">Emitir nota</button>
+      </form>
+    </at-modal>
+  } @else {
+    <div class="esqueleto" style="height: 60px; width: 40%"></div>
+    <div class="esqueleto" style="height: 520px"></div>
+  }
+</div>

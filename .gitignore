@@ -1,0 +1,23 @@
+# Secretos
+.env
+*.env.local
+*.pfx
+*.p12
+*.jks
+
+# Backend
+backend/target/
+backend/data/
+*.log
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/.angular/
+
+# IDE / SO
+.idea/
+.vscode/
+*.iml
+.DS_Store
+Thumbs.db

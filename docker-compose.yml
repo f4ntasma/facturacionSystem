@@ -1,0 +1,52 @@
+# Al Toque completo en local o en un servidor: docker compose up --build
+# Copia .env.example a .env y cambia las claves antes de usarlo en serio.
+services:
+  db:
+    image: mariadb:11.4
+    restart: unless-stopped
+    environment:
+      MARIADB_DATABASE: ${DB_NAME:-altoque}
+      MARIADB_USER: ${DB_USER:-altoque}
+      MARIADB_PASSWORD: ${DB_PASSWORD:?Define DB_PASSWORD en .env}
+      MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:?Define DB_ROOT_PASSWORD en .env}
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci --default-time-zone=-05:00
+    volumes:
+      - datos:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      retries: 10
+
+  api:
+    build: ./backend
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_NAME: ${DB_NAME:-altoque}
+      DB_USER: ${DB_USER:-altoque}
+      DB_PASSWORD: ${DB_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET:?Define JWT_SECRET en .env}
+      APP_CRYPTO_KEY: ${APP_CRYPTO_KEY:?Define APP_CRYPTO_KEY en .env}
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:8081}
+      API_PUBLIC_URL: ${API_PUBLIC_URL:-http://localhost:8081}
+      CORS_ORIGINS: ${FRONTEND_URL:-http://localhost:8081}
+      ALTOQUE_DEMO: ${ALTOQUE_DEMO:-true}
+      APIPERU_TOKEN: ${APIPERU_TOKEN:-}
+      MP_ACCESS_TOKEN: ${MP_ACCESS_TOKEN:-}
+
+  web:
+    build: ./frontend
+    restart: unless-stopped
+    depends_on:
+      - api
+    environment:
+      API_UPSTREAM: http://api:8080
+    ports:
+      - "${PUERTO_WEB:-8081}:80"
+
+volumes:
+  datos:

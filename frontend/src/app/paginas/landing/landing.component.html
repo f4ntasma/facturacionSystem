@@ -1,0 +1,182 @@
+<div class="landing">
+  <header class="nav">
+    <div class="contenedor nav-in">
+      <a routerLink="/" aria-label="Al Toque, inicio" class="marca"><at-logo variante="claro" [tam]="40" /></a>
+      <nav aria-label="Secciones" class="nav-links">
+        <a href="#como">Cómo funciona</a>
+        <a href="#funciones">Funciones</a>
+        <a href="#precios">Precios</a>
+        <a href="#preguntas">Preguntas</a>
+        @if (auth.logueado()) {
+          <a routerLink="/app" class="pildora">Ir a mi negocio</a>
+        } @else {
+          <a routerLink="/ingresar">Ingresar</a>
+          <a routerLink="/registro" class="pildora">Empieza ya</a>
+        }
+      </nav>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div class="contenedor hero-in">
+      <div class="hero-texto">
+        <span class="sello">FACTURACIÓN ELECTRÓNICA PA'L BARRIO Y PA' LA EMPRESA</span>
+        <h1 class="display h-hero">Factura<br />al toque,<br /><span class="magenta">pe causa.</span></h1>
+        <p class="bajada">Emite boletas y facturas electrónicas desde tu celular en segundos. Sin enredos, sin papeleo y sin tener que ser contador.</p>
+        <div class="ctas">
+          <a routerLink="/registro" class="cta-tinta">
+            Empieza al toque
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#FFC81E" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"></path><path d="m13 6 6 6-6 6"></path></svg>
+          </a>
+          <a href="#como" class="cta-borde">Mira cómo funciona</a>
+        </div>
+        <div class="checks">
+          @for (t of ['Boletas y facturas', 'Desde el celu o la compu', 'Envío por WhatsApp']; track t) {
+            <span><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#14141F" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5L20 7"></path></svg>{{ t }}</span>
+          }
+        </div>
+      </div>
+
+      <div class="hero-arte" aria-hidden="true">
+        <div class="escena">
+          <div class="celular">
+            <div class="pantalla">
+              <div class="display p-marca">al toque</div>
+              <div class="p-saludo">¡Habla, caserito!</div>
+              <div class="p-ventas"><div class="p-lbl">Ventas de hoy</div><div class="mono p-monto">S/ 1,248.00</div></div>
+              <div class="p-boton">+ Emitir boleta al toque</div>
+              <div class="p-lista">
+                <div><span>B001-000123</span><b>S/ 12.50</b></div>
+                <div><span>F001-000045</span><b>S/ 236.00</b></div>
+                <div><span>B001-000122</span><b>S/ 8.00</b></div>
+              </div>
+            </div>
+          </div>
+          <div class="mini-boleta mono">
+            <div class="b">BOLETA ELECTRÓNICA</div>
+            <div class="c">B001-000123</div>
+            <div class="t"><span>TOTAL</span><b>S/ 12.50</b></div>
+            <div class="v">¡Vuelve al toque!</div>
+          </div>
+          <div class="emitida">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5L20 7"></path></svg>
+            ¡Boleta emitida!
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="banda">
+    <div class="display banda-in">
+      <span>Boletas</span><span aria-hidden="true">✦</span><span>Facturas</span><span aria-hidden="true">✦</span><span>Notas de crédito</span><span aria-hidden="true">✦</span><span>Reportes del día</span><span aria-hidden="true">✦</span><span>Al toque</span>
+    </div>
+  </div>
+
+  <section id="como" class="seccion como">
+    <div class="contenedor col-48">
+      <div class="encabezado">
+        <span class="mono kicker">CÓMO FUNCIONA</span>
+        <h2 class="display h2">Tres pasos y ya estás facturando, causa.</h2>
+      </div>
+      <div class="pasos">
+        <div class="paso"><span class="n mono">1</span><h3>Registra tu negocio</h3><p>Pon tu RUC y tus datos una sola vez. Nosotros nos encargamos del resto.</p></div>
+        <div class="paso"><span class="n mono">2</span><h3>Carga tus productos</h3><p>Tu gaseosa, tu pan, tus servicios: con precio y todo, listos pa' vender.</p></div>
+        <div class="paso oscuro"><span class="n mono">3</span><h3>Emite al toque</h3><p>Un toque y la boleta sale. La imprimes o se la mandas al cliente por WhatsApp.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="funciones" class="funciones">
+    <div class="contenedor col-48">
+      <div class="fun-cab">
+        <h2 class="display h2">Todo lo que tu negocio necesita, <span class="amarillo">bacán.</span></h2>
+        <p>Hecho pa' la bodega, el taller, el restaurante y la empresa que crece.</p>
+      </div>
+      <div class="fun-grid">
+        <div class="fun"><svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="#FFC81E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="2" width="12" height="20" rx="3"></rect><path d="M11 18h2"></path></svg><h3>Desde tu celular</h3><p>Factura desde el mostrador, la combi o tu jato. También en la compu.</p></div>
+        <div class="fun"><svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="#FFC81E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 11.5a8.4 8.4 0 0 1-12.4 7.4L3 21l2.1-5.5A8.4 8.4 0 1 1 21 11.5z"></path></svg><h3>Envío por WhatsApp</h3><p>Tu cliente recibe su boleta al toque, sin gastar papel.</p></div>
+        <div class="fun"><svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="#FFC81E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9V2h12v7"></path><rect x="3" y="9" width="18" height="8" rx="2"></rect><path d="M7 14h10v8H7z"></path></svg><h3>Funciona con tu ticketera</h3><p>Imprime boletas en papel térmico, rapidito y bien presentadas.</p></div>
+        <div class="fun"><svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="#FFC81E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v18h18"></path><path d="M7 15l4-4 3 3 5-6"></path></svg><h3>Cuadre del día</h3><p>Mira cuánto vendiste hoy, esta semana y este mes, sin hacer cuentas.</p></div>
+        <div class="fun"><svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="#FFC81E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="4"></circle><path d="M2 21c0-4 3-6 7-6s7 2 7 6"></path><path d="M17 4a4 4 0 0 1 0 8"></path></svg><h3>Tus caseritos guardados</h3><p>RUC y datos de tus clientes frecuentes listos pa' la próxima factura.</p></div>
+        <div class="fun"><svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="#FFC81E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6z"></path><path d="m9 12 2 2 4-4"></path></svg><h3>Envío automático a SUNAT</h3><p>Tus comprobantes se envían solitos. Tú vende tranquilo.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="rubros">
+    <div class="contenedor rubros-in">
+      <h2 class="display h2-chico">Pa' todo tipo de negocio</h2>
+      <div class="chips">
+        <span class="r-amarillo">Bodegas</span><span class="r-borde">Restaurantes</span><span class="r-magenta">Ferreterías</span><span class="r-tinta">Talleres</span>
+        <span class="r-borde">Boticas</span><span class="r-amarillo">Puestos de mercado</span><span class="r-tinta">Emprendedores</span><span class="r-magenta">Empresas</span>
+      </div>
+    </div>
+  </section>
+
+  <section id="precios" class="seccion precios">
+    <div class="contenedor col-44">
+      <div class="encabezado centro">
+        <span class="mono kicker">PRECIOS</span>
+        <h2 class="display h2">Precios claros, sin letra chica.</h2>
+        <p class="nota-precio">Prueba gratis 15 días con todo incluido. Sin tarjeta.</p>
+      </div>
+      <div class="planes">
+        @for (p of planes(); track p.codigo) {
+          <div class="plan" [class.destacado]="p.destacado">
+            @if (p.destacado) { <span class="mas-pedido">El más pedido</span> }
+            <h3 class="display">{{ p.nombre }}</h3>
+            <p>{{ p.descripcion }}</p>
+            <div class="mono precio">S/ {{ p.precioMensual }}<span> /mes</span></div>
+            <ul>
+              @for (b of beneficios(p); track b) { <li>{{ b }}</li> }
+            </ul>
+            <button type="button" [class]="p.destacado ? 'elegir tinta' : 'elegir'" (click)="empezar(p.codigo)">
+              {{ p.codigo === 'EMPRESA' ? 'Hablemos' : 'Elegir ' + p.nombre }}
+            </button>
+          </div>
+        }
+      </div>
+    </div>
+  </section>
+
+  <section id="preguntas" class="preguntas">
+    <div class="contenedor-angosto col-32">
+      <h2 class="display h2-chico centro">¿Dudas, causa?</h2>
+      <div class="faq">
+        <details><summary>¿Necesito RUC para usar Al Toque?</summary><p>Sí. Para emitir boletas y facturas electrónicas necesitas un RUC activo. Con eso ya estás listo.</p></details>
+        <details><summary>¿Funciona en cualquier celular?</summary><p>Sí. Al Toque funciona en el navegador de cualquier celular Android o iPhone y en la compu, sin instalar nada. Si quieres, la agregas a tu pantalla de inicio como una app.</p></details>
+        <details><summary>¿Cuánto demoro en empezar?</summary><p>Unos minutos: creas tu cuenta con tu RUC y ya puedes emitir en modo de pruebas. Para emitir con validez ante SUNAT subes tu certificado digital y tu clave SOL secundaria, y listo.</p></details>
+        <details><summary>¿Puedo cambiar de plan cuando quiera?</summary><p>Claro. Subes o bajas de plan desde Ajustes cuando quieras; el cambio se aplica en tu siguiente periodo y no hay permanencia mínima.</p></details>
+        <details><summary>¿Qué pasa si se cae el internet o SUNAT?</summary><p>Tu comprobante igual se genera y se firma. Si SUNAT no responde, Al Toque lo reintenta solito cada pocos minutos hasta que quede aceptado.</p></details>
+      </div>
+    </div>
+  </section>
+
+  <section id="empieza" class="cta-final">
+    <div class="cta-caja">
+      <div class="cta-texto">
+        <h2 class="display h-cta">¿Qué esperas, causa?</h2>
+        <p>Tu primera boleta te está esperando. Empieza hoy y factura al toque.</p>
+      </div>
+      <form class="cta-form" (ngSubmit)="empezar()">
+        <label for="lt-celular">Tu número de celular</label>
+        <input id="lt-celular" name="celular" type="tel" inputmode="tel" placeholder="9XX XXX XXX" [(ngModel)]="celular" autocomplete="tel" />
+        <button type="submit">Quiero facturar al toque</button>
+      </form>
+    </div>
+  </section>
+
+  <footer class="pie">
+    <div class="contenedor pie-in">
+      <at-logo variante="tinta" [tam]="34" />
+      <nav aria-label="Pie de página" class="pie-links">
+        <a routerLink="/terminos">Términos</a>
+        <a routerLink="/privacidad">Privacidad</a>
+        <a href="mailto:hola@altoque.pe">Soporte</a>
+        <a href="mailto:hola@altoque.pe">Contacto</a>
+      </nav>
+      <span class="mono hecho">Hecho en Perú, pe · altoque.pe · {{ anio }}</span>
+    </div>
+  </footer>
+</div>
