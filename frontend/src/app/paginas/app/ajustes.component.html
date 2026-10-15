@@ -18,11 +18,10 @@
           <div class="campo"><label for="nc">Nombre comercial</label><input id="nc" name="nc" class="input" [(ngModel)]="e.nombreComercial" [disabled]="!auth.esAdmin()" /></div>
         </div>
         <div class="campo"><label for="df">Dirección fiscal</label><input id="df" name="df" class="input" [(ngModel)]="e.direccionFiscal" [disabled]="!auth.esAdmin()" /></div>
-        <div class="grilla-4">
-          <div class="campo"><label for="ub">Ubigeo</label><input id="ub" name="ub" class="input mono" maxlength="6" [(ngModel)]="e.ubigeo" [disabled]="!auth.esAdmin()" /></div>
-          <div class="campo"><label for="dep">Departamento</label><input id="dep" name="dep" class="input" [(ngModel)]="e.departamento" [disabled]="!auth.esAdmin()" /></div>
-          <div class="campo"><label for="pro">Provincia</label><input id="pro" name="pro" class="input" [(ngModel)]="e.provincia" [disabled]="!auth.esAdmin()" /></div>
-          <div class="campo"><label for="dis">Distrito</label><input id="dis" name="dis" class="input" [(ngModel)]="e.distrito" [disabled]="!auth.esAdmin()" /></div>
+        <div class="campo">
+          <label for="ub">Distrito del domicilio fiscal</label>
+          <at-ubigeo idInput="ub" [(seleccion)]="ubigeoNegocio" [deshabilitado]="!auth.esAdmin()" />
+          <span class="ayuda chico suave">SUNAT pide el ubigeo exacto en cada comprobante. Búscalo por distrito o provincia.</span>
         </div>
         <div class="grilla-2">
           <div class="campo"><label for="tel">Teléfono</label><input id="tel" name="tel" class="input mono" [(ngModel)]="e.telefono" [disabled]="!auth.esAdmin()" /></div>
@@ -61,6 +60,11 @@
           </div>
         </div>
         <span class="ayuda chico suave">Crea un usuario secundario en SUNAT Operaciones en Línea con el perfil de emisor electrónico. Guardamos la clave cifrada.</span>
+        <div class="campo">
+          <label for="cdet">Cuenta de detracciones (Banco de la Nación) <span class="suave">(opcional)</span></label>
+          <input id="cdet" name="cdet" class="input mono" inputmode="numeric" maxlength="20" [(ngModel)]="cuentaDetracciones" placeholder="00-000-000000" [disabled]="!auth.esDueno()" />
+          <span class="ayuda chico suave">Solo si vendes servicios o bienes sujetos al SPOT (facturas de más de S/ 700). Sale en la factura para que tu cliente deposite.</span>
+        </div>
         @if (auth.esDueno()) { <button type="button" class="btn btn-tinta" [disabled]="ocupado()" (click)="guardarSunat()">Guardar configuración SUNAT</button> }
       </section>
 
@@ -229,7 +233,7 @@
       <div class="campo"><label for="ln">Nombre</label><input id="ln" name="ln" class="input" [(ngModel)]="localForm.nombre" /></div>
     </div>
     <div class="campo"><label for="ld">Dirección</label><input id="ld" name="ld" class="input" [(ngModel)]="localForm.direccion" /></div>
-    <div class="campo"><label for="lu">Ubigeo <span class="suave">(opcional)</span></label><input id="lu" name="lu" class="input mono" maxlength="6" [(ngModel)]="localForm.ubigeo" /></div>
+    <div class="campo"><label for="lu">Distrito <span class="suave">(opcional)</span></label><at-ubigeo idInput="lu" [(seleccion)]="ubigeoLocal" /></div>
     @if (localForm.id && localForm.codigoSunat !== '0000') { <label class="check"><input type="checkbox" name="la" [(ngModel)]="localForm.activo" /> Activo</label> }
     <button type="submit" class="btn btn-tinta" [disabled]="ocupado()">Guardar local</button>
   </form>

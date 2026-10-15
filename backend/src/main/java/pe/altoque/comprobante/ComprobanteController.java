@@ -9,6 +9,7 @@ import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import pe.altoque.common.ApiException;
 import pe.altoque.common.Catalogos;
@@ -17,6 +18,8 @@ import pe.altoque.comprobante.Comprobante.EstadoPago;
 import pe.altoque.comprobante.Comprobante.EstadoSunat;
 import pe.altoque.comprobante.ComprobanteDtos.*;
 import pe.altoque.seguridad.Sesion;
+import pe.altoque.sunat.AlmacenArchivos;
+import pe.altoque.sunat.Archivo;
 import pe.altoque.sunat.EnvioSunat;
 import pe.altoque.sunat.EnvioSunatRepository;
 import pe.altoque.sunat.SunatService;
@@ -33,15 +36,17 @@ public class ComprobanteController {
 
     private final ComprobanteService service;
     private final SunatService sunat;
-    private final ComprobanteArchivoRepository archivos;
+    private final AlmacenArchivos almacen;
     private final EnvioSunatRepository envios;
+    private final Catalogos catalogos;
 
-    public ComprobanteController(ComprobanteService service, SunatService sunat, ComprobanteArchivoRepository archivos,
-                                 EnvioSunatRepository envios) {
+    public ComprobanteController(ComprobanteService service, SunatService sunat, AlmacenArchivos almacen,
+                                 EnvioSunatRepository envios, Catalogos catalogos) {
         this.service = service;
         this.sunat = sunat;
-        this.archivos = archivos;
+        this.almacen = almacen;
         this.envios = envios;
+        this.catalogos = catalogos;
     }
 
     @GetMapping
@@ -108,25 +113,27 @@ public class ComprobanteController {
     }
 
     @GetMapping("/{id}/xml")
+    @Transactional(readOnly = true)
     public ResponseEntity<byte[]> xml(@PathVariable Long id) {
         Comprobante c = service.buscar(Sesion.actual(), id);
         return descarga(sunat.xmlDe(id), c.getNombreArchivo() + ".xml", MediaType.APPLICATION_XML);
     }
 
     @GetMapping("/{id}/cdr")
+    @Transactional(readOnly = true)
     public ResponseEntity<byte[]> cdr(@PathVariable Long id) {
         service.buscar(Sesion.actual(), id);
-        ComprobanteArchivo a = archivos.findByComprobanteIdAndTipo(id, ComprobanteArchivo.Tipo.CDR)
-                .orElseThrow(() -> ApiException.noEncontrado("CDR"));
-        return descarga(a.getContenido(), a.getNombre(), MediaType.parseMediaType("application/zip"));
+        Archivo a = almacen.metaDeComprobante(id, Archivo.Tipo.CDR).orElseThrow(() -> ApiException.noEncontrado("CDR"));
+        return descarga(almacen.leer(a), a.getNombre(), MediaType.parseMediaType("application/zip"));
     }
 
     /** Registro de ventas en CSV (abre directo en Excel). */
     @GetMapping(value = "/exportar", produces = "text/csv")
+    @Transactional(readOnly = true)
     public ResponseEntity<byte[]> exportar(@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate desde,
                                            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate hasta) {
         if (desde.isAfter(hasta)) throw ApiException.invalido("La fecha inicial es mayor que la final.");
-        StringBuilder csv = new StringBuilder("﻿Fecha;Tipo;Serie;Número;Doc. cliente;Tipo doc.;Cliente;Moneda;Op. gravada;Op. exonerada;Op. inafecta;IGV;ICBPER;Total;Estado SUNAT;Estado pago;Doc. referencia\n");
+        StringBuilder csv = new StringBuilder("﻿Fecha;Tipo;Serie;Número;Doc. cliente;Tipo doc.;Cliente;Moneda;Op. gravada;Op. exonerada;Op. inafecta;IGV;ICBPER;Total;Estado SUNAT;Estado pago;Doc. referencia;Detracción\n");
         for (Comprobante c : service.paraExportar(Sesion.actual(), desde, hasta)) {
             boolean negativo = c.getTipo() == TipoComprobante.NOTA_CREDITO;
             csv.append(c.getFechaEmision()).append(';')
@@ -134,7 +141,7 @@ public class ComprobanteController {
                     .append(c.getSerie()).append(';')
                     .append(c.getCorrelativo()).append(';')
                     .append(c.getClienteNumDoc()).append(';')
-                    .append(Catalogos.DOCUMENTOS.getOrDefault(c.getClienteTipoDoc(), c.getClienteTipoDoc())).append(';')
+                    .append(catalogos.documentos().getOrDefault(c.getClienteTipoDoc(), c.getClienteTipoDoc())).append(';')
                     .append(csvTexto(c.getClienteNombre())).append(';')
                     .append(c.getMoneda()).append(';')
                     .append(monto(c.getTotalGravado(), negativo)).append(';')
@@ -145,7 +152,8 @@ public class ComprobanteController {
                     .append(monto(c.getTotal(), negativo)).append(';')
                     .append(c.getEstadoSunat()).append(';')
                     .append(c.getEstadoPago()).append(';')
-                    .append(c.getRefSerie() == null ? "" : c.getRefSerie() + "-" + c.getRefCorrelativo())
+                    .append(c.getRefSerie() == null ? "" : c.getRefSerie() + "-" + c.getRefCorrelativo()).append(';')
+                    .append(c.getDetraccion() == null ? "" : Montos.txt(c.getDetraccion().getMonto()))
                     .append('\n');
         }
         return descarga(csv.toString().getBytes(StandardCharsets.UTF_8), "registro-ventas-%s-a-%s.csv".formatted(desde, hasta),
@@ -158,10 +166,10 @@ public class ComprobanteController {
         } catch (ApiException e) {
             // p. ej. faltan credenciales SOL: el comprobante queda PENDIENTE y el usuario ve el mensaje en el detalle.
             log.info("Comprobante {} queda pendiente: {}", id, e.getMessage());
-            service.marcarMensaje(id, e.getMessage());
+            sunat.anotar(id, e.getMessage());
         } catch (Exception e) {
             log.warn("Envío a SUNAT falló para {}: {}", id, e.getMessage());
-            service.marcarMensaje(id, "No se pudo enviar ahora. Lo reintentamos solito.");
+            sunat.anotar(id, "No se pudo enviar ahora. Lo reintentamos solito.");
         }
     }
 

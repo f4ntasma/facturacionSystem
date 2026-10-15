@@ -57,9 +57,13 @@ altoque:
   # Mercado Pago para cobrar suscripciones (opcional).
   mercadopago-token: ${MP_ACCESS_TOKEN:}
   api-public-url: ${API_PUBLIC_URL:http://localhost:8080}
+  # XML firmados y CDR (SUNAT exige conservarlos): en Docker es un volumen que hay que respaldar.
+  archivos-dir: ${ARCHIVOS_DIR:./data/archivos}
   sunat:
     beta-factura-url: https://e-beta.sunat.gob.pe/ol-ti-itcpfegem-beta/billService
     produccion-factura-url: https://e-factura.sunat.gob.pe/ol-ti-itcpfegem/billService
+    # Consulta de CDR (getStatusCdr): solo existe en producción.
+    produccion-consulta-url: https://e-factura.sunat.gob.pe/ol-it-wsconscpegem/billConsultService
     timeout-segundos: 25
     # Reintento de pendientes y envío de resúmenes
     reintento-cron: "0 */5 * * * *"

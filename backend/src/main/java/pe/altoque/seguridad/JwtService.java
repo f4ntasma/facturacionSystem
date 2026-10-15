@@ -5,6 +5,7 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.stereotype.Service;
 import pe.altoque.config.AltoqueProperties;
+import pe.altoque.usuario.Miembro;
 import pe.altoque.usuario.Usuario;
 
 import javax.crypto.SecretKey;
@@ -27,14 +28,15 @@ public class JwtService {
         this.vigencia = Duration.ofHours(props.jwtHoras());
     }
 
-    public String generar(Usuario u) {
+    /** El token vale para una persona dentro de un negocio: cambiar de negocio emite otro token. */
+    public String generar(Miembro m) {
         Instant ahora = Instant.now();
         return Jwts.builder()
-                .subject(u.getEmail())
-                .claim("uid", u.getId())
-                .claim("eid", u.getEmpresa().getId())
-                .claim("lid", u.getEstablecimiento() != null ? u.getEstablecimiento().getId() : null)
-                .claim("rol", u.getRol().name())
+                .subject(m.getUsuario().getEmail())
+                .claim("uid", m.getUsuario().getId())
+                .claim("eid", m.getEmpresa().getId())
+                .claim("lid", m.getEstablecimiento() != null ? m.getEstablecimiento().getId() : null)
+                .claim("rol", m.getRol().name())
                 .issuedAt(Date.from(ahora))
                 .expiration(Date.from(ahora.plus(vigencia)))
                 .signWith(clave)

@@ -7,23 +7,26 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import pe.altoque.comprobante.ComprobanteRepository;
 
-/** Reintenta los comprobantes pendientes y cierra los tickets de anulación, cada 5 minutos. */
+import java.util.List;
+
+/**
+ * Cada 5 minutos: reintenta los comprobantes pendientes (con espera creciente según los intentos)
+ * y envía o consulta los resúmenes y bajas que siguen abiertos.
+ */
 @Component
 public class SunatScheduler {
 
     private static final Logger log = LoggerFactory.getLogger(SunatScheduler.class);
+    /** 12 intentos a ~5 min cubren una caída de una hora; luego se reintenta a mano desde el detalle. */
     private static final int MAX_INTENTOS = 12;
 
     private final ComprobanteRepository comprobantes;
-    private final ResumenDiarioRepository resumenes;
-    private final ComunicacionBajaRepository bajas;
+    private final LoteSunatRepository lotes;
     private final SunatService sunat;
 
-    public SunatScheduler(ComprobanteRepository comprobantes, ResumenDiarioRepository resumenes, ComunicacionBajaRepository bajas,
-                          SunatService sunat) {
+    public SunatScheduler(ComprobanteRepository comprobantes, LoteSunatRepository lotes, SunatService sunat) {
         this.comprobantes = comprobantes;
-        this.resumenes = resumenes;
-        this.bajas = bajas;
+        this.lotes = lotes;
         this.sunat = sunat;
     }
 
@@ -36,15 +39,12 @@ public class SunatScheduler {
                 log.debug("Reintento de {} falló: {}", id, e.getMessage());
             }
         }
-        resumenes.idsPorEstado(LoteSunat.EstadoLote.ENVIADO).forEach(id -> consultar(true, id));
-        bajas.idsPorEstado(LoteSunat.EstadoLote.ENVIADO).forEach(id -> consultar(false, id));
-    }
-
-    private void consultar(boolean resumen, Long id) {
-        try {
-            sunat.consultarLote(resumen, id);
-        } catch (Exception e) {
-            log.debug("Consulta de ticket {} falló: {}", id, e.getMessage());
+        for (Long id : lotes.idsPorEstado(List.of(LoteSunat.EstadoLote.GENERADO, LoteSunat.EstadoLote.ENVIADO))) {
+            try {
+                sunat.procesarLote(id);
+            } catch (Exception e) {
+                log.debug("Lote {} falló: {}", id, e.getMessage());
+            }
         }
     }
 }

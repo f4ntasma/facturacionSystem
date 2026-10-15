@@ -1,9 +1,14 @@
 package pe.altoque.comprobante;
 
 import org.springframework.stereotype.Component;
+import pe.altoque.common.Catalogos;
 import pe.altoque.common.Montos;
 import pe.altoque.comprobante.ComprobanteDtos.*;
 import pe.altoque.empresa.Empresa;
+import pe.altoque.sunat.EnvioSunat;
+import pe.altoque.sunat.EnvioSunatRepository;
+import pe.altoque.sunat.LoteSunatItem;
+import pe.altoque.sunat.LoteSunatRepository;
 
 import java.util.List;
 
@@ -12,9 +17,16 @@ import java.util.List;
 public class ComprobanteVistas {
 
     private final ComprobanteRepository comprobantes;
+    private final EnvioSunatRepository envios;
+    private final LoteSunatRepository lotes;
+    private final Catalogos catalogos;
 
-    public ComprobanteVistas(ComprobanteRepository comprobantes) {
+    public ComprobanteVistas(ComprobanteRepository comprobantes, EnvioSunatRepository envios, LoteSunatRepository lotes,
+                             Catalogos catalogos) {
         this.comprobantes = comprobantes;
+        this.envios = envios;
+        this.lotes = lotes;
+        this.catalogos = catalogos;
     }
 
     public Vista de(Comprobante c) {
@@ -23,20 +35,26 @@ public class ComprobanteVistas {
                 e.getProvincia(), e.getDepartamento(), e.getTelefono(), e.getEmail(),
                 e.getMensajeTicket() != null ? e.getMensajeTicket() : "¡Gracias, caserito! Vuelve al toque.",
                 c.getEstablecimiento().getNombre(), e.getAmbienteSunat().name());
-        RefVista ref = c.getComprobanteRef() == null ? null
-                : new RefVista(c.getComprobanteRef().getId(), c.getRefTipo(), "%s-%06d".formatted(c.getRefSerie(), c.getRefCorrelativo()),
-                c.getComprobanteRef().getTokenPublico());
+        RefVista ref = c.getNota() == null ? null
+                : new RefVista(c.getComprobanteRef() != null ? c.getComprobanteRef().getId() : null, c.getRefTipo(),
+                "%s-%06d".formatted(c.getRefSerie(), c.getRefCorrelativo()),
+                c.getComprobanteRef() != null ? c.getComprobanteRef().getTokenPublico() : null);
         List<RefVista> notas = c.getTipo().esNota() ? List.of()
-                : comprobantes.findByComprobanteRefIdOrderById(c.getId()).stream()
+                : comprobantes.notasDe(c.getId()).stream()
                 .map(n -> new RefVista(n.getId(), n.getTipo(), n.numeroImpreso(), n.getTokenPublico())).toList();
+        var ultimo = envios.findFirstByComprobanteIdOrderByIdDesc(c.getId());
+        String anulacion = lotes.itemsDe(c.getId()).stream().findFirst().map(LoteSunatItem::getMotivo).orElse(null);
+        DetraccionVista detraccion = c.getDetraccion() == null ? null : new DetraccionVista(c.getDetraccion().getBienCodigo(),
+                catalogos.detraccion(c.getDetraccion().getBienCodigo()).map(Catalogos.BienDetraccion::nombre).orElse(null),
+                c.getDetraccion().getPorcentaje(), c.getDetraccion().getMonto(), c.getDetraccion().getCuentaBanco());
         return new Vista(
                 c.getId(), c.getTipo(), c.getTipo().nombre(), c.getSerie(), c.getCorrelativo(), c.numeroImpreso(),
                 c.getFechaEmision(), c.getHoraEmision(), c.getFechaVencimiento(), c.getMoneda(), c.getFormaPago(),
                 c.getClienteTipoDoc(), c.getClienteNumDoc(), c.getClienteNombre(), c.getClienteDireccion(), c.getClienteEmail(),
                 c.getClienteTelefono(), c.getIgvPorcentaje(), c.getTotalGravado(), c.getTotalExonerado(), c.getTotalInafecto(),
                 c.getTotalIgv(), c.getTotalIcbper(), c.getTotal(), c.getTotalLetras(), c.getObservaciones(),
-                c.getEstadoSunat(), c.getSunatCodigo(), c.getSunatMensaje(), c.getHash(),
-                c.getEstadoPago(), c.getMontoPagado(), c.getTotal().subtract(c.getMontoPagado()), c.getAnulacionMotivo(),
+                c.getEstadoSunat(), ultimo.map(EnvioSunat::getCodigo).orElse(null), ultimo.map(EnvioSunat::getMensaje).orElse(null),
+                c.getHash(), c.getEstadoPago(), c.getMontoPagado(), c.getSaldo(), c.getNetoACobrar(), detraccion, anulacion,
                 ref, c.getMotivoCodigo(), c.getMotivoDescripcion(), notas,
                 c.getTokenPublico(), textoQr(c), c.getUsuario().getNombre(), emisor,
                 c.getDetalles().stream().map(d -> new DetalleVista(d.getItem(), d.getCodigo(), d.getDescripcion(), d.getUnidadMedida(),

@@ -27,10 +27,10 @@ import { LogoComponent } from '../../shared/logo.component';
         </nav>
         <div class="lat-pie">
           @if (auth.empresa(); as e) {
-            <div class="negocio">
+            <a class="negocio" routerLink="/app/negocios" title="Cambiar o agregar negocio">
               <strong>{{ e.nombreComercial || e.razonSocial }}</strong>
-              <span class="mono mini">RUC {{ e.ruc }}</span>
-            </div>
+              <span class="mono mini">RUC {{ e.ruc }}{{ (auth.perfil()?.negocios ?? 1) > 1 ? ' · cambiar' : '' }}</span>
+            </a>
           }
           <button type="button" class="btn btn-fantasma btn-chico" (click)="auth.salir('/')"><at-icono nombre="salir" [tam]="18" /> Salir</button>
         </div>
@@ -84,7 +84,8 @@ import { LogoComponent } from '../../shared/logo.component';
       .lat-nav a:hover { background: var(--papel); color: var(--tinta); }
       .lat-nav a.activo { background: var(--amarillo); color: var(--tinta); }
       .lat-pie { border-top: 1px solid var(--linea); padding-top: 14px; display: flex; flex-direction: column; gap: 8px; align-items: flex-start; }
-      .negocio { display: flex; flex-direction: column; line-height: 1.25; padding: 0 6px; }
+      .negocio { display: flex; flex-direction: column; line-height: 1.25; padding: 6px; border-radius: 10px; color: inherit; text-decoration: none; }
+      .negocio:hover { background: var(--papel); }
     }
   `,
 })

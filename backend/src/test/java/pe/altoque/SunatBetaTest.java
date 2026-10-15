@@ -70,6 +70,20 @@ class SunatBetaTest {
         imprimir("FACTURA CREDITO", credito);
         assertThat(credito.path("estadoSunat").asText()).isIn("ACEPTADO", "OBSERVADO");
 
+        // Factura con detracción (SPOT, 12 %) al crédito: la cuota es el neto sin detracción
+        var put = org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put("/api/empresa/sunat")
+                .contentType(MediaType.APPLICATION_JSON).header("Authorization", "Bearer " + token)
+                .content(json.writeValueAsBytes(Map.of("ambiente", "BETA", "cuentaDetracciones", "00012345678")));
+        assertThat(mvc.perform(put).andReturn().getResponse().getStatus()).isEqualTo(200);
+        JsonNode detraccion = llamar("/api/comprobantes", Map.of("tipo", "01",
+                "cliente", Map.of("tipoDocumento", "6", "numeroDocumento", "20601234565", "nombre", "DISTRIBUIDORA EL CASERITO S.A.C."),
+                "items", new Object[]{Map.of("descripcion", "Mantenimiento de congeladora", "cantidad", 1, "precioUnitario", 1180.00, "unidadMedida", "ZZ")},
+                "detraccion", Map.of("codigo", "020"),
+                "formaPago", "CREDITO",
+                "cuotas", new Object[]{Map.of("monto", 1038.00, "fechaVencimiento", java.time.LocalDate.now().plusDays(30).toString())}), token);
+        imprimir("FACTURA DETRACCION", detraccion);
+        assertThat(detraccion.path("estadoSunat").asText()).isIn("ACEPTADO", "OBSERVADO");
+
         JsonNode nc = llamar("/api/comprobantes/" + factura.path("id").asLong() + "/notas", Map.of("tipo", "07", "motivoCodigo", "01",
                 "motivoDescripcion", "Anulación de la operación"), token);
         imprimir("NOTA CREDITO", nc);

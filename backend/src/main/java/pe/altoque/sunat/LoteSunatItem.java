@@ -6,23 +6,25 @@ import lombok.Setter;
 import pe.altoque.comprobante.Comprobante;
 
 @Entity
-@Table(name = "comunicacion_baja_item")
+@Table(name = "lote_sunat_item")
 @Getter
 @Setter
-public class ComunicacionBajaItem {
+public class LoteSunatItem {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "baja_id")
-    private ComunicacionBaja baja;
+    @JoinColumn(name = "lote_id")
+    private LoteSunat lote;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "comprobante_id")
     private Comprobante comprobante;
 
     private int linea;
+    /** Solo RC: 1 adicionar, 2 modificar, 3 anular. */
+    private String condicion;
     private String motivo;
 }

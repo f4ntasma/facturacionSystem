@@ -19,7 +19,10 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Locale;
 
-/** Equipo del negocio: cajeros y administradores. */
+/**
+ * Equipo del negocio. El id que viaja es el del miembro (la persona dentro de este negocio).
+ * Si el correo ya tiene cuenta en Al Toque, se le da acceso a este negocio sin tocar su contraseña.
+ */
 @RestController
 @RequestMapping("/api/usuarios")
 @PreAuthorize("hasAnyRole('PROPIETARIO','ADMINISTRADOR')")
@@ -27,10 +30,11 @@ public class UsuarioController {
 
     public record UsuarioVista(Long id, String nombre, String email, Usuario.Rol rol, boolean activo, Long establecimientoId,
                                String establecimiento, Instant ultimoAcceso) {
-        static UsuarioVista de(Usuario u) {
-            return new UsuarioVista(u.getId(), u.getNombre(), u.getEmail(), u.getRol(), u.isActivo(),
-                    u.getEstablecimiento() != null ? u.getEstablecimiento().getId() : null,
-                    u.getEstablecimiento() != null ? u.getEstablecimiento().getNombre() : null, u.getUltimoAcceso());
+        static UsuarioVista de(Miembro m) {
+            Usuario u = m.getUsuario();
+            return new UsuarioVista(m.getId(), u.getNombre(), u.getEmail(), m.getRol(), m.isActivo(),
+                    m.getEstablecimiento() != null ? m.getEstablecimiento().getId() : null,
+                    m.getEstablecimiento() != null ? m.getEstablecimiento().getNombre() : null, u.getUltimoAcceso());
         }
     }
 
@@ -42,12 +46,15 @@ public class UsuarioController {
                                  @Size(min = 8, max = 72, message = "La contraseña debe tener al menos 8 caracteres") String password) {}
 
     private final UsuarioRepository usuarios;
+    private final MiembroRepository miembros;
     private final EmpresaRepository empresas;
     private final EstablecimientoRepository locales;
     private final PasswordEncoder encoder;
 
-    public UsuarioController(UsuarioRepository usuarios, EmpresaRepository empresas, EstablecimientoRepository locales, PasswordEncoder encoder) {
+    public UsuarioController(UsuarioRepository usuarios, MiembroRepository miembros, EmpresaRepository empresas,
+                             EstablecimientoRepository locales, PasswordEncoder encoder) {
         this.usuarios = usuarios;
+        this.miembros = miembros;
         this.empresas = empresas;
         this.locales = locales;
         this.encoder = encoder;
@@ -56,7 +63,7 @@ public class UsuarioController {
     @GetMapping
     @Transactional(readOnly = true)
     public List<UsuarioVista> listar() {
-        return usuarios.findByEmpresaIdOrderByNombre(Sesion.actual().empresaId()).stream().map(UsuarioVista::de).toList();
+        return miembros.equipo(Sesion.actual().empresaId()).stream().map(UsuarioVista::de).toList();
     }
 
     @PostMapping
@@ -64,48 +71,62 @@ public class UsuarioController {
     public UsuarioVista crear(@Valid @RequestBody UsuarioRequest r) {
         Sesion s = Sesion.actual();
         var empresa = empresas.findWithPlanById(s.empresaId()).orElseThrow();
-        if (usuarios.countByEmpresaIdAndActivoTrue(s.empresaId()) >= empresa.getPlan().getMaxUsuarios()) {
+        if (miembros.countByEmpresaIdAndActivoTrue(s.empresaId()) >= empresa.getPlan().getMaxUsuarios()) {
             throw ApiException.invalido("Tu plan permite %d usuario(s). Sube de plan para sumar más gente.".formatted(empresa.getPlan().getMaxUsuarios()));
         }
-        if (r.password() == null) throw ApiException.invalido("Ponle una contraseña inicial (mínimo 8 caracteres).");
-        if (usuarios.existsByEmailIgnoreCase(r.email().trim())) throw ApiException.conflicto("Ese correo ya está registrado.");
         validarRol(s, r.rol());
-        Usuario u = new Usuario();
-        u.setEmpresa(empresa);
-        aplicar(u, r, s);
-        u.setPasswordHash(encoder.encode(r.password()));
-        return UsuarioVista.de(usuarios.save(u));
+        String email = r.email().trim().toLowerCase(Locale.ROOT);
+        Usuario u = usuarios.findByEmailIgnoreCase(email).orElse(null);
+        if (u == null) {
+            if (r.password() == null) throw ApiException.invalido("Ponle una contraseña inicial (mínimo 8 caracteres).");
+            u = new Usuario();
+            u.setNombre(r.nombre().trim());
+            u.setEmail(email);
+            u.setPasswordHash(encoder.encode(r.password()));
+            usuarios.save(u);
+        } else if (miembros.findByUsuarioIdAndEmpresaId(u.getId(), s.empresaId()).isPresent()) {
+            throw ApiException.conflicto("Esa persona ya es parte de tu equipo.");
+        }
+        Miembro m = new Miembro();
+        m.setUsuario(u);
+        m.setEmpresa(empresa);
+        m.setRol(r.rol());
+        m.setEstablecimiento(local(s, r.establecimientoId()));
+        return UsuarioVista.de(miembros.save(m));
     }
 
     @PutMapping("/{id}")
     @Transactional
     public UsuarioVista actualizar(@PathVariable Long id, @Valid @RequestBody UsuarioRequest r) {
         Sesion s = Sesion.actual();
-        Usuario u = usuarios.findByIdAndEmpresaId(id, s.empresaId()).orElseThrow(() -> ApiException.noEncontrado("Usuario"));
-        if (u.getRol() == Usuario.Rol.PROPIETARIO && (r.rol() != Usuario.Rol.PROPIETARIO || Boolean.FALSE.equals(r.activo()))) {
+        Miembro m = miembros.findByIdAndEmpresaId(id, s.empresaId()).orElseThrow(() -> ApiException.noEncontrado("Usuario"));
+        if (m.getRol() == Usuario.Rol.PROPIETARIO && (r.rol() != Usuario.Rol.PROPIETARIO || Boolean.FALSE.equals(r.activo()))) {
             throw ApiException.invalido("El dueño del negocio no se puede desactivar ni cambiar de rol.");
         }
-        if (!u.getEmail().equalsIgnoreCase(r.email().trim()) && usuarios.existsByEmailIgnoreCase(r.email().trim())) {
-            throw ApiException.conflicto("Ese correo ya está registrado.");
+        if (m.getRol() != Usuario.Rol.PROPIETARIO) validarRol(s, r.rol());
+        m.setRol(r.rol());
+        if (r.activo() != null) m.setActivo(r.activo());
+        if (r.establecimientoId() != null) m.setEstablecimiento(local(s, r.establecimientoId()));
+        // Nombre, correo y contraseña son de la persona: solo se cambian si pertenece únicamente a este negocio.
+        Usuario u = m.getUsuario();
+        boolean soloAqui = miembros.activosDe(u.getId()).stream().allMatch(x -> x.getEmpresa().getId().equals(s.empresaId()));
+        if (soloAqui) {
+            String email = r.email().trim().toLowerCase(Locale.ROOT);
+            if (!u.getEmail().equalsIgnoreCase(email) && usuarios.existsByEmailIgnoreCase(email)) {
+                throw ApiException.conflicto("Ese correo ya está registrado.");
+            }
+            u.setNombre(r.nombre().trim());
+            u.setEmail(email);
+            if (r.password() != null && !r.password().isBlank()) u.setPasswordHash(encoder.encode(r.password()));
         }
-        if (u.getRol() != Usuario.Rol.PROPIETARIO) validarRol(s, r.rol());
-        aplicar(u, r, s);
-        if (r.password() != null && !r.password().isBlank()) u.setPasswordHash(encoder.encode(r.password()));
-        return UsuarioVista.de(u);
+        return UsuarioVista.de(m);
     }
 
-    private void aplicar(Usuario u, UsuarioRequest r, Sesion s) {
-        u.setNombre(r.nombre().trim());
-        u.setEmail(r.email().trim().toLowerCase(Locale.ROOT));
-        u.setRol(r.rol());
-        if (r.activo() != null) u.setActivo(r.activo());
-        if (r.establecimientoId() != null) {
-            Establecimiento l = locales.findByIdAndEmpresaId(r.establecimientoId(), s.empresaId())
-                    .orElseThrow(() -> ApiException.noEncontrado("Local"));
-            u.setEstablecimiento(l);
-        } else if (u.getEstablecimiento() == null) {
-            u.setEstablecimiento(locales.findByEmpresaIdAndCodigoSunat(s.empresaId(), "0000").orElse(null));
+    private Establecimiento local(Sesion s, Long establecimientoId) {
+        if (establecimientoId != null) {
+            return locales.findByIdAndEmpresaId(establecimientoId, s.empresaId()).orElseThrow(() -> ApiException.noEncontrado("Local"));
         }
+        return locales.findByEmpresaIdAndCodigoSunat(s.empresaId(), "0000").orElse(null);
     }
 
     private void validarRol(Sesion s, Usuario.Rol rol) {

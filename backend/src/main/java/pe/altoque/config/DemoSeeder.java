@@ -10,7 +10,7 @@ import pe.altoque.catalogo.*;
 import pe.altoque.empresa.Empresa;
 import pe.altoque.empresa.EmpresaRepository;
 import pe.altoque.empresa.EmpresaService;
-import pe.altoque.usuario.Usuario;
+import pe.altoque.usuario.Miembro;
 import pe.altoque.usuario.UsuarioRepository;
 
 import java.math.BigDecimal;
@@ -48,10 +48,11 @@ public class DemoSeeder implements ApplicationRunner {
     @Transactional
     public void run(ApplicationArguments args) {
         if (!props.demo() || usuarios.existsByEmailIgnoreCase(EMAIL) || empresas.existsByRuc("20000000001")) return;
-        Usuario u = empresaService.crear(new EmpresaService.NuevaEmpresa("20000000001", "BODEGA DON PEPE S.A.C.", "Bodega Don Pepe",
-                "AV. LOS INCAS 123", "150132", "LIMA", "LIMA", "SAN JUAN DE LURIGANCHO", "987654321",
-                "Pepe Quispe", EMAIL, "altoque123", "NEGOCIANTE"));
-        Empresa e = u.getEmpresa();
+        Miembro m = empresaService.registrar(
+                new EmpresaService.DatosEmpresa("20000000001", "BODEGA DON PEPE S.A.C.", "Bodega Don Pepe",
+                        "AV. LOS INCAS 123", "150132", null, null, null, "987654321", "NEGOCIANTE"),
+                new EmpresaService.DatosPersona("Pepe Quispe", EMAIL, "altoque123"));
+        Empresa e = m.getEmpresa();
         e.setEstado(Empresa.Estado.ACTIVA);
         e.setPruebaHasta(null);
         e.setMensajeTicket("¡Gracias, caserito! Vuelve al toque.");

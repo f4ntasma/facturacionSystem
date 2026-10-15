@@ -48,6 +48,48 @@ export interface Perfil {
   establecimientoId?: number;
   establecimiento?: string;
   empresa: EmpresaVista;
+  /** Negocios a los que la persona puede entrar (contadores: varios). */
+  negocios: number;
+}
+
+export interface Negocio {
+  empresaId: number;
+  ruc: string;
+  nombre: string;
+  rol: Rol;
+  actual: boolean;
+}
+
+export interface Ubigeo {
+  ubigeo: string;
+  distrito: string;
+  provincia: string;
+  departamento: string;
+  etiqueta: string;
+}
+
+export interface BienDetraccion {
+  codigo: string;
+  nombre: string;
+  porcentaje: number;
+}
+
+export interface Detraccion {
+  codigo: string;
+  descripcion?: string;
+  porcentaje: number;
+  monto: number;
+  cuentaBanco: string;
+}
+
+export interface Movimiento {
+  id: number;
+  tipo: 'VENTA' | 'DEVOLUCION' | 'ANULACION' | 'AJUSTE' | 'INGRESO';
+  cantidad: number;
+  stockResultante: number;
+  comprobanteId?: number;
+  nota?: string;
+  fecha: string;
 }
 
 export interface TokenResponse {
@@ -153,6 +195,9 @@ export interface Comprobante {
   estadoPago: EstadoPago;
   montoPagado: number;
   saldo: number;
+  /** Total menos detracción: lo que el cliente le paga al negocio. */
+  netoACobrar: number;
+  detraccion?: Detraccion;
   anulacionMotivo?: string;
   referencia?: Ref;
   motivoCodigo?: string;
@@ -202,6 +247,8 @@ export interface Catalogos {
   motivosNotaDebito: Record<string, string>;
   unidades: Record<string, string>;
   afectaciones: Record<string, string>;
+  detracciones: BienDetraccion[];
+  mediosPago: { codigo: MetodoPago; nombre: string; codigoSunat: string; efectivo: boolean }[];
 }
 
 export interface Resumen {

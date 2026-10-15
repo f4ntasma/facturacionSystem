@@ -3,11 +3,10 @@ package pe.altoque.usuario;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-import pe.altoque.empresa.Empresa;
-import pe.altoque.empresa.Establecimiento;
 
 import java.time.Instant;
 
+/** Una persona con su correo y contraseña. Lo que puede hacer en cada negocio está en {@link Miembro}. */
 @Entity
 @Table(name = "usuario")
 @Getter
@@ -17,7 +16,7 @@ public class Usuario {
     public enum Rol {
         /** Dueño del negocio: todo, incluido plan y SUNAT. */
         PROPIETARIO,
-        /** Gestiona catálogo, usuarios y anulaciones. */
+        /** Gestiona catálogo, equipo y anulaciones. */
         ADMINISTRADOR,
         /** Emite y cobra. */
         VENDEDOR
@@ -27,21 +26,9 @@ public class Usuario {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "empresa_id")
-    private Empresa empresa;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "establecimiento_id")
-    private Establecimiento establecimiento;
-
     private String nombre;
     private String email;
     private String passwordHash;
-
-    @Enumerated(EnumType.STRING)
-    private Rol rol;
-
     private boolean activo = true;
     private Instant ultimoAcceso;
     private Instant createdAt;

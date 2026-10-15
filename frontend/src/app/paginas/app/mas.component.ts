@@ -32,6 +32,7 @@ import { IconoComponent } from '../../shared/icono.component';
 export class MasComponent {
   protected auth = inject(Auth);
   protected readonly enlaces = [
+    { ruta: '/app/negocios', texto: 'Mis negocios', icono: 'local', q: {} },
     { ruta: '/app/productos', texto: 'Productos', icono: 'caja', q: {} },
     { ruta: '/app/caja', texto: 'Caja del día', icono: 'dinero', q: {} },
     { ruta: '/app/reportes', texto: 'Reportes', icono: 'grafico', q: {} },

@@ -166,7 +166,20 @@
             <div class="entre"><span>IGV 18%</span><span class="mono">{{ totales().igv | soles }}</span></div>
             @if (totales().icbper) { <div class="entre"><span>ICBPER (bolsas)</span><span class="mono">{{ totales().icbper | soles }}</span></div> }
             <div class="entre total"><span>Total</span><span class="mono">{{ totales().total | soles }}</span></div>
+            @if (detraccion(); as d) {
+              <div class="entre"><span>Detracción {{ d.porcentaje }}% (al Banco de la Nación)</span><span class="mono">− {{ d.monto | soles }}</span></div>
+              <div class="entre neto"><span>Te paga el cliente</span><span class="mono">{{ neto() | soles }}</span></div>
+            }
           </div>
+          @if (aplicaDetraccion()) {
+            <div class="campo">
+              <label for="det">¿Operación sujeta a detracción? <span class="suave">(SPOT)</span></label>
+              <select id="det" class="input" [ngModel]="detraccionCodigo()" (ngModelChange)="detraccionCodigo.set($event)">
+                <option value="">No está sujeta</option>
+                @for (b of cat.datos().detracciones; track b.codigo) { <option [value]="b.codigo">{{ b.codigo }} · {{ b.nombre }} ({{ b.porcentaje }}%)</option> }
+              </select>
+            </div>
+          }
 
           <hr class="separador" />
 
@@ -200,9 +213,9 @@
                 </div>
                 <div class="fila-wrap">
                   @for (b of [10, 20, 50, 100, 200]; track b) {
-                    @if (b >= totales().total) { <button type="button" class="btn btn-chico btn-borde mono" (click)="recibido.set(b)">S/ {{ b }}</button> }
+                    @if (b >= neto()) { <button type="button" class="btn btn-chico btn-borde mono" (click)="recibido.set(b)">S/ {{ b }}</button> }
                   }
-                  <button type="button" class="btn btn-chico btn-fantasma" (click)="recibido.set(totales().total)">Exacto</button>
+                  <button type="button" class="btn btn-chico btn-fantasma" (click)="recibido.set(neto())">Exacto</button>
                 </div>
               } @else if (metodo() !== 'TARJETA') {
                 <div class="campo">

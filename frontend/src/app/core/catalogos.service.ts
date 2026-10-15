@@ -2,7 +2,7 @@ import { Injectable, inject, signal } from '@angular/core';
 import { Api } from './api.service';
 import { Catalogos } from './modelos';
 
-const VACIO: Catalogos = { documentos: {}, motivosNotaCredito: {}, motivosNotaDebito: {}, unidades: {}, afectaciones: {} };
+const VACIO: Catalogos = { documentos: {}, motivosNotaCredito: {}, motivosNotaDebito: {}, unidades: {}, afectaciones: {}, detracciones: [], mediosPago: [] };
 
 @Injectable({ providedIn: 'root' })
 export class CatalogosService {
@@ -17,7 +17,7 @@ export class CatalogosService {
     return this.cargado;
   }
 
-  lista(nombre: keyof Catalogos): { codigo: string; nombre: string }[] {
+  lista(nombre: 'documentos' | 'motivosNotaCredito' | 'motivosNotaDebito' | 'unidades' | 'afectaciones'): { codigo: string; nombre: string }[] {
     return Object.entries(this.datos()[nombre]).map(([codigo, n]) => ({ codigo, nombre: n }));
   }
 

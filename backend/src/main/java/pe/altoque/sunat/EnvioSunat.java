@@ -19,8 +19,7 @@ public class EnvioSunat {
 
     private Long empresaId;
     private Long comprobanteId;
-    private Long resumenId;
-    private Long bajaId;
+    private Long loteId;
     private String operacion;
     private String ambiente;
     private boolean exito;

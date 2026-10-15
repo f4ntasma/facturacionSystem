@@ -44,6 +44,9 @@ public final class ComprobanteDtos {
 
     public record CuotaIn(@NotNull @DecimalMin("0.01") BigDecimal monto, @NotNull LocalDate fechaVencimiento) {}
 
+    /** Detracción: código del catálogo 54 (el porcentaje sale del catálogo). */
+    public record DetraccionIn(@NotBlank(message = "Elige el bien o servicio sujeto a detracción") String codigo) {}
+
     public record EmitirRequest(
             @NotNull(message = "Elige boleta o factura") TipoComprobante tipo,
             Long serieId,
@@ -53,6 +56,7 @@ public final class ComprobanteDtos {
             @Valid List<CuotaIn> cuotas,
             @Valid List<PagoIn> pagos,
             LocalDate fechaVencimiento,
+            @Valid DetraccionIn detraccion,
             @Size(max = 500) String observaciones) {}
 
     public record NotaRequest(
@@ -90,6 +94,8 @@ public final class ComprobanteDtos {
 
     public record RefVista(Long id, TipoComprobante tipo, String numero, String token) {}
 
+    public record DetraccionVista(String codigo, String descripcion, BigDecimal porcentaje, BigDecimal monto, String cuentaBanco) {}
+
     public record Vista(
             Long id, TipoComprobante tipo, String tipoNombre, String serie, int correlativo, String numero,
             LocalDate fechaEmision, LocalTime horaEmision, LocalDate fechaVencimiento, String moneda, FormaPago formaPago,
@@ -97,7 +103,8 @@ public final class ComprobanteDtos {
             String clienteTelefono, BigDecimal igvPorcentaje, BigDecimal totalGravado, BigDecimal totalExonerado,
             BigDecimal totalInafecto, BigDecimal totalIgv, BigDecimal totalIcbper, BigDecimal total, String totalLetras,
             String observaciones, EstadoSunat estadoSunat, String sunatCodigo, String sunatMensaje, String hash,
-            EstadoPago estadoPago, BigDecimal montoPagado, BigDecimal saldo, String anulacionMotivo,
+            EstadoPago estadoPago, BigDecimal montoPagado, BigDecimal saldo, BigDecimal netoACobrar, DetraccionVista detraccion,
+            String anulacionMotivo,
             RefVista referencia, String motivoCodigo, String motivoDescripcion, List<RefVista> notas,
             String tokenPublico, String qr, String vendedor, EmisorVista emisor,
             List<DetalleVista> detalles, List<CuotaVista> cuotas, List<PagoVista> pagos, Instant createdAt) {}

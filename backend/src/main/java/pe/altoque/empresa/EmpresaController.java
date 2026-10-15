@@ -26,11 +26,12 @@ public class EmpresaController {
     public record EmpresaDatos(String ruc, String razonSocial, String nombreComercial, String direccionFiscal, String ubigeo,
                                String departamento, String provincia, String distrito, String urbanizacion, String telefono,
                                String email, String mensajeTicket, BigDecimal igvPorcentaje, String ambienteSunat,
-                               String solUsuario, boolean solConfigurado) {
+                               String solUsuario, boolean solConfigurado, String cuentaDetracciones) {
         static EmpresaDatos de(Empresa e) {
             return new EmpresaDatos(e.getRuc(), e.getRazonSocial(), e.getNombreComercial(), e.getDireccionFiscal(), e.getUbigeo(),
                     e.getDepartamento(), e.getProvincia(), e.getDistrito(), e.getUrbanizacion(), e.getTelefono(), e.getEmail(),
-                    e.getMensajeTicket(), e.getIgvPorcentaje(), e.getAmbienteSunat().name(), e.getSolUsuario(), e.getSolClaveEnc() != null);
+                    e.getMensajeTicket(), e.getIgvPorcentaje(), e.getAmbienteSunat().name(), e.getSolUsuario(), e.getSolClaveEnc() != null,
+                    e.getCuentaDetracciones());
         }
     }
 
@@ -38,15 +39,17 @@ public class EmpresaController {
                                  @Size(max = 200) String nombreComercial,
                                  @NotBlank(message = "Escribe la dirección fiscal") @Size(max = 250) String direccionFiscal,
                                  @Pattern(regexp = "\\d{6}", message = "El ubigeo tiene 6 dígitos") String ubigeo,
-                                 @NotBlank @Size(max = 60) String departamento,
-                                 @NotBlank @Size(max = 60) String provincia,
-                                 @NotBlank @Size(max = 60) String distrito,
+                                 @Size(max = 60) String departamento,
+                                 @Size(max = 60) String provincia,
+                                 @Size(max = 60) String distrito,
                                  @Size(max = 100) String urbanizacion,
                                  @Size(max = 20) String telefono,
                                  @Email @Size(max = 150) String email,
                                  @Size(max = 160) String mensajeTicket) {}
 
-    public record SunatRequest(@NotNull Empresa.Ambiente ambiente, @Size(max = 30) String solUsuario, @Size(max = 60) String solClave) {}
+    public record SunatRequest(@NotNull Empresa.Ambiente ambiente, @Size(max = 30) String solUsuario, @Size(max = 60) String solClave,
+                               @Pattern(regexp = "\\d{8,20}|", message = "La cuenta de detracciones tiene solo números (11 dígitos en el Banco de la Nación)")
+                               String cuentaDetracciones) {}
 
     public record CertificadoVista(String sujeto, String emisor, Instant validoDesde, Instant validoHasta, boolean autogenerado) {
         static CertificadoVista de(CertificadoDigital c) {
@@ -115,10 +118,7 @@ public class EmpresaController {
         e.setRazonSocial(r.razonSocial().trim().toUpperCase(Locale.ROOT));
         e.setNombreComercial(vacio(r.nombreComercial()));
         e.setDireccionFiscal(r.direccionFiscal().trim().toUpperCase(Locale.ROOT));
-        if (r.ubigeo() != null) e.setUbigeo(r.ubigeo());
-        e.setDepartamento(r.departamento().trim().toUpperCase(Locale.ROOT));
-        e.setProvincia(r.provincia().trim().toUpperCase(Locale.ROOT));
-        e.setDistrito(r.distrito().trim().toUpperCase(Locale.ROOT));
+        e.setUbicacion(empresaService.resolverUbigeo(r.ubigeo(), r.distrito(), r.provincia(), r.departamento()));
         e.setUrbanizacion(vacio(r.urbanizacion()));
         e.setTelefono(vacio(r.telefono()));
         e.setEmail(vacio(r.email()));
@@ -133,6 +133,7 @@ public class EmpresaController {
         Empresa e = empresa();
         if (r.solUsuario() != null && !r.solUsuario().isBlank()) e.setSolUsuario(r.solUsuario().trim().toUpperCase(Locale.ROOT));
         if (r.solClave() != null && !r.solClave().isBlank()) e.setSolClaveEnc(cifrado.cifrar(r.solClave()));
+        if (r.cuentaDetracciones() != null) e.setCuentaDetracciones(vacio(r.cuentaDetracciones()));
         if (r.ambiente() == Empresa.Ambiente.PRODUCCION) {
             if (e.getSolUsuario() == null || e.getSolClaveEnc() == null) {
                 throw ApiException.invalido("Para pasar a producción necesitas tu usuario y clave SOL secundaria.");

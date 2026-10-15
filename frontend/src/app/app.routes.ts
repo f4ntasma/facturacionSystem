@@ -22,6 +22,7 @@ export const routes: Routes = [
       { path: 'reportes', title: 'Reportes · Al Toque', loadComponent: () => import('./paginas/app/reportes.component').then((m) => m.ReportesComponent) },
       { path: 'caja', title: 'Caja · Al Toque', loadComponent: () => import('./paginas/app/caja.component').then((m) => m.CajaComponent) },
       { path: 'ajustes', title: 'Ajustes · Al Toque', loadComponent: () => import('./paginas/app/ajustes.component').then((m) => m.AjustesComponent) },
+      { path: 'negocios', title: 'Mis negocios · Al Toque', loadComponent: () => import('./paginas/app/negocios.component').then((m) => m.NegociosComponent) },
       { path: 'mas', title: 'Más · Al Toque', loadComponent: () => import('./paginas/app/mas.component').then((m) => m.MasComponent) },
     ],
   },

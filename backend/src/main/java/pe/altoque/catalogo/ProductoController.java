@@ -47,14 +47,27 @@ public class ProductoController {
 
     public record CategoriaVista(Long id, String nombre) {}
 
+    public record IngresoRequest(@NotNull @DecimalMin(value = "0.001", message = "La cantidad debe ser mayor a cero") BigDecimal cantidad,
+                                 @Size(max = 200) String nota) {}
+
+    public record MovimientoVista(Long id, MovimientoInventario.Tipo tipo, BigDecimal cantidad, BigDecimal stockResultante,
+                                  Long comprobanteId, String nota, java.time.Instant fecha) {}
+
     private final ProductoRepository productos;
     private final CategoriaRepository categorias;
     private final EmpresaRepository empresas;
+    private final InventarioService inventario;
+    private final MovimientoInventarioRepository movimientos;
+    private final Catalogos catalogos;
 
-    public ProductoController(ProductoRepository productos, CategoriaRepository categorias, EmpresaRepository empresas) {
+    public ProductoController(ProductoRepository productos, CategoriaRepository categorias, EmpresaRepository empresas,
+                              InventarioService inventario, MovimientoInventarioRepository movimientos, Catalogos catalogos) {
         this.productos = productos;
         this.categorias = categorias;
         this.empresas = empresas;
+        this.inventario = inventario;
+        this.movimientos = movimientos;
+        this.catalogos = catalogos;
     }
 
     @GetMapping("/productos")
@@ -85,7 +98,11 @@ public class ProductoController {
         if (productos.existsByEmpresaIdAndCodigo(s.empresaId(), codigo)) throw ApiException.conflicto("Ya tienes un producto con el código " + codigo + ".");
         p.setCodigo(codigo);
         aplicar(p, r, s.empresaId());
-        return ProductoVista.de(productos.save(p));
+        productos.save(p);
+        if (p.isControlaStock() && r.stock() != null && r.stock().signum() > 0) {
+            inventario.ingresar(p, r.stock(), s.usuarioId(), "Stock inicial");
+        }
+        return ProductoVista.de(p);
     }
 
     @PutMapping("/productos/{id}")
@@ -102,7 +119,30 @@ public class ProductoController {
             p.setCodigo(codigo);
         }
         aplicar(p, r, s.empresaId());
+        if (p.isControlaStock() && r.stock() != null) inventario.ajustar(p, r.stock(), s.usuarioId(), "Ajuste desde el catálogo");
         return ProductoVista.de(p);
+    }
+
+    /** Ingreso de mercadería (compra o reposición). */
+    @PostMapping("/productos/{id}/ingresos")
+    @PreAuthorize("hasAnyRole('PROPIETARIO','ADMINISTRADOR')")
+    @Transactional
+    public ProductoVista ingresar(@PathVariable Long id, @Valid @RequestBody IngresoRequest r) {
+        Producto p = buscar(id);
+        if (!p.isControlaStock()) throw ApiException.invalido("Activa «controlar stock» en este producto primero.");
+        inventario.ingresar(p, r.cantidad(), Sesion.actual().usuarioId(), r.nota());
+        return ProductoVista.de(p);
+    }
+
+    /** Kardex del producto: últimos movimientos. */
+    @GetMapping("/productos/{id}/kardex")
+    @Transactional(readOnly = true)
+    public List<MovimientoVista> kardex(@PathVariable Long id) {
+        Producto p = buscar(id);
+        return movimientos.findByEmpresaIdAndProductoIdOrderByIdDesc(p.getEmpresa().getId(), p.getId(), PageRequest.of(0, 100)).stream()
+                .map(m -> new MovimientoVista(m.getId(), m.getTipo(), m.getCantidad(), m.getStockResultante(), m.getComprobanteId(),
+                        m.getNota(), m.getCreatedAt()))
+                .toList();
     }
 
     @PatchMapping("/productos/{id}/favorito")
@@ -121,7 +161,7 @@ public class ProductoController {
     }
 
     private void aplicar(Producto p, ProductoRequest r, Long empresaId) {
-        if (!Catalogos.UNIDADES.containsKey(r.unidadMedida())) throw ApiException.invalido("Unidad de medida no válida.");
+        if (!catalogos.unidades().containsKey(r.unidadMedida())) throw ApiException.invalido("Unidad de medida no válida.");
         p.setNombre(r.nombre().trim());
         p.setDescripcion(r.descripcion() == null || r.descripcion().isBlank() ? null : r.descripcion().trim());
         p.setUnidadMedida(r.unidadMedida());
@@ -129,7 +169,6 @@ public class ProductoController {
         p.setTipoAfectacion(r.tipoAfectacion());
         p.setAplicaIcbper(r.aplicaIcbper());
         p.setControlaStock(r.controlaStock());
-        if (r.stock() != null) p.setStock(r.stock());
         p.setFavorito(r.favorito());
         if (r.activo() != null) p.setActivo(r.activo());
         if (r.categoria() == null || r.categoria().isBlank()) {

@@ -38,7 +38,6 @@ public final class Calculadora {
         }
         BigDecimal icbper = aplicaIcbper ? Montos.r2(cantidad.setScale(0, RoundingMode.DOWN).multiply(ICBPER_UNITARIO)) : BigDecimal.ZERO;
         d.setIcbper(icbper);
-        d.setTotal(bruto.add(icbper));
     }
 
     public static void totalizar(Comprobante c) {
@@ -59,6 +58,11 @@ public final class Calculadora {
         c.setTotalIgv(Montos.r2(igv));
         c.setTotalIcbper(Montos.r2(icbper));
         c.setTotal(Montos.r2(gravado.add(exonerado).add(inafecto).add(igv).add(icbper)));
+    }
+
+    /** Detracción redondeada a soles enteros, como se deposita en el Banco de la Nación. */
+    public static BigDecimal detraccion(BigDecimal total, BigDecimal porcentaje) {
+        return total.multiply(porcentaje).divide(Montos.CIEN, 0, RoundingMode.HALF_UP).setScale(2);
     }
 
     /** Suma sin IGV (LineExtensionAmount del comprobante). */

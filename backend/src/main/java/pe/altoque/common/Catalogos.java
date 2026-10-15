@@ -1,65 +1,118 @@
 package pe.altoque.common;
 
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Component;
+
+import java.math.BigDecimal;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Optional;
 
-/** Catálogos SUNAT que usa la app (subconjunto útil para negocios pequeños y medianos). */
-public final class Catalogos {
+/**
+ * Catálogos SUNAT. La fuente es la base (tablas sunat_*, medio_pago); se leen una vez y se guardan en memoria
+ * porque solo cambian con una migración. Aquí también viven las validaciones de documentos de identidad.
+ */
+@Component
+public class Catalogos {
 
-    private Catalogos() {}
+    public record Motivo(String codigo, String nombre, boolean devuelveTodo, boolean reponeStock) {}
 
-    /** Catálogo 06: documentos de identidad. */
-    public static final Map<String, String> DOCUMENTOS = ordenado(
-            "0", "Sin documento",
-            "1", "DNI",
-            "4", "Carné de extranjería",
-            "6", "RUC",
-            "7", "Pasaporte",
-            "A", "Cédula diplomática");
+    public record BienDetraccion(String codigo, String nombre, BigDecimal porcentaje) {}
 
-    /** Catálogo 09: motivos de nota de crédito. */
-    public static final Map<String, String> MOTIVOS_NC = ordenado(
-            "01", "Anulación de la operación",
-            "02", "Anulación por error en el RUC",
-            "03", "Corrección por error en la descripción",
-            "04", "Descuento global",
-            "05", "Descuento por ítem",
-            "06", "Devolución total",
-            "07", "Devolución por ítem",
-            "09", "Disminución en el valor");
+    public record MedioPago(String codigo, String nombre, String codigoSunat, boolean efectivo) {}
 
-    /** Catálogo 10: motivos de nota de débito. */
-    public static final Map<String, String> MOTIVOS_ND = ordenado(
-            "01", "Intereses por mora",
-            "02", "Aumento en el valor",
-            "03", "Penalidades / otros conceptos");
+    private final JdbcTemplate jdbc;
+    private volatile Datos datos;
 
-    /** Catálogo 03: unidades de medida más usadas. */
-    public static final Map<String, String> UNIDADES = ordenado(
-            "NIU", "Unidad",
-            "ZZ", "Servicio",
-            "KGM", "Kilogramo",
-            "GRM", "Gramo",
-            "LTR", "Litro",
-            "MTR", "Metro",
-            "BX", "Caja",
-            "PK", "Paquete",
-            "DZN", "Docena",
-            "BG", "Bolsa",
-            "BO", "Botella",
-            "HUR", "Hora");
+    private record Datos(Map<String, String> documentos, Map<String, String> unidades, Map<String, String> afectaciones,
+                         Map<String, Motivo> motivosNc, Map<String, Motivo> motivosNd, Map<String, BienDetraccion> detracciones,
+                         Map<String, MedioPago> medios) {}
 
-    /** Catálogo 07 (resumido). */
-    public static final Map<String, String> AFECTACIONES = ordenado(
-            "10", "Gravado (con IGV)",
-            "20", "Exonerado",
-            "30", "Inafecto");
-
-    /** Motivos que devuelven todo el comprobante (se copian todos los ítems y se repone stock). */
-    public static boolean motivoTotal(String codigo) {
-        return "01".equals(codigo) || "02".equals(codigo) || "06".equals(codigo);
+    public Catalogos(JdbcTemplate jdbc) {
+        this.jdbc = jdbc;
     }
 
+    public Map<String, String> documentos() {
+        return datos().documentos();
+    }
+
+    public Map<String, String> unidades() {
+        return datos().unidades();
+    }
+
+    public Map<String, String> afectaciones() {
+        return datos().afectaciones();
+    }
+
+    /** Motivos de nota de crédito (catálogo 09) o débito (catálogo 10). */
+    public Optional<Motivo> motivo(String tipoNota, String codigo) {
+        Map<String, Motivo> m = "07".equals(tipoNota) ? datos().motivosNc() : datos().motivosNd();
+        return Optional.ofNullable(m.get(codigo));
+    }
+
+    public Optional<BienDetraccion> detraccion(String codigo) {
+        return Optional.ofNullable(datos().detracciones().get(codigo));
+    }
+
+    /** Lo que necesitan los formularios de la app. */
+    public Map<String, Object> paraFormularios() {
+        Datos d = datos();
+        Map<String, Object> r = new LinkedHashMap<>();
+        r.put("documentos", d.documentos());
+        r.put("motivosNotaCredito", nombres(d.motivosNc()));
+        r.put("motivosNotaDebito", nombres(d.motivosNd()));
+        r.put("unidades", d.unidades());
+        r.put("afectaciones", d.afectaciones());
+        r.put("detracciones", d.detracciones().values());
+        r.put("mediosPago", d.medios().values());
+        return r;
+    }
+
+    private Datos datos() {
+        Datos d = datos;
+        if (d == null) {
+            synchronized (this) {
+                if (datos == null) datos = cargar();
+                d = datos;
+            }
+        }
+        return d;
+    }
+
+    private Datos cargar() {
+        Map<String, String> documentos = mapa("select codigo, abreviatura from sunat_tipo_documento order by codigo");
+        documentos.replace("0", "Sin documento");
+        Map<String, String> unidades = mapa("select codigo, nombre from sunat_unidad_medida order by case codigo when 'NIU' then 0 when 'ZZ' then 1 else 2 end, nombre");
+        Map<String, String> afectaciones = mapa("select codigo, case codigo when '10' then 'Gravado (con IGV)' when '20' then 'Exonerado' else 'Inafecto' end from sunat_afectacion_igv order by codigo");
+        Map<String, Motivo> nc = new LinkedHashMap<>(), nd = new LinkedHashMap<>();
+        jdbc.query("select tipo_comprobante, codigo, nombre, devuelve_todo, repone_stock from sunat_motivo_nota order by tipo_comprobante, codigo", rs -> {
+            Motivo m = new Motivo(rs.getString(2), rs.getString(3), rs.getBoolean(4), rs.getBoolean(5));
+            ("07".equals(rs.getString(1)) ? nc : nd).put(m.codigo(), m);
+        });
+        Map<String, BienDetraccion> det = new LinkedHashMap<>();
+        jdbc.query("select codigo, nombre, porcentaje from sunat_bien_detraccion order by codigo",
+                rs -> { det.put(rs.getString(1), new BienDetraccion(rs.getString(1), rs.getString(2), rs.getBigDecimal(3))); });
+        Map<String, MedioPago> medios = new LinkedHashMap<>();
+        jdbc.query("select codigo, nombre, codigo_sunat, es_efectivo from medio_pago order by orden",
+                rs -> { medios.put(rs.getString(1), new MedioPago(rs.getString(1), rs.getString(2), rs.getString(3), rs.getBoolean(4))); });
+        return new Datos(documentos, unidades, afectaciones, nc, nd, det, medios);
+    }
+
+    private Map<String, String> mapa(String sql) {
+        Map<String, String> m = new LinkedHashMap<>();
+        jdbc.query(sql, rs -> { m.put(rs.getString(1), rs.getString(2)); });
+        return m;
+    }
+
+    private static Map<String, String> nombres(Map<String, Motivo> motivos) {
+        Map<String, String> m = new LinkedHashMap<>();
+        motivos.values().forEach(x -> m.put(x.codigo(), x.nombre()));
+        return m;
+    }
+
+    // ------------------------------------------------------------------ documentos de identidad
+
+    /** RUC: prefijo válido (10 persona natural, 15/16/17 otros, 20 jurídica) y dígito verificador módulo 11. */
     public static boolean rucValido(String ruc) {
         if (ruc == null || !ruc.matches("(10|15|16|17|20)\\d{9}")) return false;
         int[] pesos = {5, 4, 3, 2, 7, 6, 5, 4, 3, 2};
@@ -79,11 +132,5 @@ public final class Catalogos {
             case "0" -> !numero.isBlank();
             default -> false;
         };
-    }
-
-    private static Map<String, String> ordenado(String... kv) {
-        Map<String, String> m = new LinkedHashMap<>();
-        for (int i = 0; i < kv.length; i += 2) m.put(kv[i], kv[i + 1]);
-        return java.util.Collections.unmodifiableMap(m);
     }
 }

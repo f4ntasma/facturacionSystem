@@ -64,10 +64,25 @@ public class SunatClient {
     }
 
     public Respuesta getStatus(Empresa.Ambiente ambiente, Credenciales cred, String ticket) {
-        return llamar(ambiente, cred, "<ser:getStatus><ticket>" + Xml.escapar(ticket) + "</ticket></ser:getStatus>");
+        return llamar(url(ambiente), cred, "<ser:getStatus><ticket>" + Xml.escapar(ticket) + "</ticket></ser:getStatus>");
+    }
+
+    /**
+     * Recupera el CDR de un comprobante ya enviado (p. ej. tras el error 1033 «registrado previamente»).
+     * Solo existe en producción; statusCode 0001/0004 trae la constancia.
+     */
+    public Respuesta getStatusCdr(Credenciales cred, String ruc, String tipo, String serie, int correlativo) {
+        String cuerpo = "<ser:getStatusCdr><rucComprobante>" + ruc + "</rucComprobante><tipoComprobante>" + tipo
+                + "</tipoComprobante><serieComprobante>" + serie + "</serieComprobante><numeroComprobante>" + correlativo
+                + "</numeroComprobante></ser:getStatusCdr>";
+        return llamar(props.sunat().produccionConsultaUrl(), cred, cuerpo);
     }
 
     private Respuesta llamar(Empresa.Ambiente ambiente, Credenciales cred, String cuerpo) {
+        return llamar(url(ambiente), cred, cuerpo);
+    }
+
+    private Respuesta llamar(String url, Credenciales cred, String cuerpo) {
         String sobre = """
                 <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" \
                 xmlns:ser="http://service.sunat.gob.pe" \
@@ -78,7 +93,7 @@ public class SunatClient {
                 <soapenv:Body>%s</soapenv:Body></soapenv:Envelope>"""
                 .formatted(Xml.escapar(cred.usuario()), Xml.escapar(cred.clave()), cuerpo);
         try {
-            HttpRequest req = HttpRequest.newBuilder(URI.create(url(ambiente)))
+            HttpRequest req = HttpRequest.newBuilder(URI.create(url))
                     .timeout(Duration.ofSeconds(props.sunat().timeoutSegundos()))
                     .header("Content-Type", "text/xml; charset=utf-8")
                     .header("SOAPAction", "")

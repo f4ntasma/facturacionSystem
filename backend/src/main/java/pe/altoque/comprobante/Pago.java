@@ -32,7 +32,9 @@ public class Pago {
     @JoinColumn(name = "caja_id")
     private Caja caja;
 
+    /** Código de la tabla medio_pago. */
     @Enumerated(EnumType.STRING)
+    @Column(name = "medio_pago")
     private Metodo metodo;
 
     private BigDecimal monto;

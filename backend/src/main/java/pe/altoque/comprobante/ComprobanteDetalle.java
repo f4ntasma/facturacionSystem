@@ -38,5 +38,9 @@ public class ComprobanteDetalle {
     private BigDecimal valorVenta;
     private BigDecimal igv;
     private BigDecimal icbper = BigDecimal.ZERO;
-    private BigDecimal total;
+
+    /** Importe de la línea con impuestos (no se guarda: es valor de venta + IGV + ICBPER). */
+    public BigDecimal getTotal() {
+        return valorVenta.add(igv).add(icbper);
+    }
 }

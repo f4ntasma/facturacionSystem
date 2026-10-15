@@ -21,7 +21,7 @@ public class Serie {
     @JoinColumn(name = "empresa_id")
     private Empresa empresa;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @ManyToOne(fetch = FetchType.EAGER, optional = false)
     @JoinColumn(name = "establecimiento_id")
     private Establecimiento establecimiento;
 

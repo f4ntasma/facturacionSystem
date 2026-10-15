@@ -4,17 +4,18 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Api, mensajeError } from '../../core/api.service';
 import { Auth } from '../../core/auth.service';
 import { FechaPipe, SolesPipe } from '../../core/formato';
-import { Ambiente, NOMBRE_TIPO, PlanPublico, Rol, TipoComprobante } from '../../core/modelos';
+import { Ambiente, NOMBRE_TIPO, PlanPublico, Rol, TipoComprobante, Ubigeo } from '../../core/modelos';
 import { ToastService } from '../../core/toast.service';
 import { IconoComponent } from '../../shared/icono.component';
 import { ModalComponent } from '../../shared/modal.component';
+import { UbigeoComponent } from '../../shared/ubigeo.component';
 
 type Tab = 'negocio' | 'sunat' | 'series' | 'equipo' | 'plan' | 'cuenta';
 
 interface Empresa {
   ruc: string; razonSocial: string; nombreComercial?: string; direccionFiscal: string; ubigeo: string; departamento: string;
   provincia: string; distrito: string; urbanizacion?: string; telefono?: string; email?: string; mensajeTicket?: string;
-  ambienteSunat: Ambiente; solUsuario?: string; solConfigurado: boolean;
+  ambienteSunat: Ambiente; solUsuario?: string; solConfigurado: boolean; cuentaDetracciones?: string;
 }
 interface Certificado { sujeto: string; emisor: string; validoDesde: string; validoHasta: string; autogenerado: boolean }
 interface Serie { id: number; tipo: TipoComprobante; serie: string; correlativoActual: number; activo: boolean; establecimientoId: number; establecimiento: string }
@@ -24,7 +25,7 @@ interface Cuenta { estado: string; pruebaHasta?: string; plan: PlanPublico; hist
 
 @Component({
   selector: 'at-ajustes',
-  imports: [FormsModule, IconoComponent, ModalComponent, FechaPipe, SolesPipe],
+  imports: [FormsModule, IconoComponent, ModalComponent, UbigeoComponent, FechaPipe, SolesPipe],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './ajustes.component.html',
   styles: `
@@ -67,6 +68,10 @@ export class AjustesComponent {
   protected ambiente = signal<Ambiente>('BETA');
   protected solUsuario = '';
   protected solClave = '';
+  protected cuentaDetracciones = '';
+  /** Distrito del domicilio fiscal y del local que se edita. */
+  protected ubigeoNegocio = signal<Ubigeo | null>(null);
+  protected ubigeoLocal = signal<Ubigeo | null>(null);
   protected certArchivo: File | null = null;
   protected certClave = '';
   protected serieForm = { tipo: '03' as TipoComprobante, serie: '', establecimientoId: 0, correlativoInicial: 0 };
@@ -104,6 +109,8 @@ export class AjustesComponent {
     if (e) {
       this.ambiente.set(e.ambienteSunat);
       this.solUsuario = e.solUsuario ?? '';
+      this.cuentaDetracciones = e.cuentaDetracciones ?? '';
+      this.ubigeoNegocio.set(aUbigeo(e));
     }
     this.certificado.set(c);
     this.series.set(s);
@@ -130,16 +137,21 @@ export class AjustesComponent {
   // negocio
   protected async guardarNegocio() {
     const e = this.empresa()!;
-    const r = await this.correr(() => this.api.put<Empresa>('/empresa', e), '¡Datos del negocio guardados!');
+    const u = this.ubigeoNegocio();
+    const cuerpo = { ...e, ubigeo: u?.ubigeo ?? e.ubigeo, distrito: u?.distrito ?? e.distrito, provincia: u?.provincia ?? e.provincia,
+      departamento: u?.departamento ?? e.departamento };
+    const r = await this.correr(() => this.api.put<Empresa>('/empresa', cuerpo), '¡Datos del negocio guardados!');
     if (r) {
       this.empresa.set(r);
+      this.ubigeoNegocio.set(aUbigeo(r));
       this.auth.refrescar();
     }
   }
 
   // sunat
   protected async guardarSunat() {
-    const r = await this.correr(() => this.api.put<Empresa>('/empresa/sunat', { ambiente: this.ambiente(), solUsuario: this.solUsuario, solClave: this.solClave }),
+    const r = await this.correr(() => this.api.put<Empresa>('/empresa/sunat', { ambiente: this.ambiente(), solUsuario: this.solUsuario, solClave: this.solClave,
+      cuentaDetracciones: this.cuentaDetracciones.replace(/\D/g, '') }),
       this.ambiente() === 'PRODUCCION' ? '¡Ya emites en producción, causa!' : 'Configuración SUNAT guardada.');
     if (r) {
       this.empresa.set(r);
@@ -188,11 +200,13 @@ export class AjustesComponent {
 
   protected editarLocal(l?: Local) {
     this.localForm = l ? { ...l } : { codigoSunat: String(this.locales().length).padStart(4, '0'), nombre: '', direccion: '', ubigeo: '', activo: true };
+    const cod = this.localForm.ubigeo;
+    this.ubigeoLocal.set(cod ? { ubigeo: cod, distrito: '', provincia: '', departamento: '', etiqueta: 'Ubigeo ' + cod } : null);
     this.localAbierto.set(true);
   }
 
   protected async guardarLocal() {
-    const f = { ...this.localForm, ubigeo: this.localForm.ubigeo || null };
+    const f = { ...this.localForm, ubigeo: this.ubigeoLocal()?.ubigeo || null };
     const r = await this.correr(() => (f.id ? this.api.put<Local>(`/establecimientos/${f.id}`, f) : this.api.post<Local>('/establecimientos', f)), 'Local guardado.');
     if (r) {
       this.locales.update((l) => (f.id ? l.map((x) => (x.id === r.id ? r : x)) : [...l, r]));
@@ -231,4 +245,9 @@ export class AjustesComponent {
     const r = await this.correr(() => this.api.post('/auth/clave', this.clave).then(() => true), 'Contraseña actualizada.');
     if (r) this.clave = { actual: '', nueva: '' };
   }
+}
+
+function aUbigeo(e: Empresa): Ubigeo {
+  return { ubigeo: e.ubigeo, distrito: e.distrito, provincia: e.provincia, departamento: e.departamento,
+    etiqueta: `${e.distrito}, ${e.provincia}, ${e.departamento}` };
 }

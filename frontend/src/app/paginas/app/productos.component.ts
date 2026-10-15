@@ -3,8 +3,8 @@ import { FormsModule } from '@angular/forms';
 import { Api, mensajeError } from '../../core/api.service';
 import { Auth } from '../../core/auth.service';
 import { CatalogosService } from '../../core/catalogos.service';
-import { CantidadPipe, SolesPipe } from '../../core/formato';
-import { Pagina, Producto } from '../../core/modelos';
+import { CantidadPipe, FechaPipe, SolesPipe } from '../../core/formato';
+import { Movimiento, Pagina, Producto } from '../../core/modelos';
 import { ToastService } from '../../core/toast.service';
 import { IconoComponent } from '../../shared/icono.component';
 import { ModalComponent } from '../../shared/modal.component';
@@ -30,7 +30,7 @@ const VACIO: Form = { codigo: '', nombre: '', descripcion: '', unidadMedida: 'NI
 
 @Component({
   selector: 'at-productos',
-  imports: [FormsModule, SolesPipe, CantidadPipe, IconoComponent, ModalComponent],
+  imports: [FormsModule, SolesPipe, CantidadPipe, FechaPipe, IconoComponent, ModalComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="pagina">
@@ -69,7 +69,11 @@ const VACIO: Form = { codigo: '', nombre: '', descripcion: '', unidadMedida: 'NI
                   <td><strong>{{ p.nombre }}</strong><br /><span class="mini suave mono">{{ p.codigo }} · {{ unidad(p.unidadMedida) }}{{ p.tipoAfectacion === '20' ? ' · exonerado' : p.tipoAfectacion === '30' ? ' · inafecto' : '' }}{{ p.aplicaIcbper ? ' · ICBPER' : '' }}</span></td>
                   <td>{{ p.categoria || '—' }}</td>
                   <td class="derecha monto">{{ p.precio | soles }}</td>
-                  <td class="derecha mono" [style.color]="p.controlaStock && p.stock <= 5 ? 'var(--magenta)' : ''">{{ p.controlaStock ? (p.stock | cant) : '—' }}</td>
+                  <td class="derecha mono" [style.color]="p.controlaStock && p.stock <= 5 ? 'var(--magenta)' : ''">
+                    @if (p.controlaStock) {
+                      <button type="button" class="enlace mono" (click)="verKardex(p)" [attr.aria-label]="'Kardex de ' + p.nombre">{{ p.stock | cant }}</button>
+                    } @else { — }
+                  </td>
                   <td class="derecha">@if (auth.esAdmin()) { <button type="button" class="btn btn-icono btn-fantasma" (click)="editar(p)" [attr.aria-label]="'Editar ' + p.nombre"><at-icono nombre="editar" [tam]="18" /></button> }</td>
                 </tr>
               } @empty {
@@ -80,6 +84,38 @@ const VACIO: Form = { codigo: '', nombre: '', descripcion: '', unidadMedida: 'NI
         </div>
       }
     </div>
+
+    <at-modal [abierto]="!!kardexDe()" [titulo]="'Kardex · ' + (kardexDe()?.nombre ?? '')" (cerrar)="kardexDe.set(null)">
+      @if (kardexDe(); as p) {
+        <div class="col" style="gap: 14px">
+          <div class="entre"><span>Stock actual</span><strong class="mono" style="font-size: 22px">{{ p.stock | cant }}</strong></div>
+          @if (auth.esAdmin()) {
+            <form class="fila-wrap" (ngSubmit)="ingresar(p)">
+              <input name="ing-cant" class="input mono" style="max-width: 110px" type="number" min="0.001" step="any" placeholder="Cantidad" [(ngModel)]="ingreso.cantidad" />
+              <input name="ing-nota" class="input" style="flex: 1; min-width: 140px" placeholder="Nota (ej.: compra al mayorista)" [(ngModel)]="ingreso.nota" />
+              <button type="submit" class="btn btn-tinta btn-chico" [disabled]="guardando()">+ Ingreso</button>
+            </form>
+          }
+          <div class="tabla-caja">
+            <table class="tabla">
+              <thead><tr><th>Fecha</th><th>Movimiento</th><th class="derecha">Cant.</th><th class="derecha">Saldo</th></tr></thead>
+              <tbody>
+                @for (m of kardex(); track m.id) {
+                  <tr>
+                    <td class="mini">{{ m.fecha | fecha }}</td>
+                    <td>{{ nombreMovimiento[m.tipo] }}@if (m.nota) { <br /><span class="mini suave">{{ m.nota }}</span> }</td>
+                    <td class="derecha mono" [style.color]="m.cantidad < 0 ? 'var(--magenta)' : 'var(--verde)'">{{ m.cantidad > 0 ? '+' : '' }}{{ m.cantidad | cant }}</td>
+                    <td class="derecha mono">{{ m.stockResultante | cant }}</td>
+                  </tr>
+                } @empty {
+                  <tr><td colspan="4" class="suave">Sin movimientos todavía.</td></tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      }
+    </at-modal>
 
     <at-modal [abierto]="abierto()" [titulo]="form.id ? 'Editar producto' : 'Nuevo producto'" (cerrar)="abierto.set(false)">
       <form class="col" (ngSubmit)="guardar()">
@@ -151,6 +187,12 @@ export class ProductosComponent {
   protected abierto = signal(false);
   protected guardando = signal(false);
   protected form: Form = { ...VACIO };
+  protected kardexDe = signal<Producto | null>(null);
+  protected kardex = signal<Movimiento[]>([]);
+  protected ingreso = { cantidad: null as number | null, nota: '' };
+  protected readonly nombreMovimiento: Record<Movimiento['tipo'], string> = {
+    VENTA: 'Venta', DEVOLUCION: 'Devolución (nota de crédito)', ANULACION: 'Anulación o rechazo', AJUSTE: 'Ajuste de conteo', INGRESO: 'Ingreso',
+  };
   protected categorias = computed(() => [...new Set(this.productos().map((p) => p.categoria).filter((c): c is string => !!c))]);
   protected filtrados = computed(() => {
     const q = this.q().trim().toLowerCase();
@@ -183,6 +225,31 @@ export class ProductosComponent {
   protected editar(p: Producto) {
     this.form = { ...VACIO, ...p, descripcion: p.descripcion ?? '', categoria: p.categoria ?? '' };
     this.abierto.set(true);
+  }
+
+  protected async verKardex(p: Producto) {
+    this.kardexDe.set(p);
+    this.kardex.set([]);
+    this.kardex.set(await this.api.get<Movimiento[]>(`/productos/${p.id}/kardex`).catch(() => []));
+  }
+
+  protected async ingresar(p: Producto) {
+    if (!this.ingreso.cantidad || this.ingreso.cantidad <= 0) {
+      this.toast.error('Pon cuánto ingresa.');
+      return;
+    }
+    this.guardando.set(true);
+    try {
+      const r = await this.api.post<Producto>(`/productos/${p.id}/ingresos`, { cantidad: this.ingreso.cantidad, nota: this.ingreso.nota || null });
+      this.productos.update((l) => l.map((x) => (x.id === r.id ? r : x)));
+      this.ingreso = { cantidad: null, nota: '' };
+      this.toast.ok('Ingreso registrado.');
+      await this.verKardex(r);
+    } catch (e) {
+      this.toast.error(mensajeError(e));
+    } finally {
+      this.guardando.set(false);
+    }
   }
 
   protected async favorito(p: Producto) {

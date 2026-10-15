@@ -104,6 +104,7 @@ public class SuscripcionController {
         s.setPlan(plan);
         LocalDate inicio = LocalDate.now();
         s.setPeriodoInicio(inicio);
+        s.setPeriodo(anual ? Suscripcion.Periodo.ANUAL : Suscripcion.Periodo.MENSUAL);
         s.setPeriodoFin(anual ? inicio.plusYears(1) : inicio.plusMonths(1));
         s.setMonto(anual ? plan.precioAnualOMensual() : plan.getPrecioMensual());
         s.setEstado(Suscripcion.Estado.PENDIENTE);
@@ -148,7 +149,7 @@ public class SuscripcionController {
         try {
             var cuerpo = Map.of(
                     "items", List.of(Map.of("title", "Al Toque · Plan " + s.getPlan().getNombre()
-                                    + (s.getPeriodoFin().isAfter(s.getPeriodoInicio().plusMonths(1)) ? " (12 meses)" : " (1 mes)"),
+                                    + (s.getPeriodo() == Suscripcion.Periodo.ANUAL ? " (12 meses)" : " (1 mes)"),
                             "quantity", 1, "currency_id", "PEN", "unit_price", s.getMonto())),
                     "external_reference", String.valueOf(s.getId()),
                     "notification_url", props.apiPublicUrl() + "/api/suscripcion/webhook",

@@ -22,7 +22,7 @@ public class CertificadoDigital {
 
     @Lob
     @Basic(fetch = FetchType.LAZY)
-    @Column(columnDefinition = "LONGBLOB")
+    @Column(columnDefinition = "BLOB")
     private byte[] archivo;
 
     private String claveEnc;

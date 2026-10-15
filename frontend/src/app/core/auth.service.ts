@@ -45,6 +45,16 @@ export class Auth {
     this.guardar(await this.api.post<TokenResponse>('/auth/registro', datos));
   }
 
+  /** Cambia al otro negocio de la persona: el token nuevo vale para ese negocio. */
+  async entrar(empresaId: number) {
+    this.guardar(await this.api.post<TokenResponse>(`/auth/negocios/${empresaId}/entrar`));
+  }
+
+  /** Suma un negocio a la cuenta (p. ej. el contador que lleva varias mypes) y entra a él. */
+  async agregarNegocio(datos: Record<string, unknown>) {
+    this.guardar(await this.api.post<TokenResponse>('/auth/negocios', datos));
+  }
+
   /** Recarga el perfil (plan, uso del mes, ambiente SUNAT). */
   async refrescar(): Promise<Perfil | null> {
     if (!this.logueado()) return null;

@@ -9,12 +9,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import pe.altoque.catalogo.Cliente;
 import pe.altoque.catalogo.ClienteRepository;
+import pe.altoque.catalogo.InventarioService;
 import pe.altoque.catalogo.Producto;
 import pe.altoque.catalogo.ProductoRepository;
 import pe.altoque.common.ApiException;
 import pe.altoque.common.Catalogos;
 import pe.altoque.common.Montos;
-import pe.altoque.common.NumeroALetras;
 import pe.altoque.common.Tokens;
 import pe.altoque.comprobante.Comprobante.EstadoPago;
 import pe.altoque.comprobante.Comprobante.EstadoSunat;
@@ -33,12 +33,25 @@ import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 
+/**
+ * Emisión, notas, cobros y anulación. Reglas SUNAT que se validan aquí, antes de firmar:
+ * <ul>
+ *   <li>La fecha de emisión es siempre hoy (no se emite con fecha atrasada ni adelantada).</li>
+ *   <li>Factura: el cliente tiene RUC válido. Boleta: desde S/ 700 exige documento de identidad.</li>
+ *   <li>Factura al crédito: cuotas con vencimiento posterior a la emisión que suman el neto pendiente.</li>
+ *   <li>Detracción: solo factura, más de S/ 700, con la cuenta del Banco de la Nación configurada.</li>
+ *   <li>Notas: sobre una boleta o factura aceptada, misma serie de origen (B/F), sin pasar lo acreditable.</li>
+ *   <li>Anulación: hasta 7 días calendario; después, con nota de crédito.</li>
+ * </ul>
+ */
 @Service
 public class ComprobanteService {
 
     /** A partir de este monto la boleta exige documento del cliente. */
     public static final BigDecimal LIMITE_BOLETA_SIN_DOC = new BigDecimal("700.00");
-    /** SUNAT permite anular (baja / resumen) hasta 7 días calendario después de la emisión. */
+    /** El SPOT no aplica a operaciones de hasta S/ 700. */
+    public static final BigDecimal MINIMO_DETRACCION = new BigDecimal("700.00");
+    /** Plazo para anular por comunicación de baja o resumen diario, en días calendario desde la emisión. */
     public static final int DIAS_PARA_ANULAR = 7;
 
     private final ComprobanteRepository comprobantes;
@@ -48,12 +61,15 @@ public class ComprobanteService {
     private final ClienteRepository clientes;
     private final ProductoRepository productos;
     private final CajaRepository cajas;
+    private final InventarioService inventario;
+    private final Catalogos catalogos;
     private final SunatService sunat;
     private final ComprobanteVistas vistas;
 
     public ComprobanteService(ComprobanteRepository comprobantes, SerieRepository series, EmpresaRepository empresas,
                               UsuarioRepository usuarios, ClienteRepository clientes, ProductoRepository productos,
-                              CajaRepository cajas, SunatService sunat, ComprobanteVistas vistas) {
+                              CajaRepository cajas, InventarioService inventario, Catalogos catalogos, SunatService sunat,
+                              ComprobanteVistas vistas) {
         this.comprobantes = comprobantes;
         this.series = series;
         this.empresas = empresas;
@@ -61,6 +77,8 @@ public class ComprobanteService {
         this.clientes = clientes;
         this.productos = productos;
         this.cajas = cajas;
+        this.inventario = inventario;
+        this.catalogos = catalogos;
         this.sunat = sunat;
         this.vistas = vistas;
     }
@@ -77,7 +95,6 @@ public class ComprobanteService {
         Serie serie = elegirSerie(s, req.tipo(), req.serieId(), req.tipo() == TipoComprobante.FACTURA ? "F" : "B");
 
         Comprobante c = base(empresa, usuario, serie);
-        c.setTipo(req.tipo());
         c.setObservaciones(limpiar(req.observaciones()));
         c.setFormaPago(req.formaPago() == null ? FormaPago.CONTADO : req.formaPago());
         asignarCliente(c, s.empresaId(), req.cliente());
@@ -90,36 +107,58 @@ public class ComprobanteService {
         }
         Calculadora.totalizar(c);
         validarCliente(c);
-        moverStock(c, -1);
+        if (req.detraccion() != null) aplicarDetraccion(c, req.detraccion());
 
+        // Las cuotas son obligatorias en la factura al crédito; la boleta al crédito solo queda por cobrar.
         if (c.getTipo() == TipoComprobante.FACTURA && c.getFormaPago() == FormaPago.CREDITO) {
             prepararCredito(c, req);
         } else {
             c.setFechaVencimiento(req.fechaVencimiento());
         }
         registrarPagosIniciales(c, usuario, req.pagos());
-        cerrarNumeracion(c);
+        c.setCorrelativo(serie.siguiente());
         comprobantes.save(c);
+        inventario.vender(c);
         sunat.generarXml(c);
         return c;
     }
 
-    private void prepararCredito(Comprobante c, EmitirRequest req) {
-        List<CuotaIn> cuotas = req.cuotas() == null ? List.of() : req.cuotas();
-        if (cuotas.isEmpty()) {
-            LocalDate vence = req.fechaVencimiento() != null ? req.fechaVencimiento() : c.getFechaEmision().plusDays(30);
-            cuotas = List.of(new CuotaIn(c.getTotal(), vence));
+    private void aplicarDetraccion(Comprobante c, DetraccionIn in) {
+        if (c.getTipo() != TipoComprobante.FACTURA) throw ApiException.invalido("La detracción solo va en facturas.");
+        if (c.getTotal().compareTo(MINIMO_DETRACCION) <= 0) {
+            throw ApiException.invalido("La detracción aplica a operaciones de más de S/ 700.");
         }
+        String cuenta = c.getEmpresa().getCuentaDetracciones();
+        if (cuenta == null || cuenta.isBlank()) {
+            throw ApiException.invalido("Falta tu cuenta de detracciones del Banco de la Nación. Agrégala en Ajustes › SUNAT.");
+        }
+        var bien = catalogos.detraccion(in.codigo()).orElseThrow(() -> ApiException.invalido("Código de detracción inválido."));
+        ComprobanteDetraccion d = new ComprobanteDetraccion();
+        d.setBienCodigo(bien.codigo());
+        d.setPorcentaje(bien.porcentaje());
+        d.setMonto(Calculadora.detraccion(c.getTotal(), bien.porcentaje()));
+        d.setCuentaBanco(cuenta.trim());
+        c.asignarDetraccion(d);
+    }
+
+    private void prepararCredito(Comprobante c, EmitirRequest req) {
+        BigDecimal neto = c.getNetoACobrar();
+        List<CuotaIn> cuotas = req.cuotas() == null ? List.of() : req.cuotas();
         BigDecimal pagadoAlEmitir = req.pagos() == null ? BigDecimal.ZERO
                 : req.pagos().stream().map(PagoIn::monto).reduce(BigDecimal.ZERO, BigDecimal::add);
+        if (cuotas.isEmpty()) {
+            LocalDate vence = req.fechaVencimiento() != null ? req.fechaVencimiento() : c.getFechaEmision().plusDays(30);
+            cuotas = List.of(new CuotaIn(neto.subtract(pagadoAlEmitir), vence));
+        }
         BigDecimal suma = cuotas.stream().map(CuotaIn::monto).reduce(BigDecimal.ZERO, BigDecimal::add);
-        if (Montos.r2(suma.add(pagadoAlEmitir)).compareTo(c.getTotal()) != 0) {
-            throw ApiException.invalido("Las cuotas (S/ %s) más lo pagado hoy deben sumar el total (S/ %s)."
-                    .formatted(Montos.txt(suma), Montos.txt(c.getTotal())));
+        if (Montos.r2(suma.add(pagadoAlEmitir)).compareTo(neto) != 0) {
+            throw ApiException.invalido("Las cuotas (S/ %s) más lo pagado hoy deben sumar %s (S/ %s)."
+                    .formatted(Montos.txt(suma), c.getDetraccion() != null ? "el neto sin detracción" : "el total", Montos.txt(neto)));
         }
         int i = 1;
         LocalDate ultima = null;
         for (CuotaIn q : cuotas) {
+            if (q.monto().signum() <= 0) throw ApiException.invalido("Cada cuota debe ser mayor a cero.");
             if (!q.fechaVencimiento().isAfter(c.getFechaEmision())) {
                 throw ApiException.invalido("Las cuotas deben vencer después de hoy.");
             }
@@ -144,24 +183,27 @@ public class ComprobanteService {
         }
         Comprobante ref = buscar(s, refId);
         if (ref.getTipo().esNota()) throw ApiException.invalido("Una nota se emite sobre una boleta o factura, no sobre otra nota.");
-        if (ref.getEstadoSunat() != EstadoSunat.ACEPTADO && ref.getEstadoSunat() != EstadoSunat.OBSERVADO) {
-            throw ApiException.invalido("Solo puedes emitir notas sobre comprobantes aceptados por SUNAT.");
+        if (!ref.vigente()) throw ApiException.invalido("Solo puedes emitir notas sobre comprobantes aceptados por SUNAT.");
+        Catalogos.Motivo motivo = catalogos.motivo(req.tipo().codigo(), req.motivoCodigo())
+                .orElseThrow(() -> ApiException.invalido("Motivo inválido para esta nota."));
+        if (ref.getTipo() == TipoComprobante.BOLETA && "02".equals(motivo.codigo())) {
+            throw ApiException.invalido("«Error en el RUC» solo aplica a facturas.");
         }
-        Map<String, String> motivos = req.tipo() == TipoComprobante.NOTA_CREDITO ? Catalogos.MOTIVOS_NC : Catalogos.MOTIVOS_ND;
-        if (!motivos.containsKey(req.motivoCodigo())) throw ApiException.invalido("Motivo inválido para esta nota.");
 
         Usuario usuario = usuarios.getReferenceById(s.usuarioId());
         String prefijo = ref.getSerie().substring(0, 1);
         Serie serie = elegirSerie(s, req.tipo(), null, prefijo);
 
         Comprobante c = base(empresa, usuario, serie);
-        c.setTipo(req.tipo());
-        c.setComprobanteRef(ref);
-        c.setRefTipo(ref.getTipo());
-        c.setRefSerie(ref.getSerie());
-        c.setRefCorrelativo(ref.getCorrelativo());
-        c.setMotivoCodigo(req.motivoCodigo());
-        c.setMotivoDescripcion(req.motivoDescripcion().trim());
+        ComprobanteNota nota = new ComprobanteNota();
+        nota.setComprobanteRef(ref);
+        nota.setRefTipo(ref.getTipo());
+        nota.setRefSerie(ref.getSerie());
+        nota.setRefCorrelativo(ref.getCorrelativo());
+        nota.setNotaTipo(req.tipo());
+        nota.setMotivoCodigo(motivo.codigo());
+        nota.setSustento(req.motivoDescripcion().trim());
+        c.asignarNota(nota);
         c.setCliente(ref.getCliente());
         c.setClienteTipoDoc(ref.getClienteTipoDoc());
         c.setClienteNumDoc(ref.getClienteNumDoc());
@@ -171,8 +213,7 @@ public class ComprobanteService {
         c.setClienteTelefono(ref.getClienteTelefono());
         c.setIgvPorcentaje(ref.getIgvPorcentaje());
 
-        boolean total = req.tipo() == TipoComprobante.NOTA_CREDITO && Catalogos.motivoTotal(req.motivoCodigo());
-        if (total) {
+        if (req.tipo() == TipoComprobante.NOTA_CREDITO && motivo.devuelveTodo()) {
             for (ComprobanteDetalle d : ref.getDetalles()) c.agregarDetalle(copia(d));
         } else {
             if (req.items() == null || req.items().isEmpty()) throw ApiException.invalido("Indica los ítems y montos de la nota.");
@@ -186,29 +227,26 @@ public class ComprobanteService {
         Calculadora.totalizar(c);
 
         if (req.tipo() == TipoComprobante.NOTA_CREDITO) {
-            BigDecimal yaAcreditado = comprobantes.findByComprobanteRefIdOrderById(ref.getId()).stream()
-                    .filter(n -> n.getTipo() == TipoComprobante.NOTA_CREDITO && n.getEstadoSunat() != EstadoSunat.RECHAZADO
-                            && n.getEstadoSunat() != EstadoSunat.ANULADO)
+            BigDecimal yaAcreditado = comprobantes.notasDe(ref.getId()).stream()
+                    .filter(x -> x.getTipo() == TipoComprobante.NOTA_CREDITO && x.getEstadoSunat() != EstadoSunat.RECHAZADO
+                            && x.getEstadoSunat() != EstadoSunat.ANULADO)
                     .map(Comprobante::getTotal).reduce(BigDecimal.ZERO, BigDecimal::add);
             if (c.getTotal().add(yaAcreditado).compareTo(ref.getTotal()) > 0) {
                 throw ApiException.invalido("La nota supera lo que queda por acreditar de %s (S/ %s)."
                         .formatted(ref.numeroImpreso(), Montos.txt(ref.getTotal().subtract(yaAcreditado))));
             }
-            if ("01".equals(req.motivoCodigo()) || "06".equals(req.motivoCodigo()) || "07".equals(req.motivoCodigo())) {
-                moverStock(c, +1);
-            }
             c.setEstadoPago(EstadoPago.PAGADO);
-            c.setMontoPagado(c.getTotal());
         } else {
             c.setEstadoPago(EstadoPago.POR_COBRAR);
         }
-        cerrarNumeracion(c);
+        c.setCorrelativo(serie.siguiente());
         comprobantes.save(c);
+        if (req.tipo() == TipoComprobante.NOTA_CREDITO && motivo.reponeStock()) inventario.devolver(c);
         sunat.generarXml(c);
         return c;
     }
 
-    // ------------------------------------------------------------------ cobros, envío y anulación
+    // ------------------------------------------------------------------ cobros y anulación
 
     @Transactional
     public Comprobante registrarPago(Sesion s, Long id, PagoIn in) {
@@ -217,13 +255,12 @@ public class ComprobanteService {
         if (c.getEstadoSunat() == EstadoSunat.ANULADO || c.getEstadoSunat() == EstadoSunat.RECHAZADO) {
             throw ApiException.invalido("Este comprobante no es válido; no se le pueden registrar cobros.");
         }
-        BigDecimal saldo = c.getTotal().subtract(c.getMontoPagado());
+        BigDecimal saldo = c.getSaldo();
         if (saldo.signum() <= 0) throw ApiException.invalido("Este comprobante ya está pagado completo.");
         if (in.monto().compareTo(saldo) > 0) {
             throw ApiException.invalido("El cobro supera el saldo pendiente (S/ %s).".formatted(Montos.txt(saldo)));
         }
-        Pago p = nuevoPago(c, usuarios.getReferenceById(s.usuarioId()), in);
-        c.agregarPago(p);
+        c.agregarPago(nuevoPago(c, usuarios.getReferenceById(s.usuarioId()), in, cajaAbierta(c)));
         actualizarEstadoPago(c);
         return c;
     }
@@ -235,34 +272,19 @@ public class ComprobanteService {
         switch (c.getEstadoSunat()) {
             case ANULADO, POR_ANULAR -> throw ApiException.conflicto("Este comprobante ya está anulado o en proceso de anulación.");
             case PENDIENTE -> throw ApiException.invalido("Aún no llega a SUNAT. Reintenta el envío y luego anúlalo.");
-            case RECHAZADO -> {
-                // Nunca fue válido para SUNAT: solo se marca y se repone el stock.
-                c.setEstadoSunat(EstadoSunat.ANULADO);
-                c.setAnulacionMotivo(motivo);
-                c.setAnuladoAt(Instant.now());
-                if (!c.getTipo().esNota()) moverStock(c, +1);
-                return c;
-            }
+            case RECHAZADO -> throw ApiException.invalido("SUNAT lo rechazó: no tiene validez y no hace falta anularlo. Emite uno nuevo.");
             default -> {
             }
         }
         long dias = ChronoUnit.DAYS.between(c.getFechaEmision(), LocalDate.now());
         if (dias > DIAS_PARA_ANULAR) {
-            throw ApiException.invalido("Pasaron más de 7 días desde la emisión. Para revertirlo emite una nota de crédito.");
+            throw ApiException.invalido("Pasaron más de %d días desde la emisión. Para revertirlo emite una nota de crédito.".formatted(DIAS_PARA_ANULAR));
         }
-        boolean tieneNotas = comprobantes.findByComprobanteRefIdOrderById(c.getId()).stream()
-                .anyMatch(n -> n.getEstadoSunat() != EstadoSunat.ANULADO && n.getEstadoSunat() != EstadoSunat.RECHAZADO);
+        boolean tieneNotas = comprobantes.notasDe(c.getId()).stream()
+                .anyMatch(x -> x.getEstadoSunat() != EstadoSunat.ANULADO && x.getEstadoSunat() != EstadoSunat.RECHAZADO);
         if (tieneNotas) throw ApiException.invalido("Este comprobante tiene notas vigentes. Anula primero las notas.");
-        if (!c.getTipo().esNota()) moverStock(c, +1);
         sunat.anular(c, motivo.trim());
         return c;
-    }
-
-    @Transactional
-    public void marcarMensaje(Long id, String mensaje) {
-        comprobantes.findById(id).ifPresent(c -> {
-            if (c.getEstadoSunat() == EstadoSunat.PENDIENTE) c.setSunatMensaje(mensaje);
-        });
     }
 
     // ------------------------------------------------------------------ consultas
@@ -287,7 +309,7 @@ public class ComprobanteService {
 
     @Transactional(readOnly = true)
     public List<Comprobante> paraExportar(Sesion s, LocalDate desde, LocalDate hasta) {
-        var orden = Sort.by("fechaEmision", "tipo", "serie", "correlativo");
+        var orden = Sort.by("fechaEmision", "serieRef.tipoComprobante", "serieRef.serie", "correlativo");
         return comprobantes.findAll(filtros(s.empresaId(), null, null, null, desde, hasta, null), orden);
     }
 
@@ -295,10 +317,11 @@ public class ComprobanteService {
                                               LocalDate desde, LocalDate hasta, String q) {
         return (root, query, cb) -> {
             List<jakarta.persistence.criteria.Predicate> ps = new ArrayList<>();
+            var serie = root.join("serieRef");
             ps.add(cb.equal(root.get("empresa").get("id"), empresaId));
             if (tipo != null && !tipo.isBlank()) {
                 List<TipoComprobante> tipos = Arrays.stream(tipo.split(",")).map(String::trim).map(TipoComprobante::deCodigo).toList();
-                ps.add(root.get("tipo").in(tipos));
+                ps.add(serie.get("tipoComprobante").in(tipos));
             }
             if (estado != null) ps.add(cb.equal(root.get("estadoSunat"), estado));
             if (estadoPago != null) ps.add(cb.equal(root.get("estadoPago"), estadoPago));
@@ -306,10 +329,9 @@ public class ComprobanteService {
             if (hasta != null) ps.add(cb.lessThanOrEqualTo(root.get("fechaEmision"), hasta));
             if (q != null && !q.isBlank()) {
                 String t = q.trim();
-                var numero = t.toUpperCase().matches("[A-Z0-9]{4}-\\d+");
-                if (numero) {
+                if (t.toUpperCase().matches("[A-Z0-9]{4}-\\d+")) {
                     String[] partes = t.toUpperCase().split("-");
-                    ps.add(cb.equal(root.get("serie"), partes[0]));
+                    ps.add(cb.equal(serie.get("serie"), partes[0]));
                     ps.add(cb.equal(root.get("correlativo"), Integer.parseInt(partes[1])));
                 } else {
                     String like = "%" + t.toLowerCase() + "%";
@@ -361,6 +383,7 @@ public class ComprobanteService {
             }
             serie = candidatas.getFirst();
         }
+        // Bloquea la fila: dos ventas a la vez nunca toman el mismo número.
         return series.bloquear(serie.getId()).orElseThrow();
     }
 
@@ -369,8 +392,6 @@ public class ComprobanteService {
         c.setEmpresa(empresa);
         c.setUsuario(usuario);
         c.setSerieRef(serie);
-        c.setEstablecimiento(serie.getEstablecimiento());
-        c.setSerie(serie.getSerie());
         c.setFechaEmision(LocalDate.now());
         c.setHoraEmision(LocalTime.now().withNano(0));
         c.setIgvPorcentaje(empresa.getIgvPorcentaje());
@@ -379,13 +400,6 @@ public class ComprobanteService {
         cajas.findFirstByEmpresaIdAndEstablecimientoIdAndEstadoOrderByIdDesc(empresa.getId(), serie.getEstablecimiento().getId(), Caja.Estado.ABIERTA)
                 .ifPresent(c::setCaja);
         return c;
-    }
-
-    /** Toma el correlativo al final, con la serie ya bloqueada, para no dejar huecos si algo falla antes. */
-    private void cerrarNumeracion(Comprobante c) {
-        c.setCorrelativo(c.getSerieRef().siguiente());
-        c.setTotalLetras(NumeroALetras.convertir(c.getTotal(), c.getMoneda()));
-        c.setNombreArchivo("%s-%s-%s-%d".formatted(c.getEmpresa().getRuc(), c.getTipo().codigo(), c.getSerie(), c.getCorrelativo()));
     }
 
     private void asignarCliente(Comprobante c, Long empresaId, ClienteIn in) {
@@ -463,7 +477,9 @@ public class ComprobanteService {
         d.setProducto(p);
         d.setCodigo(it.codigo() != null ? it.codigo() : p != null ? p.getCodigo() : null);
         d.setDescripcion(it.descripcion().trim());
-        d.setUnidadMedida(it.unidadMedida() != null ? it.unidadMedida() : p != null ? p.getUnidadMedida() : "NIU");
+        String unidad = it.unidadMedida() != null ? it.unidadMedida() : p != null ? p.getUnidadMedida() : "NIU";
+        if (!catalogos.unidades().containsKey(unidad)) throw ApiException.invalido("Unidad de medida no válida: " + unidad);
+        d.setUnidadMedida(unidad);
         d.setCantidad(it.cantidad());
         d.setPrecioUnitario(it.precioUnitario());
         d.setTipoAfectacion(it.tipoAfectacion() != null ? it.tipoAfectacion() : p != null ? p.getTipoAfectacion() : Calculadora.GRAVADO);
@@ -486,56 +502,47 @@ public class ComprobanteService {
         d.setValorVenta(o.getValorVenta());
         d.setIgv(o.getIgv());
         d.setIcbper(o.getIcbper());
-        d.setTotal(o.getTotal());
         return d;
-    }
-
-    /** signo -1 descuenta (venta), +1 repone (anulación o devolución). */
-    private void moverStock(Comprobante c, int signo) {
-        for (ComprobanteDetalle d : c.getDetalles()) {
-            Producto p = d.getProducto();
-            if (p == null || !p.isControlaStock()) continue;
-            BigDecimal nuevo = p.getStock().add(d.getCantidad().multiply(BigDecimal.valueOf(signo)));
-            if (signo < 0 && nuevo.signum() < 0) {
-                throw ApiException.invalido("No alcanza el stock de «%s»: quedan %s.".formatted(p.getNombre(), p.getStock().stripTrailingZeros().toPlainString()));
-            }
-            p.setStock(nuevo);
-        }
     }
 
     private void registrarPagosIniciales(Comprobante c, Usuario usuario, List<PagoIn> pagos) {
         boolean credito = c.getFormaPago() == FormaPago.CREDITO;
+        BigDecimal neto = c.getNetoACobrar();
         List<PagoIn> lista = pagos == null ? List.of() : pagos;
         if (lista.isEmpty() && !credito) {
-            lista = List.of(new PagoIn(Pago.Metodo.EFECTIVO, c.getTotal(), null));
+            lista = List.of(new PagoIn(Pago.Metodo.EFECTIVO, neto, null));
         }
         BigDecimal suma = lista.stream().map(PagoIn::monto).reduce(BigDecimal.ZERO, BigDecimal::add);
-        if (!credito && Montos.r2(suma).compareTo(c.getTotal()) != 0) {
-            throw ApiException.invalido("Los pagos (S/ %s) no cuadran con el total (S/ %s). Si queda saldo, emite al crédito."
-                    .formatted(Montos.txt(suma), Montos.txt(c.getTotal())));
+        if (!credito && Montos.r2(suma).compareTo(neto) != 0) {
+            throw ApiException.invalido("Los pagos (S/ %s) no cuadran con %s (S/ %s). Si queda saldo, emite al crédito."
+                    .formatted(Montos.txt(suma), c.getDetraccion() != null ? "el neto sin detracción" : "el total", Montos.txt(neto)));
         }
-        if (credito && suma.compareTo(c.getTotal()) >= 0) {
+        if (credito && suma.compareTo(neto) >= 0) {
             throw ApiException.invalido("Si se paga todo hoy, emítela al contado.");
         }
-        for (PagoIn in : lista) c.agregarPago(nuevoPago(c, usuario, in));
+        for (PagoIn in : lista) c.agregarPago(nuevoPago(c, usuario, in, c.getCaja()));
         actualizarEstadoPago(c);
     }
 
-    private Pago nuevoPago(Comprobante c, Usuario usuario, PagoIn in) {
+    private Caja cajaAbierta(Comprobante c) {
+        return cajas.findFirstByEmpresaIdAndEstablecimientoIdAndEstadoOrderByIdDesc(c.getEmpresa().getId(),
+                c.getEstablecimiento().getId(), Caja.Estado.ABIERTA).orElse(null);
+    }
+
+    private Pago nuevoPago(Comprobante c, Usuario usuario, PagoIn in, Caja caja) {
         Pago p = new Pago();
         p.setUsuario(usuario);
         p.setMetodo(in.metodo());
         p.setMonto(Montos.r2(in.monto()));
         p.setReferencia(limpiar(in.referencia()));
         p.setPagadoAt(Instant.now());
-        p.setCaja(c.getCaja());
+        p.setCaja(caja);
         return p;
     }
 
     private void actualizarEstadoPago(Comprobante c) {
-        BigDecimal pagado = c.getPagos().stream().map(Pago::getMonto).reduce(BigDecimal.ZERO, BigDecimal::add);
-        c.setMontoPagado(Montos.r2(pagado));
-        if (pagado.compareTo(c.getTotal()) >= 0) c.setEstadoPago(EstadoPago.PAGADO);
+        BigDecimal pagado = c.getMontoPagado();
+        if (pagado.compareTo(c.getNetoACobrar()) >= 0) c.setEstadoPago(EstadoPago.PAGADO);
         else if (pagado.signum() > 0) c.setEstadoPago(EstadoPago.PARCIAL);
         else c.setEstadoPago(EstadoPago.POR_COBRAR);
     }

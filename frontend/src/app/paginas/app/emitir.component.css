@@ -87,3 +87,5 @@
 .exito-acciones { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; }
 .exito-acciones .btn { min-height: 52px; }
 @media (max-width: 420px) { .exito-acciones { grid-template-columns: 1fr; } }
+
+.totales .neto { font-weight: 800; color: var(--verde); }

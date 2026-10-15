@@ -41,8 +41,12 @@ public class Caja {
     private BigDecimal montoApertura = BigDecimal.ZERO;
     private BigDecimal montoEsperado;
     private BigDecimal montoDeclarado;
-    private BigDecimal diferencia;
     private String notas;
     private Instant abiertaAt;
     private Instant cerradaAt;
+
+    /** Sobrante (+) o faltante (−) del cuadre; se calcula, no se guarda. */
+    public BigDecimal getDiferencia() {
+        return montoDeclarado == null || montoEsperado == null ? null : montoDeclarado.subtract(montoEsperado);
+    }
 }

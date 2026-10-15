@@ -21,22 +21,23 @@ public class PerfilService {
                                boolean solConfigurado, PlanVista plan, long usadosMes) {}
 
     public record Perfil(Long id, String nombre, String email, Usuario.Rol rol, Long establecimientoId, String establecimiento,
-                         EmpresaVista empresa) {}
+                         EmpresaVista empresa, int negocios) {}
 
-    private final UsuarioRepository usuarios;
+    private final MiembroRepository miembros;
     private final ComprobanteRepository comprobantes;
     private final CertificadoRepository certificados;
 
-    public PerfilService(UsuarioRepository usuarios, ComprobanteRepository comprobantes, CertificadoRepository certificados) {
-        this.usuarios = usuarios;
+    public PerfilService(MiembroRepository miembros, ComprobanteRepository comprobantes, CertificadoRepository certificados) {
+        this.miembros = miembros;
         this.comprobantes = comprobantes;
         this.certificados = certificados;
     }
 
     @Transactional(readOnly = true)
-    public Perfil de(Long usuarioId) {
-        Usuario u = usuarios.findById(usuarioId).orElseThrow();
-        Empresa e = u.getEmpresa();
+    public Perfil de(Long usuarioId, Long empresaId) {
+        Miembro m = miembros.findByUsuarioIdAndEmpresaId(usuarioId, empresaId).orElseThrow();
+        Usuario u = m.getUsuario();
+        Empresa e = m.getEmpresa();
         Plan p = e.getPlan();
         LocalDate hoy = LocalDate.now();
         long usados = comprobantes.countByEmpresaIdAndFechaEmisionBetween(e.getId(), hoy.withDayOfMonth(1), hoy.withDayOfMonth(hoy.lengthOfMonth()));
@@ -45,9 +46,10 @@ public class PerfilService {
                 p.isNotasCredito(), p.isReportesAvanzados());
         var empresa = new EmpresaVista(e.getId(), e.getRuc(), e.getRazonSocial(), e.getNombreComercial(), e.getDireccionFiscal(),
                 e.getAmbienteSunat().name(), e.getEstado().name(), e.getPruebaHasta(), propio,
-                e.getSolUsuario() != null && e.getSolClaveEnc() != null, plan, usados);
-        return new Perfil(u.getId(), u.getNombre(), u.getEmail(), u.getRol(),
-                u.getEstablecimiento() != null ? u.getEstablecimiento().getId() : null,
-                u.getEstablecimiento() != null ? u.getEstablecimiento().getNombre() : null, empresa);
+                e.solConfigurado(), plan, usados);
+        return new Perfil(u.getId(), u.getNombre(), u.getEmail(), m.getRol(),
+                m.getEstablecimiento() != null ? m.getEstablecimiento().getId() : null,
+                m.getEstablecimiento() != null ? m.getEstablecimiento().getNombre() : null, empresa,
+                miembros.activosDe(usuarioId).size());
     }
 }

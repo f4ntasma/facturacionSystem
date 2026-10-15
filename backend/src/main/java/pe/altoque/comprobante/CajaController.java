@@ -83,7 +83,6 @@ public class CajaController {
         BigDecimal esperado = c.getMontoApertura().add(efectivo(c));
         c.setMontoEsperado(Montos.r2(esperado));
         c.setMontoDeclarado(Montos.r2(r.montoDeclarado()));
-        c.setDiferencia(Montos.r2(r.montoDeclarado().subtract(esperado)));
         c.setNotas(r.notas());
         c.setEstado(Caja.Estado.CERRADA);
         c.setCerradaAt(Instant.now());

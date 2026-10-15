@@ -3,7 +3,10 @@ package pe.altoque;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -34,6 +37,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class FlujoFacturacionTest {
 
     @Autowired
@@ -63,6 +67,7 @@ class FlujoFacturacionTest {
     }
 
     @Test
+    @Order(1)
     void flujoCompleto() throws Exception {
         JsonNode gaseosa = post("/api/productos", Map.of("nombre", "Gaseosa 1 L", "unidadMedida", "NIU", "precio", 5.50,
                 "tipoAfectacion", "10", "controlaStock", true, "stock", 10, "categoria", "Bebidas"), token);
@@ -169,7 +174,66 @@ class FlujoFacturacionTest {
         assertThat(cerrada.path("diferencia").decimalValue()).isEqualByComparingTo("-1.00");
     }
 
+    @Test
+    void facturaConDetraccionAlCredito() throws Exception {
+        // Sin cuenta del Banco de la Nación no se puede
+        Map<String, Object> pedido = Map.of(
+                "tipo", "01",
+                "cliente", Map.of("tipoDocumento", "6", "numeroDocumento", "20601234565", "nombre", "DISTRIBUIDORA EL CASERITO S.A.C."),
+                "items", new Object[]{Map.of("descripcion", "Mantenimiento de congeladora", "cantidad", 1, "precioUnitario", 1000.00,
+                        "unidadMedida", "ZZ")},
+                "detraccion", Map.of("codigo", "020"),
+                "formaPago", "CREDITO",
+                "cuotas", new Object[]{Map.of("monto", 880.00, "fechaVencimiento", java.time.LocalDate.now().plusDays(30).toString())});
+        assertThat(postEsperando("/api/comprobantes", pedido, token, 400).path("mensaje").asText()).contains("Banco de la Nación");
+
+        put("/api/empresa/sunat", Map.of("ambiente", "SIMULADO", "cuentaDetracciones", "00012345678"));
+        JsonNode f = post("/api/comprobantes", pedido, token);
+        // 12 % de S/ 1,000 = S/ 120; el cliente paga S/ 880 al emisor
+        assertThat(f.path("detraccion").path("monto").decimalValue()).isEqualByComparingTo("120.00");
+        assertThat(f.path("netoACobrar").decimalValue()).isEqualByComparingTo("880.00");
+        assertThat(f.path("saldo").decimalValue()).isEqualByComparingTo("880.00");
+        String xml = new String(mvc.perform(get("/api/comprobantes/" + f.path("id").asLong() + "/xml").header("Authorization", "Bearer " + token))
+                .andReturn().getResponse().getContentAsByteArray(), java.nio.charset.StandardCharsets.UTF_8);
+        assertThat(xml).contains("listID=\"1001\"").contains("languageLocaleID=\"2006\"").contains("<cbc:PaymentMeansID>020</cbc:PaymentMeansID>")
+                .contains("<cbc:PaymentPercent>12</cbc:PaymentPercent>").contains("00012345678");
+    }
+
+    @Test
+    void kardexYVariosNegocios() throws Exception {
+        JsonNode arroz = post("/api/productos", Map.of("nombre", "Arroz 5 kg", "unidadMedida", "NIU", "precio", 22.00,
+                "tipoAfectacion", "20", "controlaStock", true, "stock", 5), token);
+        long id = arroz.path("id").asLong();
+        post("/api/productos/" + id + "/ingresos", Map.of("cantidad", 3, "nota", "Compra al mayorista"), token);
+        post("/api/comprobantes", Map.of("tipo", "03",
+                "items", new Object[]{Map.of("productoId", id, "descripcion", "Arroz 5 kg", "cantidad", 2, "precioUnitario", 22.00)}), token);
+        JsonNode kardex = obtener("/api/productos/" + id + "/kardex");
+        assertThat(kardex.size()).isEqualTo(3);
+        assertThat(kardex.get(0).path("tipo").asText()).isEqualTo("VENTA");
+        assertThat(kardex.get(0).path("stockResultante").decimalValue()).isEqualByComparingTo("6");
+
+        // La misma persona suma otro negocio y entra a él con otro token
+        JsonNode otro = post("/api/auth/negocios", Map.of("ruc", "10456789019", "razonSocial", "Taller El Chino",
+                "direccion", "Jr. Lima 200", "distrito", "MIRAFLORES", "provincia", "LIMA", "departamento", "LIMA"), token);
+        assertThat(otro.path("perfil").path("empresa").path("ruc").asText()).isEqualTo("10456789019");
+        assertThat(otro.path("perfil").path("negocios").asInt()).isGreaterThanOrEqualTo(2);
+        String tokenOtro = otro.path("token").asText();
+        assertThat(leer(mvc.perform(get("/api/auth/negocios").header("Authorization", "Bearer " + tokenOtro))).size()).isGreaterThanOrEqualTo(2);
+        // Los comprobantes de un negocio no se ven desde el otro
+        assertThat(leer(mvc.perform(get("/api/comprobantes").header("Authorization", "Bearer " + tokenOtro))).path("totalElements").asInt())
+                .isZero();
+        assertThat(leer(mvc.perform(get("/api/empresa").header("Authorization", "Bearer " + tokenOtro))).path("distrito").asText())
+                .isEqualTo("MIRAFLORES");
+    }
+
     // ------------------------------------------------------------------ apoyo
+
+    private void put(String url, Object cuerpo) throws Exception {
+        mvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put(url)
+                        .contentType(MediaType.APPLICATION_JSON).content(json.writeValueAsBytes(cuerpo))
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk());
+    }
 
     private static void verificarFirma(byte[] xml) throws Exception {
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();

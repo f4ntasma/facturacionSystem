@@ -92,6 +92,19 @@ export class EmitirComponent {
   });
   protected unidades = computed(() => this.lineas().reduce((a, l) => a + l.cantidad, 0));
 
+  // detracción (SPOT): solo factura de más de S/ 700
+  protected detraccionCodigo = signal('');
+  protected aplicaDetraccion = computed(() => this.tipo() === '01' && this.totales().total > 700);
+  protected detraccion = computed(() => {
+    if (!this.aplicaDetraccion() || !this.detraccionCodigo()) return null;
+    const bien = this.cat.datos().detracciones.find((d) => d.codigo === this.detraccionCodigo());
+    if (!bien) return null;
+    // Se deposita en soles enteros
+    return { ...bien, monto: Math.round((this.totales().total * bien.porcentaje) / 100) };
+  });
+  /** Lo que el cliente paga al negocio (el total menos la detracción). */
+  protected neto = computed(() => r2(this.totales().total - (this.detraccion()?.monto ?? 0)));
+
   // cliente
   protected clienteAbierto = signal(false);
   protected tipoDoc = '1';
@@ -118,7 +131,7 @@ export class EmitirComponent {
   protected verObs = signal(false);
   protected vuelto = computed(() => {
     const r = this.recibido();
-    return r && r > this.totales().total ? r2(r - this.totales().total) : 0;
+    return r && r > this.neto() ? r2(r - this.neto()) : 0;
   });
 
   // ítem libre
@@ -278,13 +291,13 @@ export class EmitirComponent {
     let pagos: { metodo: MetodoPago; monto: number; referencia?: string }[] = [];
     let cuotas: { monto: number; fechaVencimiento: string }[] | undefined;
     if (this.formaPago() === 'CONTADO') {
-      if (this.metodo() === 'EFECTIVO' && this.recibido() && this.recibido()! < t.total) return this.fallar('Lo recibido no alcanza para el total.');
-      pagos = [{ metodo: this.metodo(), monto: t.total, referencia: this.referencia || undefined }];
+      if (this.metodo() === 'EFECTIVO' && this.recibido() && this.recibido()! < this.neto()) return this.fallar('Lo recibido no alcanza para el total.');
+      pagos = [{ metodo: this.metodo(), monto: this.neto(), referencia: this.referencia || undefined }];
     } else {
       const adelanto = r2(this.adelanto() || 0);
-      if (adelanto >= t.total) return this.fallar('Si paga todo hoy, emítela al contado.');
+      if (adelanto >= this.neto()) return this.fallar('Si paga todo hoy, emítela al contado.');
       if (adelanto > 0) pagos = [{ metodo: this.metodo(), monto: adelanto, referencia: this.referencia || undefined }];
-      const saldo = r2(t.total - adelanto);
+      const saldo = r2(this.neto() - adelanto);
       const n = Math.max(1, Math.min(24, this.numCuotas()));
       const base = Math.floor((saldo / n) * 100) / 100;
       cuotas = Array.from({ length: n }, (_, i) => ({
@@ -308,6 +321,7 @@ export class EmitirComponent {
         formaPago: this.formaPago(),
         cuotas,
         pagos,
+        detraccion: this.detraccion() ? { codigo: this.detraccion()!.codigo } : null,
         observaciones: this.observaciones.trim() || null,
       });
       this.emitido.set(c);

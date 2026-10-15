@@ -6,10 +6,9 @@ import pe.altoque.comprobante.ComprobanteCuota;
 import pe.altoque.comprobante.ComprobanteDetalle;
 import pe.altoque.comprobante.TipoComprobante;
 import pe.altoque.empresa.Empresa;
-import pe.altoque.sunat.ComunicacionBaja;
-import pe.altoque.sunat.ComunicacionBajaItem;
-import pe.altoque.sunat.ResumenDiario;
-import pe.altoque.sunat.ResumenDiarioItem;
+import pe.altoque.comprobante.ComprobanteDetraccion;
+import pe.altoque.sunat.LoteSunat;
+import pe.altoque.sunat.LoteSunatItem;
 
 import java.math.BigDecimal;
 import java.time.format.DateTimeFormatter;
@@ -59,6 +58,7 @@ public final class UblBuilder {
             x.el("cbc:InvoiceTypeCode", c.getTipo().codigo(), "listID", c.getTipoOperacion());
         }
         x.el("cbc:Note", c.getTotalLetras(), "languageLocaleID", "1000");
+        if (c.getDetraccion() != null) x.el("cbc:Note", "Operación sujeta a detracción", "languageLocaleID", "2006");
         x.el("cbc:DocumentCurrencyCode", m);
 
         if (c.getTipo().esNota()) {
@@ -87,6 +87,7 @@ public final class UblBuilder {
         x.cerrar("cac:PartyLegalEntity").cerrar("cac:Party").cerrar("cac:AccountingCustomerParty");
 
         if (c.getTipo() == TipoComprobante.FACTURA) {
+            if (c.getDetraccion() != null) detraccion(x, c);
             formaPago(x, c);
         }
 
@@ -104,6 +105,22 @@ public final class UblBuilder {
         }
         x.cerrar(raiz);
         return x.toString();
+    }
+
+    /** SPOT: cuenta del Banco de la Nación (PaymentMeans) y bien, porcentaje y monto (PaymentTerms). */
+    private static void detraccion(Xml x, Comprobante c) {
+        ComprobanteDetraccion d = c.getDetraccion();
+        x.abrir("cac:PaymentMeans")
+                .el("cbc:ID", "Detraccion")
+                .el("cbc:PaymentMeansCode", d.getMedioPago())
+                .abrir("cac:PayeeFinancialAccount").el("cbc:ID", d.getCuentaBanco()).cerrar("cac:PayeeFinancialAccount")
+                .cerrar("cac:PaymentMeans");
+        x.abrir("cac:PaymentTerms")
+                .el("cbc:ID", "Detraccion")
+                .el("cbc:PaymentMeansID", d.getBienCodigo())
+                .el("cbc:PaymentPercent", d.getPorcentaje().stripTrailingZeros().toPlainString())
+                .el("cbc:Amount", txt(d.getMonto()), "currencyID", "PEN")
+                .cerrar("cac:PaymentTerms");
     }
 
     private static void formaPago(Xml x, Comprobante c) {
@@ -216,7 +233,7 @@ public final class UblBuilder {
 
     // ------------------------------------------------------------------ resumen diario y bajas
 
-    public static String resumenDiario(ResumenDiario r) {
+    public static String resumenDiario(LoteSunat r) {
         Empresa e = r.getEmpresa();
         Xml x = new Xml();
         x.abrir("SummaryDocuments", "xmlns", "urn:sunat:names:specification:ubl:peru:schema:xsd:SummaryDocuments-1",
@@ -228,7 +245,7 @@ public final class UblBuilder {
         x.el("cbc:IssueDate", r.getFechaGeneracion());
         firmaReferencia(x, e);
         emisorLote(x, e);
-        for (ResumenDiarioItem item : r.getItems()) {
+        for (LoteSunatItem item : r.getItems()) {
             Comprobante c = item.getComprobante();
             String m = c.getMoneda();
             x.abrir("sac:SummaryDocumentsLine");
@@ -271,7 +288,7 @@ public final class UblBuilder {
         x.abrir("sac:BillingPayment").el("cbc:PaidAmount", txt(monto), "currencyID", m).el("cbc:InstructionID", instruccion).cerrar("sac:BillingPayment");
     }
 
-    public static String comunicacionBaja(ComunicacionBaja b) {
+    public static String comunicacionBaja(LoteSunat b) {
         Empresa e = b.getEmpresa();
         Xml x = new Xml();
         x.abrir("VoidedDocuments", "xmlns", "urn:sunat:names:specification:ubl:peru:schema:xsd:VoidedDocuments-1",
@@ -283,7 +300,7 @@ public final class UblBuilder {
         x.el("cbc:IssueDate", b.getFechaGeneracion());
         firmaReferencia(x, e);
         emisorLote(x, e);
-        for (ComunicacionBajaItem item : b.getItems()) {
+        for (LoteSunatItem item : b.getItems()) {
             Comprobante c = item.getComprobante();
             x.abrir("sac:VoidedDocumentsLine")
                     .el("cbc:LineID", item.getLinea())

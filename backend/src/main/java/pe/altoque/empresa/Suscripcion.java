@@ -16,6 +16,8 @@ public class Suscripcion {
 
     public enum Estado { PENDIENTE, PAGADA, VENCIDA, CANCELADA }
 
+    public enum Periodo { MENSUAL, ANUAL }
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -27,6 +29,9 @@ public class Suscripcion {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "plan_id")
     private Plan plan;
+
+    @Enumerated(EnumType.STRING)
+    private Periodo periodo = Periodo.MENSUAL;
 
     private LocalDate periodoInicio;
     private LocalDate periodoFin;

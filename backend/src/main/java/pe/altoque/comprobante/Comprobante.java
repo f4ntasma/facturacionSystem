@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import pe.altoque.catalogo.Cliente;
+import pe.altoque.common.NumeroALetras;
 import pe.altoque.empresa.Empresa;
 import pe.altoque.empresa.Establecimiento;
 import pe.altoque.empresa.Serie;
@@ -16,6 +17,10 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Boleta, factura o nota. Tipo, serie y local salen de la serie; lo que se puede calcular
+ * (monto en letras, nombre de archivo, lo cobrado) no se guarda.
+ */
 @Entity
 @Table(name = "comprobante")
 @Getter
@@ -28,6 +33,7 @@ public class Comprobante {
         ACEPTADO,
         /** Aceptado con observaciones (códigos 4000+). */
         OBSERVADO,
+        /** SUNAT lo rechazó (2000–3999): nunca tuvo validez y su número no se reutiliza. */
         RECHAZADO,
         /** Baja o resumen de anulación enviado, esperando ticket. */
         POR_ANULAR,
@@ -38,6 +44,10 @@ public class Comprobante {
 
     public enum FormaPago { CONTADO, CREDITO }
 
+    /** Catálogo 51. */
+    public static final String OPERACION_VENTA_INTERNA = "0101";
+    public static final String OPERACION_DETRACCION = "1001";
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -46,13 +56,12 @@ public class Comprobante {
     @JoinColumn(name = "empresa_id")
     private Empresa empresa;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "establecimiento_id")
-    private Establecimiento establecimiento;
-
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    /** Siempre se carga: de aquí salen el tipo, la serie y el local. */
+    @ManyToOne(fetch = FetchType.EAGER, optional = false)
     @JoinColumn(name = "serie_id")
     private Serie serieRef;
+
+    private int correlativo;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "usuario_id")
@@ -66,16 +75,11 @@ public class Comprobante {
     @JoinColumn(name = "caja_id")
     private Caja caja;
 
-    @Column(name = "tipo_comprobante")
-    private TipoComprobante tipo;
-
-    private String serie;
-    private int correlativo;
     private LocalDate fechaEmision;
     private LocalTime horaEmision;
     private LocalDate fechaVencimiento;
     private String moneda = "PEN";
-    private String tipoOperacion = "0101";
+    private String tipoOperacion = OPERACION_VENTA_INTERNA;
 
     @Enumerated(EnumType.STRING)
     private FormaPago formaPago = FormaPago.CONTADO;
@@ -94,38 +98,24 @@ public class Comprobante {
     private BigDecimal totalIgv = BigDecimal.ZERO;
     private BigDecimal totalIcbper = BigDecimal.ZERO;
     private BigDecimal total = BigDecimal.ZERO;
-    private String totalLetras;
     private String observaciones;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "comprobante_ref_id")
-    private Comprobante comprobanteRef;
-
-    private TipoComprobante refTipo;
-    private String refSerie;
-    private Integer refCorrelativo;
-    private String motivoCodigo;
-    private String motivoDescripcion;
 
     @Enumerated(EnumType.STRING)
     private EstadoSunat estadoSunat = EstadoSunat.PENDIENTE;
 
-    private String sunatCodigo;
-    private String sunatMensaje;
-    private int sunatIntentos;
-    private Instant enviadoAt;
-    private String hash;
-    private String nombreArchivo;
-
     @Enumerated(EnumType.STRING)
     private EstadoPago estadoPago = EstadoPago.PAGADO;
 
-    private BigDecimal montoPagado = BigDecimal.ZERO;
-    private String anulacionMotivo;
-    private Instant anuladoAt;
+    private String hash;
     private String tokenPublico;
     private Instant createdAt;
     private Instant updatedAt;
+
+    @OneToOne(mappedBy = "comprobante", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private ComprobanteNota nota;
+
+    @OneToOne(mappedBy = "comprobante", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private ComprobanteDetraccion detraccion;
 
     @OneToMany(mappedBy = "comprobante", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("item")
@@ -149,13 +139,77 @@ public class Comprobante {
         updatedAt = Instant.now();
     }
 
+    // ------------------------------------------------------------------ derivados
+
+    public TipoComprobante getTipo() {
+        return serieRef.getTipoComprobante();
+    }
+
+    public String getSerie() {
+        return serieRef.getSerie();
+    }
+
+    public Establecimiento getEstablecimiento() {
+        return serieRef.getEstablecimiento();
+    }
+
+    public String getTotalLetras() {
+        return NumeroALetras.convertir(total, moneda);
+    }
+
+    /** Nombre de los archivos ante SUNAT: RUC-TIPO-SERIE-CORRELATIVO. */
+    public String getNombreArchivo() {
+        return "%s-%s-%s-%d".formatted(empresa.getRuc(), getTipo().codigo(), getSerie(), correlativo);
+    }
+
+    public BigDecimal getMontoPagado() {
+        return pagos.stream().map(Pago::getMonto).reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    /** Lo que el cliente le paga al emisor: el total menos la detracción que deposita en el Banco de la Nación. */
+    public BigDecimal getNetoACobrar() {
+        return detraccion == null ? total : total.subtract(detraccion.getMonto());
+    }
+
+    public BigDecimal getSaldo() {
+        return getNetoACobrar().subtract(getMontoPagado());
+    }
+
+    // Datos de la nota (null si no es nota)
+
+    public Comprobante getComprobanteRef() {
+        return nota == null ? null : nota.getComprobanteRef();
+    }
+
+    public TipoComprobante getRefTipo() {
+        return nota == null ? null : nota.getRefTipo();
+    }
+
+    public String getRefSerie() {
+        return nota == null ? null : nota.getRefSerie();
+    }
+
+    public Integer getRefCorrelativo() {
+        return nota == null ? null : nota.getRefCorrelativo();
+    }
+
+    public String getMotivoCodigo() {
+        return nota == null ? null : nota.getMotivoCodigo();
+    }
+
+    public String getMotivoDescripcion() {
+        return nota == null ? null : nota.getSustento();
+    }
+
+    // ------------------------------------------------------------------ armado
+
     public String numero() {
-        return serie + "-" + correlativo;
+        return getSerie() + "-" + correlativo;
     }
 
     /** Número con ceros a la izquierda como se imprime: B001-000123. */
     public String numeroImpreso() {
-        return "%s-%06d".formatted(serie, correlativo);
+        return "%s-%06d".formatted(getSerie(), correlativo);
     }
 
     public void agregarDetalle(ComprobanteDetalle d) {
@@ -173,8 +227,24 @@ public class Comprobante {
         pagos.add(p);
     }
 
+    public void asignarNota(ComprobanteNota n) {
+        n.setComprobante(this);
+        n.setEmpresaId(empresa.getId());
+        nota = n;
+    }
+
+    public void asignarDetraccion(ComprobanteDetraccion d) {
+        d.setComprobante(this);
+        detraccion = d;
+        tipoOperacion = OPERACION_DETRACCION;
+    }
+
     /** Boletas y sus notas se anulan por resumen diario; facturas y sus notas por comunicación de baja. */
     public boolean seAnulaPorResumen() {
-        return serie.startsWith("B");
+        return getSerie().startsWith("B");
+    }
+
+    public boolean vigente() {
+        return estadoSunat == EstadoSunat.ACEPTADO || estadoSunat == EstadoSunat.OBSERVADO;
     }
 }

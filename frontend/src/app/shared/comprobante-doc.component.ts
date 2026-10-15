@@ -62,6 +62,9 @@ const DOCS: Record<string, string> = { '0': 'DOC', '1': 'DNI', '4': 'CE', '6': '
           @if (c.totalIcbper > 0) { <div class="item"><span>ICBPER</span><span>{{ c.totalIcbper.toFixed(2) }}</span></div> }
           <div class="item total"><span>TOTAL</span><span>{{ c.total | soles: c.moneda }}</span></div>
           <div class="letras">SON: {{ c.totalLetras }}</div>
+          @if (c.detraccion; as d) {
+            <div class="letras">OPERACIÓN SUJETA AL SPOT · Detracción {{ d.porcentaje }}%: {{ d.monto.toFixed(2) }} · Cta. BN {{ d.cuentaBanco }}</div>
+          }
         </div>
 
         <div class="bloque">
@@ -134,6 +137,12 @@ const DOCS: Record<string, string> = { '0': 'DOC', '1': 'DNI', '4': 'CE', '6': '
         <section class="a4-pie">
           <div class="a4-izq">
             <div class="letras"><span class="lbl">Son</span>{{ c.totalLetras }}</div>
+            @if (c.detraccion; as d) {
+              <div class="spot"><span class="lbl">Operación sujeta al SPOT</span>
+                Sistema de Pago de Obligaciones Tributarias con el Gobierno Central. Bien/servicio {{ d.codigo }}{{ d.descripcion ? ' · ' + d.descripcion : '' }}.
+                Detracción {{ d.porcentaje }}%: {{ d.monto | soles }} · Cta. Banco de la Nación {{ d.cuentaBanco }}. Neto a pagar: {{ c.netoACobrar | soles }}.
+              </div>
+            }
             @if (c.cuotas.length) {
               <div><span class="lbl">Cuotas</span>
                 @for (q of c.cuotas; track q.numero) { <div>Cuota {{ q.numero }}: {{ q.monto | soles }} · vence {{ q.fechaVencimiento | fecha }}</div> }
@@ -203,6 +212,7 @@ const DOCS: Record<string, string> = { '0': 'DOC', '1': 'DNI', '4': 'CE', '6': '
     .a4-pie { display: flex; justify-content: space-between; gap: 24px; align-items: flex-start; }
     .a4-izq { display: flex; flex-direction: column; gap: 10px; flex: 1; min-width: 0; }
     .fila-qr { display: flex; gap: 12px; align-items: center; }
+    .spot { font-size: 11px; border: 1px dashed var(--tinta); border-radius: 8px; padding: 8px 10px; }
     .fila-qr img { width: 110px; height: 110px; }
     .a4-totales { border-collapse: collapse; min-width: 240px; flex-shrink: 0; font-family: var(--f-mono); }
     .a4-totales td:last-child { white-space: nowrap; }
